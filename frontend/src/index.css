@@ -1,0 +1,36 @@
+/* Importar Tailwind CSS v4 */
+@import "tailwindcss";
+
+/* Importar fuente Nunito de Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&display=swap');
+
+/* Variables CSS personalizadas de Tailwind v4 */
+@theme {
+  /* Colores personalizados del sistema */
+  --color-primary: #1779BC;
+  --color-primary-light: #67aed4;
+  --color-secondary: #778191;
+  
+  /* Fuente personalizada */
+  --font-family-sans: 'Nunito', sans-serif;
+}
+
+/* Estilos base */
+:root {
+  font-family: var(--font-family-sans);
+  font-style: normal;
+  font-weight: 400;
+  
+  /* Optimizaciones de renderizado */
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  background-color: #ffffff;
+  color: #333;
+  min-height: 100vh;
+}
