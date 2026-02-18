@@ -139,6 +139,55 @@ function MiComponente() {
 }
 ```
 
+#### Formularios en Modal
+
+**AddVehicleModal** - Formulario para agregar vehículos nuevos con validación completa.
+
+**Uso básico:**
+```jsx
+import AddVehicleModal from './components/AddVehicleModal';
+import { useState } from 'react';
+
+function MiComponente() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleAddVehicle = (vehicleData) => {
+    console.log('Vehículo agregado:', vehicleData);
+    // Enviar al backend
+  };
+
+  return (
+    <>
+      <button onClick={() => setIsOpen(true)}>Agregar Vehículo</button>
+      
+      <AddVehicleModal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        onSubmit={handleAddVehicle}
+      />
+    </>
+  );
+}
+```
+
+**Campos del formulario:**
+- ✅ Placa (validación formato ABC-123)
+- ✅ Marca y Modelo
+- ✅ Año
+- ✅ Color
+- ✅ Tipo de combustible
+- ✅ Vencimiento SOAT
+- ✅ Vencimiento Revisión Técnico-Mecánica
+- ✅ Último mantenimiento (opcional)
+- ✅ Kilometraje actual (opcional)
+
+**Características:**
+- ✅ Validación en tiempo real
+- ✅ Mensajes de error claros
+- ✅ Formato automático de placa a mayúsculas
+- ✅ Alertas de éxito/error con useAlert
+- ✅ Responsive design
+
 
 ## 📁 Estructura del Proyecto
 

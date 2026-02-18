@@ -1,6 +1,7 @@
 // Página VehicleList - Lista de vehículos con grid layout
 import { useState } from 'react';
 import VehicleCard from '../components/VehicleCard';
+import AddVehicleModal from '../components/AddVehicleModal';
 
 const VehicleList = ({ onNavigate }) => {
   // Datos de ejemplo - estos vendrán del backend
@@ -39,6 +40,7 @@ const VehicleList = ({ onNavigate }) => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [isAddVehicleModalOpen, setIsAddVehicleModalOpen] = useState(false);
 
   // Filtrar vehículos
   const filteredVehicles = vehicles.filter(vehicle => {
@@ -55,6 +57,11 @@ const VehicleList = ({ onNavigate }) => {
     onNavigate('maintenance', vehicle);
   };
 
+  const handleAddVehicle = (vehicleData) => {
+    console.log('Vehículo agregado:', vehicleData);
+    // Aquí se enviará al backend cuando esté disponible
+  };
+
   return (
     <div className="py-8">
       {/* Header */}
@@ -66,7 +73,10 @@ const VehicleList = ({ onNavigate }) => {
           </p>
         </div>
         
-        <button className="bg-primary hover:bg-primary-light text-white font-semibold py-3 px-6 rounded-lg transition-colors shadow-md hover:shadow-lg">
+        <button 
+          onClick={() => setIsAddVehicleModalOpen(true)}
+          className="bg-primary hover:bg-primary-light text-white font-semibold py-3 px-6 rounded-lg transition-colors shadow-md hover:shadow-lg"
+        >
           + Agregar Vehículo
         </button>
       </div>
@@ -119,6 +129,13 @@ const VehicleList = ({ onNavigate }) => {
           </p>
         </div>
       )}
+
+      {/* Modal de Agregar Vehículo */}
+      <AddVehicleModal
+        isOpen={isAddVehicleModalOpen}
+        onClose={() => setIsAddVehicleModalOpen(false)}
+        onSubmit={handleAddVehicle}
+      />
     </div>
   );
 };

@@ -9,12 +9,14 @@ import {
   DocumentChartBarIcon 
 } from '@heroicons/react/24/outline';
 import AlertsModal from '../components/AlertsModal';
+import AddVehicleModal from '../components/AddVehicleModal';
 // import { exampleService } from '../services/example.service';
 
 export const Home = ({ onNavigate }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isAlertsModalOpen, setIsAlertsModalOpen] = useState(false);
+  const [isAddVehicleModalOpen, setIsAddVehicleModalOpen] = useState(false);
 
   // Datos de ejemplo de vehículos - estos vendrán del backend
   const [vehicles] = useState([
@@ -72,6 +74,11 @@ export const Home = ({ onNavigate }) => {
     }).length;
 
     return alertsCount;
+  };
+
+  const handleAddVehicle = (vehicleData) => {
+    console.log('Vehículo agregado:', vehicleData);
+    // Aquí se enviará al backend cuando esté disponible
   };
 
   // Ejemplo de cómo usar los servicios
@@ -172,6 +179,7 @@ export const Home = ({ onNavigate }) => {
           </button>
 
           <button
+            onClick={() => setIsAddVehicleModalOpen(true)}
             className="bg-primary-light hover:bg-primary text-white p-6 rounded-lg shadow-md hover:shadow-xl transition-all transform hover:scale-105 flex flex-col items-center gap-3"
           >
             <PlusIcon className="w-12 h-12" />
@@ -232,6 +240,13 @@ export const Home = ({ onNavigate }) => {
         isOpen={isAlertsModalOpen}
         onClose={() => setIsAlertsModalOpen(false)}
         vehicles={vehicles}
+      />
+
+      {/* Modal de Agregar Vehículo */}
+      <AddVehicleModal
+        isOpen={isAddVehicleModalOpen}
+        onClose={() => setIsAddVehicleModalOpen(false)}
+        onSubmit={handleAddVehicle}
       />
     </div>
   );
