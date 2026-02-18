@@ -188,6 +188,65 @@ function MiComponente() {
 - ✅ Alertas de éxito/error con useAlert
 - ✅ Responsive design
 
+**MaintenanceHistoryModal** - Modal para visualizar el historial de mantenimientos con filtros por mes.
+
+**Uso básico:**
+```jsx
+import MaintenanceHistoryModal from './components/MaintenanceHistoryModal';
+import { useState } from 'react';
+
+function MiComponente() {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  // Datos de ejemplo
+  const maintenances = [
+    {
+      id: 1,
+      vehicleId: 1,
+      maintenanceType: 'oil_change',
+      date: '2026-01-10',
+      cost: '150000',
+      mileage: '45000',
+      nextMaintenanceDate: '2026-07-10',
+      description: 'Cambio de aceite y filtro'
+    },
+    // más mantenimientos...
+  ];
+
+  const vehicles = [
+    { id: 1, plate: 'ABC-123', brand: 'Toyota', model: 'Hilux' },
+    // más vehículos...
+  ];
+
+  return (
+    <>
+      <button onClick={() => setIsOpen(true)}>Ver Historial</button>
+      
+      <MaintenanceHistoryModal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        maintenances={maintenances}
+        vehicles={vehicles}
+      />
+    </>
+  );
+}
+```
+
+**Características:**
+- ✅ Filtro personalizable: selecciona cualquier mes y año manualmente
+- ✅ Botón para limpiar filtro y ver todos los mantenimientos
+- ✅ Estadísticas en tiempo real (cantidad y costo total del período)
+- ✅ Tarjetas detalladas con información completa de cada mantenimiento
+- ✅ Ordenamiento por fecha (más reciente primero)
+- ✅ Colores distintivos por tipo de mantenimiento
+- ✅ Información del vehículo asociado
+- ✅ Scroll vertical para listas largas
+- ✅ Mensaje cuando no hay mantenimientos en el período seleccionado
+
+**Tipos de mantenimiento soportados:**
+- oil_change, tire_change, brake_fluid, drive_kit, filters, battery, brakes, suspension, engine, transmission, other
+
 
 ## 📁 Estructura del Proyecto
 
