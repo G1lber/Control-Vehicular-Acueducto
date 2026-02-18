@@ -31,7 +31,7 @@ const VehicleList = ({ onNavigate }) => {
       brand: 'Nissan',
       model: 'Frontier',
       year: 2023,
-      soatExpiry: '2026-12-20',
+      soatExpiry: '2026-1-20',
       techReviewExpiry: '2027-01-15',
       lastMaintenance: '2026-02-01'
     },
