@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import VehicleCard from '../components/VehicleCard';
 
-const VehicleList = () => {
+const VehicleList = ({ onNavigate }) => {
   // Datos de ejemplo - estos vendrán del backend
   const [vehicles] = useState([
     {
