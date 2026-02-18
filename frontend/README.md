@@ -52,6 +52,40 @@ var(--color-secondary)
 var(--color-background)
 ```
 
+### Iconos con Heroicons
+
+El proyecto utiliza **Heroicons** para todos los iconos del sistema. Heroicons es la biblioteca de iconos oficial recomendada por Tailwind CSS.
+
+**Importar iconos:**
+```jsx
+import { HomeIcon, UserIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+
+// Para iconos sólidos:
+import { HomeIcon, UserIcon } from '@heroicons/react/24/solid';
+```
+
+**Uso en componentes:**
+```jsx
+<HomeIcon className="w-6 h-6 text-primary" />
+<UserIcon className="w-5 h-5" />
+```
+
+**Iconos disponibles comunes:**
+- `HomeIcon` - Inicio
+- `BuildingOffice2Icon` - Vehículos
+- `DocumentChartBarIcon` - Reportes
+- `Cog6ToothIcon` - Configuración/Mantenimientos
+- `ExclamationTriangleIcon` - Alertas
+- `CalendarIcon` - Fechas
+- `EnvelopeIcon` - Email
+- `LockClosedIcon` - Contraseña
+- `EyeIcon` / `EyeSlashIcon` - Mostrar/ocultar
+- `ArrowDownTrayIcon` - Descargar
+- `PlusIcon` - Agregar
+- `ChevronRightIcon` - Flecha derecha
+
+📚 **Catálogo completo:** https://heroicons.com
+
 ## 📁 Estructura del Proyecto
 
 ```

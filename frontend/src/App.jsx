@@ -4,6 +4,7 @@ import Layout from './components/Layout'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import VehicleList from './pages/VehicleList'
+import Reports from './pages/Reports'
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -33,6 +34,8 @@ function App() {
     switch (currentPage) {
       case 'vehicles':
         return <VehicleList onNavigate={handleNavigate} />;
+      case 'reports':
+        return <Reports onNavigate={handleNavigate} />;
       case 'home':
       default:
         return <Home onNavigate={handleNavigate} />;
