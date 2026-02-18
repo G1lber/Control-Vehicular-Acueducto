@@ -8,11 +8,71 @@ import {
   PlusIcon, 
   DocumentChartBarIcon 
 } from '@heroicons/react/24/outline';
+import AlertsModal from '../components/AlertsModal';
 // import { exampleService } from '../services/example.service';
 
 export const Home = ({ onNavigate }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isAlertsModalOpen, setIsAlertsModalOpen] = useState(false);
+
+  // Datos de ejemplo de vehículos - estos vendrán del backend
+  const [vehicles] = useState([
+    {
+      id: 1,
+      plate: 'ABC-123',
+      brand: 'Toyota',
+      model: 'Hilux',
+      year: 2022,
+      soatExpiry: '2026-06-15',
+      techReviewExpiry: '2026-08-20',
+      lastMaintenance: '2026-01-10'
+    },
+    {
+      id: 2,
+      plate: 'DEF-456',
+      brand: 'Chevrolet',
+      model: 'D-Max',
+      year: 2021,
+      soatExpiry: '2026-03-10',
+      techReviewExpiry: '2026-02-28',
+      lastMaintenance: '2026-01-05'
+    },
+    {
+      id: 3,
+      plate: 'GHI-789',
+      brand: 'Nissan',
+      model: 'Frontier',
+      year: 2023,
+      soatExpiry: '2026-01-20',
+      techReviewExpiry: '2027-01-15',
+      lastMaintenance: '2026-02-01'
+    },
+  ]);
+
+  // Calcular alertas reales
+  const calculateAlerts = () => {
+    const isExpiringSoon = (dateString) => {
+      const expiryDate = new Date(dateString);
+      const today = new Date();
+      const daysUntilExpiry = Math.floor((expiryDate - today) / (1000 * 60 * 60 * 24));
+      return daysUntilExpiry <= 30 && daysUntilExpiry >= 0;
+    };
+
+    const isExpired = (dateString) => {
+      const expiryDate = new Date(dateString);
+      const today = new Date();
+      return expiryDate < today;
+    };
+
+    const alertsCount = vehicles.filter(vehicle => {
+      const soatAlert = isExpiringSoon(vehicle.soatExpiry) || isExpired(vehicle.soatExpiry);
+      const techAlert = isExpiringSoon(vehicle.techReviewExpiry) || isExpired(vehicle.techReviewExpiry);
+      return soatAlert || techAlert;
+    }).length;
+
+    return alertsCount;
+  };
 
   // Ejemplo de cómo usar los servicios
   useEffect(() => {
@@ -78,17 +138,24 @@ export const Home = ({ onNavigate }) => {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+        <button
+          onClick={() => setIsAlertsModalOpen(true)}
+          className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-all transform hover:scale-105 cursor-pointer text-left"
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-secondary text-sm font-semibold mb-1">Alertas</p>
-              <p className="text-3xl font-bold text-yellow-600">5</p>
+              <p className="text-3xl font-bold text-yellow-600">{calculateAlerts()}</p>
             </div>
             <div className="bg-yellow-100 p-3 rounded-full">
               <ExclamationTriangleIcon className="w-8 h-8 text-yellow-600" />
             </div>
           </div>
-        </div>
+          <p className="text-yellow-600 text-sm font-semibold mt-3 flex items-center gap-1">
+            Ver detalles
+            <ChevronRightIcon className="w-4 h-4" />
+          </p>
+        </button>
       </div>
 
       {/* Menú de acceso rápido */}
@@ -159,6 +226,13 @@ export const Home = ({ onNavigate }) => {
           ))}
         </ul>
       )}
+
+      {/* Modal de Alertas */}
+      <AlertsModal 
+        isOpen={isAlertsModalOpen}
+        onClose={() => setIsAlertsModalOpen(false)}
+        vehicles={vehicles}
+      />
     </div>
   );
 };

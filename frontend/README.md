@@ -86,6 +86,60 @@ import { HomeIcon, UserIcon } from '@heroicons/react/24/solid';
 
 📚 **Catálogo completo:** https://heroicons.com
 
+### Componentes Reutilizables
+
+#### Modal
+Componente de ventana emergente reutilizable con soporte para diferentes tamaños y cierre con ESC.
+
+**Uso básico:**
+```jsx
+import Modal from './components/Modal';
+import { useState } from 'react';
+
+function MiComponente() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      <button onClick={() => setIsOpen(true)}>Abrir Modal</button>
+      
+      <Modal 
+        isOpen={isOpen} 
+        onClose={() => setIsOpen(false)}
+        title="Título del Modal"
+        size="md" // sm, md, lg, xl
+      >
+        <p>Contenido del modal aquí</p>
+      </Modal>
+    </>
+  );
+}
+```
+
+**Características:**
+- ✅ Cierre con tecla ESC
+- ✅ Cierre al hacer click en el overlay
+- ✅ 4 tamaños: sm, md, lg, xl
+- ✅ Previene scroll del body cuando está abierto
+- ✅ Animación de entrada suave
+
+#### Sistema de Alertas
+Sistema de notificaciones toast para toda la aplicación. Ver [ALERTS_README.md](src/components/ALERTS_README.md) para documentación completa.
+
+**Uso básico:**
+```jsx
+import { useAlert } from '../context/AlertContext';
+
+function MiComponente() {
+  const { success, error, warning, info } = useAlert();
+  
+  const handleClick = () => {
+    success('¡Operación exitosa!');
+  };
+}
+```
+
+
 ## 📁 Estructura del Proyecto
 
 ```
