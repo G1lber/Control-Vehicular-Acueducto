@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 
-const MaintenanceForm = ({ vehicleId, onSubmit }) => {
+const MaintenanceForm = ({ vehicleId, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
     vehicleId: vehicleId || '',
     maintenanceType: '',
@@ -164,7 +164,7 @@ const MaintenanceForm = ({ vehicleId, onSubmit }) => {
           </button>
           <button
             type="button"
-            onClick={() => window.history.back()}
+            onClick={onCancel}
             className="flex-1 bg-white hover:bg-gray-50 text-primary border-2 border-primary font-semibold py-3 px-6 rounded-lg transition-colors"
           >
             Cancelar

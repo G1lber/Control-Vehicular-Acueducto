@@ -50,6 +50,11 @@ const VehicleList = ({ onNavigate }) => {
     return matchesSearch;
   });
 
+  const handleMaintenanceClick = (vehicle) => {
+    // Navegar a la página de mantenimiento con los datos del vehículo
+    onNavigate('maintenance', vehicle);
+  };
+
   return (
     <div className="py-8">
       {/* Header */}
@@ -100,7 +105,11 @@ const VehicleList = ({ onNavigate }) => {
       {filteredVehicles.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredVehicles.map(vehicle => (
-            <VehicleCard key={vehicle.id} vehicle={vehicle} />
+            <VehicleCard 
+              key={vehicle.id} 
+              vehicle={vehicle} 
+              onMaintenanceClick={handleMaintenanceClick}
+            />
           ))}
         </div>
       ) : (

@@ -5,10 +5,12 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import VehicleList from './pages/VehicleList'
 import Reports from './pages/Reports'
+import MaintenanceForm from './components/MaintenanceForm'
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentPage, setCurrentPage] = useState('home');
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
 
   const handleLogin = () => {
     setIsAuthenticated(true);
@@ -20,8 +22,19 @@ function App() {
     setCurrentPage('home');
   };
 
-  const handleNavigate = (page) => {
+  const handleNavigate = (page, vehicleData = null) => {
     setCurrentPage(page);
+    if (vehicleData) {
+      setSelectedVehicle(vehicleData);
+    }
+  };
+
+  const handleMaintenanceSubmit = (formData) => {
+    console.log('Mantenimiento registrado:', formData);
+    alert('Mantenimiento registrado exitosamente');
+    // Volver a la lista de vehículos
+    setCurrentPage('vehicles');
+    setSelectedVehicle(null);
   };
 
   // Si no está autenticado, mostrar Login
@@ -36,6 +49,32 @@ function App() {
         return <VehicleList onNavigate={handleNavigate} />;
       case 'reports':
         return <Reports onNavigate={handleNavigate} />;
+      case 'maintenance':
+        return (
+          <div className="py-8">
+            <button
+              onClick={() => handleNavigate('vehicles')}
+              className="mb-6 text-primary hover:text-primary-light font-semibold flex items-center gap-2 transition-colors"
+            >
+              ← Volver a Vehículos
+            </button>
+            {selectedVehicle && (
+              <div className="mb-6 bg-primary/10 border-l-4 border-primary rounded-lg p-4">
+                <h3 className="text-lg font-bold text-primary">
+                  Mantenimiento para: {selectedVehicle.plate}
+                </h3>
+                <p className="text-primary-light font-semibold">
+                  {selectedVehicle.brand} {selectedVehicle.model} ({selectedVehicle.year})
+                </p>
+              </div>
+            )}
+            <MaintenanceForm
+              vehicleId={selectedVehicle?.id}
+              onSubmit={handleMaintenanceSubmit}
+              onCancel={() => handleNavigate('vehicles')}
+            />
+          </div>
+        );
       case 'home':
       default:
         return <Home onNavigate={handleNavigate} />;
