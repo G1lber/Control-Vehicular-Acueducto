@@ -247,6 +247,72 @@ function MiComponente() {
 **Tipos de mantenimiento soportados:**
 - oil_change, tire_change, brake_fluid, drive_kit, filters, battery, brakes, suspension, engine, transmission, other
 
+**VehicleDetailsModal** - Modal para visualizar y actualizar información detallada del vehículo.
+
+**Uso básico:**
+```jsx
+import VehicleDetailsModal from './components/VehicleDetailsModal';
+import { useState } from 'react';
+
+function MiComponente() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  
+  const vehicle = {
+    id: 1,
+    plate: 'ABC-123',
+    brand: 'Toyota',
+    model: 'Hilux',
+    year: 2022,
+    color: 'Blanco',
+    fuelType: 'Diesel',
+    soatExpiry: '2026-06-15',
+    techReviewExpiry: '2026-08-20',
+    lastMaintenance: '2026-01-10',
+    mileage: '45000'
+  };
+
+  const handleUpdate = (updatedVehicle) => {
+    console.log('Vehículo actualizado:', updatedVehicle);
+    // Enviar al backend
+  };
+
+  return (
+    <>
+      <button onClick={() => { 
+        setSelectedVehicle(vehicle);
+        setIsOpen(true);
+      }}>
+        Ver Detalles
+      </button>
+      
+      <VehicleDetailsModal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        vehicle={selectedVehicle}
+        onUpdate={handleUpdate}
+      />
+    </>
+  );
+}
+```
+
+**Características:**
+- ✅ Vista completa de información del vehículo
+- ✅ **Dos modos de edición independientes:**
+  - **Editar Información:** Actualizar placa, marca, modelo, año, color, tipo de combustible, kilometraje y último mantenimiento
+  - **Editar Fechas:** Actualizar fechas de SOAT y revisión técnico-mecánica
+- ✅ Indicadores visuales de estado (vencido, por vencer, vigente)
+- ✅ Contador de días restantes para cada documento
+- ✅ Validación completa de campos:
+  - Formato de placa (ABC-123)
+  - Rango de año válido
+  - Campos obligatorios vs opcionales
+- ✅ Integración con sistema de alertas
+- ✅ Diseño responsive y profesional
+- ✅ Botones de acción claros (Editar, Guardar, Cancelar)
+- ✅ Los dos modos de edición no pueden estar activos simultáneamente
+
 
 ## 📁 Estructura del Proyecto
 

@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import VehicleCard from '../components/VehicleCard';
 import AddVehicleModal from '../components/AddVehicleModal';
+import VehicleDetailsModal from '../components/VehicleDetailsModal';
 
 const VehicleList = ({ onNavigate }) => {
   // Datos de ejemplo - estos vendrán del backend
@@ -12,9 +13,12 @@ const VehicleList = ({ onNavigate }) => {
       brand: 'Toyota',
       model: 'Hilux',
       year: 2022,
+      color: 'Blanco',
+      fuelType: 'Diesel',
       soatExpiry: '2026-06-15',
       techReviewExpiry: '2026-08-20',
-      lastMaintenance: '2026-01-10'
+      lastMaintenance: '2026-01-10',
+      mileage: '45000'
     },
     {
       id: 2,
@@ -22,9 +26,12 @@ const VehicleList = ({ onNavigate }) => {
       brand: 'Chevrolet',
       model: 'D-Max',
       year: 2021,
+      color: 'Azul',
+      fuelType: 'Diesel',
       soatExpiry: '2026-03-10',
       techReviewExpiry: '2026-02-28',
-      lastMaintenance: '2026-01-05'
+      lastMaintenance: '2026-01-05',
+      mileage: '68000'
     },
     {
       id: 3,
@@ -32,15 +39,20 @@ const VehicleList = ({ onNavigate }) => {
       brand: 'Nissan',
       model: 'Frontier',
       year: 2023,
+      color: 'Gris',
+      fuelType: 'Gasolina',
       soatExpiry: '2026-1-20',
       techReviewExpiry: '2027-01-15',
-      lastMaintenance: '2026-02-01'
+      lastMaintenance: '2026-02-01',
+      mileage: '32000'
     },
   ]);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [isAddVehicleModalOpen, setIsAddVehicleModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
 
   // Filtrar vehículos
   const filteredVehicles = vehicles.filter(vehicle => {
@@ -60,6 +72,17 @@ const VehicleList = ({ onNavigate }) => {
   const handleAddVehicle = (vehicleData) => {
     console.log('Vehículo agregado:', vehicleData);
     // Aquí se enviará al backend cuando esté disponible
+  };
+
+  const handleDetailsClick = (vehicle) => {
+    setSelectedVehicle(vehicle);
+    setIsDetailsModalOpen(true);
+  };
+
+  const handleVehicleUpdate = (updatedVehicle) => {
+    console.log('Vehículo actualizado:', updatedVehicle);
+    // Aquí se enviará al backend cuando esté disponible
+    // Por ahora, actualizamos el estado local si fuera necesario
   };
 
   return (
@@ -119,6 +142,7 @@ const VehicleList = ({ onNavigate }) => {
               key={vehicle.id} 
               vehicle={vehicle} 
               onMaintenanceClick={handleMaintenanceClick}
+              onDetailsClick={handleDetailsClick}
             />
           ))}
         </div>
@@ -135,6 +159,14 @@ const VehicleList = ({ onNavigate }) => {
         isOpen={isAddVehicleModalOpen}
         onClose={() => setIsAddVehicleModalOpen(false)}
         onSubmit={handleAddVehicle}
+      />
+
+      {/* Modal de Detalles del Vehículo */}
+      <VehicleDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
+        vehicle={selectedVehicle}
+        onUpdate={handleVehicleUpdate}
       />
     </div>
   );

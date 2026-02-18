@@ -1,7 +1,7 @@
 // Componente VehicleCard - Tarjeta de información de vehículo
 // Uso: Muestra información general del vehículo con SOAT y revisión técnico-mecánica
 
-const VehicleCard = ({ vehicle, onMaintenanceClick }) => {
+const VehicleCard = ({ vehicle, onMaintenanceClick, onDetailsClick }) => {
   // Ejemplo de datos del vehículo:
   // {
   //   id: 1,
@@ -103,7 +103,10 @@ const VehicleCard = ({ vehicle, onMaintenanceClick }) => {
 
         {/* Botones de acción */}
         <div className="flex gap-2 mt-4">
-          <button className="flex-1 bg-primary hover:bg-primary-light text-white font-semibold py-2 px-4 rounded transition-colors text-sm">
+          <button 
+            onClick={() => onDetailsClick && onDetailsClick(vehicle)}
+            className="flex-1 bg-primary hover:bg-primary-light text-white font-semibold py-2 px-4 rounded transition-colors text-sm"
+          >
             Ver Detalles
           </button>
           <button 

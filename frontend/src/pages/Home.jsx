@@ -28,9 +28,12 @@ export const Home = ({ onNavigate }) => {
       brand: 'Toyota',
       model: 'Hilux',
       year: 2022,
+      color: 'Blanco',
+      fuelType: 'Diesel',
       soatExpiry: '2026-06-15',
       techReviewExpiry: '2026-08-20',
-      lastMaintenance: '2026-01-10'
+      lastMaintenance: '2026-01-10',
+      mileage: '45000'
     },
     {
       id: 2,
@@ -38,9 +41,12 @@ export const Home = ({ onNavigate }) => {
       brand: 'Chevrolet',
       model: 'D-Max',
       year: 2021,
+      color: 'Azul',
+      fuelType: 'Diesel',
       soatExpiry: '2026-03-10',
       techReviewExpiry: '2026-02-28',
-      lastMaintenance: '2026-01-05'
+      lastMaintenance: '2026-01-05',
+      mileage: '68000'
     },
     {
       id: 3,
@@ -48,9 +54,12 @@ export const Home = ({ onNavigate }) => {
       brand: 'Nissan',
       model: 'Frontier',
       year: 2023,
+      color: 'Gris',
+      fuelType: 'Gasolina',
       soatExpiry: '2026-01-20',
       techReviewExpiry: '2027-01-15',
-      lastMaintenance: '2026-02-01'
+      lastMaintenance: '2026-02-01',
+      mileage: '32000'
     },
   ]);
 
@@ -277,23 +286,7 @@ export const Home = ({ onNavigate }) => {
         </div>
       </div>
 
-      {/* Componentes de ejemplo disponibles */}
-      <div className="bg-primary-light/10 border-2 border-primary-light rounded-lg p-6">
-        <h3 className="text-xl font-bold text-primary mb-4">
-          🎨 Componentes Disponibles
-        </h3>
-        <ul className="space-y-2 text-gray-700">
-          <li>✅ <span className="font-semibold text-primary">VehicleCard</span> - Tarjeta de vehículo con SOAT y revisión TM</li>
-          <li>✅ <span className="font-semibold text-primary">MaintenanceForm</span> - Formulario de registro de mantenimientos</li>
-          <li>✅ <span className="font-semibold text-primary">VehicleList</span> - Lista de vehículos con búsqueda y filtros</li>
-          <li>✅ <span className="font-semibold text-primary">Reports</span> - Generación de reportes del sistema</li>
-          <li>✅ <span className="font-semibold text-primary">Login</span> - Página de inicio de sesión</li>
-          <li>✅ <span className="font-semibold text-primary">Layout</span> - Layout principal con header y footer</li>
-        </ul>
-        <p className="text-primary-light font-semibold mt-4">
-          Revisa la carpeta <code className="bg-white px-2 py-1 rounded">src/components/</code> y <code className="bg-white px-2 py-1 rounded">src/pages/</code>
-        </p>
-      </div>
+      
       
       {/* Ejemplo de cómo mostrar datos del backend */}
       {data.length > 0 && (
