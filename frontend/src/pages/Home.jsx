@@ -36,16 +36,7 @@ export const Home = ({ onNavigate }) => {
         <p className="text-primary-light text-lg">Cargando...</p>
       )}
       
-      <div className="bg-white p-8 rounded-lg shadow-lg mb-8">
-        <p className="text-gray-700 leading-relaxed mb-4">
-          Este es un proyecto de maquetado con React y Tailwind CSS.
-        </p>
-        <p className="text-primary-light font-semibold leading-relaxed">
-          Aquí puedes empezar a crear tus componentes y páginas para gestionar vehículos,
-          mantenimientos, SOAT y revisiones técnico-mecánicas.
-        </p>
-      </div>
-
+      
       {/* Cards de resumen */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <button 
