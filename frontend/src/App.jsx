@@ -6,20 +6,25 @@ import Login from './pages/Login'
 import VehicleList from './pages/VehicleList'
 import Reports from './pages/Reports'
 import MaintenanceForm from './components/MaintenanceForm'
+import AlertContainer from './components/AlertContainer'
+import { useAlert } from './context/AlertContext'
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentPage, setCurrentPage] = useState('home');
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const { success, error, info } = useAlert();
 
   const handleLogin = () => {
     setIsAuthenticated(true);
     setCurrentPage('home');
+    success('Bienvenido al Sistema de Control Vehicular');
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
     setCurrentPage('home');
+    info('Sesión cerrada correctamente');
   };
 
   const handleNavigate = (page, vehicleData = null) => {
@@ -31,7 +36,7 @@ function App() {
 
   const handleMaintenanceSubmit = (formData) => {
     console.log('Mantenimiento registrado:', formData);
-    alert('Mantenimiento registrado exitosamente');
+    success('Mantenimiento registrado exitosamente');
     // Volver a la lista de vehículos
     setCurrentPage('vehicles');
     setSelectedVehicle(null);
@@ -39,7 +44,12 @@ function App() {
 
   // Si no está autenticado, mostrar Login
   if (!isAuthenticated) {
-    return <Login onLogin={handleLogin} />;
+    return (
+      <>
+        <AlertContainer />
+        <Login onLogin={handleLogin} />
+      </>
+    );
   }
 
   // Renderizar página según el estado
@@ -83,9 +93,12 @@ function App() {
 
   // Si está autenticado, mostrar el Layout con la página actual
   return (
-    <Layout onLogout={handleLogout} onNavigate={handleNavigate} currentPage={currentPage}>
-      {renderPage()}
-    </Layout>
+    <>
+      <AlertContainer />
+      <Layout onLogout={handleLogout} onNavigate={handleNavigate} currentPage={currentPage}>
+        {renderPage()}
+      </Layout>
+    </>
   );
 }
 

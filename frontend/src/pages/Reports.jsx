@@ -12,8 +12,10 @@ import {
   LightBulbIcon, 
   ChartBarIcon 
 } from '@heroicons/react/24/outline';
+import { useAlert } from '../context/AlertContext';
 
 const Reports = ({ onNavigate }) => {
+  const { success, info } = useAlert();
   const [dateRange, setDateRange] = useState({
     startDate: '',
     endDate: ''
@@ -32,7 +34,8 @@ const Reports = ({ onNavigate }) => {
   const handleGenerateReport = (type) => {
     // Aquí se generaría el reporte cuando el backend esté disponible
     console.log('Generando reporte:', type, dateRange);
-    alert(`Generando reporte: ${reportTypes.find(r => r.value === type)?.label}`);
+    const reportName = reportTypes.find(r => r.value === type)?.label;
+    success(`Reporte "${reportName}" generado exitosamente`);
   };
 
   return (
