@@ -19,7 +19,7 @@ Control-Vehicular-Acueducto/
 ✅ **Configurado y listo para usar**
 
 - **Framework**: React 19.2 con Vite 7.3
-- **Estilos**: CSS personalizado
+- **Estilos**: CSS personalizado - Tailwind
 - **HTTP Client**: Axios configurado
 - **Estructura**: Organizada por componentes, páginas, servicios
 - **Preparado para**: Conexión con backend mediante proxy y servicios API

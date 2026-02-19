@@ -6,7 +6,8 @@ import {
   Cog6ToothIcon, 
   ExclamationTriangleIcon, 
   PlusIcon, 
-  DocumentChartBarIcon 
+  DocumentChartBarIcon,
+  UsersIcon
 } from '@heroicons/react/24/outline';
 import AlertsModal from '../components/AlertsModal';
 import AddVehicleModal from '../components/AddVehicleModal';
@@ -19,6 +20,26 @@ export const Home = ({ onNavigate }) => {
   const [isAlertsModalOpen, setIsAlertsModalOpen] = useState(false);
   const [isAddVehicleModalOpen, setIsAddVehicleModalOpen] = useState(false);
   const [isMaintenanceHistoryOpen, setIsMaintenanceHistoryOpen] = useState(false);
+
+  // Datos de conductores - estos vendrán del backend
+  const [drivers] = useState([
+    {
+      id: 1,
+      name: 'Carlos Andrés López',
+      cedula: '1234567890',
+      phone: '3001234567',
+      area: 'Operaciones',
+      role: 'Conductor'
+    },
+    {
+      id: 3,
+      name: 'José Luis Martínez',
+      cedula: '5555555555',
+      phone: '3205555555',
+      area: 'Operaciones',
+      role: 'Conductor'
+    },
+  ]);
 
   // Datos de ejemplo de vehículos - estos vendrán del backend
   const [vehicles] = useState([
@@ -33,7 +54,8 @@ export const Home = ({ onNavigate }) => {
       soatExpiry: '2026-06-15',
       techReviewExpiry: '2026-08-20',
       lastMaintenance: '2026-01-10',
-      mileage: '45000'
+      mileage: '45000',
+      driverId: 1
     },
     {
       id: 2,
@@ -46,7 +68,8 @@ export const Home = ({ onNavigate }) => {
       soatExpiry: '2026-03-10',
       techReviewExpiry: '2026-02-28',
       lastMaintenance: '2026-01-05',
-      mileage: '68000'
+      mileage: '68000',
+      driverId: 3
     },
     {
       id: 3,
@@ -59,7 +82,8 @@ export const Home = ({ onNavigate }) => {
       soatExpiry: '2026-01-20',
       techReviewExpiry: '2027-01-15',
       lastMaintenance: '2026-02-01',
-      mileage: '32000'
+      mileage: '32000',
+      driverId: 1
     },
   ]);
 
@@ -247,7 +271,7 @@ export const Home = ({ onNavigate }) => {
       {/* Menú de acceso rápido */}
       <div className="mb-8">
         <h3 className="text-2xl font-bold text-primary mb-4">Acceso Rápido</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <button
             onClick={() => onNavigate && onNavigate('vehicles')}
             className="bg-primary hover:bg-primary-light text-white p-6 rounded-lg shadow-md hover:shadow-xl transition-all transform hover:scale-105 flex flex-col items-center gap-3"
@@ -255,6 +279,15 @@ export const Home = ({ onNavigate }) => {
             <ChartBarIcon className="w-12 h-12" />
             <span className="font-bold text-lg">Ver Vehículos</span>
             <span className="text-sm opacity-90">Gestionar flota vehicular</span>
+          </button>
+
+          <button
+            onClick={() => onNavigate && onNavigate('users')}
+            className="bg-primary hover:bg-primary-light text-white p-6 rounded-lg shadow-md hover:shadow-xl transition-all transform hover:scale-105 flex flex-col items-center gap-3"
+          >
+            <UsersIcon className="w-12 h-12" />
+            <span className="font-bold text-lg">Ver Usuarios</span>
+            <span className="text-sm opacity-90">Conductores y supervisores</span>
           </button>
 
           <button
@@ -311,6 +344,7 @@ export const Home = ({ onNavigate }) => {
         isOpen={isAddVehicleModalOpen}
         onClose={() => setIsAddVehicleModalOpen(false)}
         onSubmit={handleAddVehicle}
+        drivers={drivers}
       />
 
       {/* Modal de Historial de Mantenimientos */}

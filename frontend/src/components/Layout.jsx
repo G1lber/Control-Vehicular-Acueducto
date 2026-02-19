@@ -3,7 +3,8 @@ import {
   HomeIcon, 
   BuildingOffice2Icon, 
   DocumentChartBarIcon, 
-  ArrowRightOnRectangleIcon 
+  ArrowRightOnRectangleIcon,
+  UsersIcon
 } from '@heroicons/react/24/outline';
 
 export const Layout = ({ children, onLogout, onNavigate, currentPage }) => {
@@ -47,6 +48,17 @@ export const Layout = ({ children, onLogout, onNavigate, currentPage }) => {
               >
                 <BuildingOffice2Icon className="w-5 h-5" />
                 Vehículos
+              </button>
+              <button
+                onClick={() => onNavigate && onNavigate('users')}
+                className={`flex items-center gap-2 font-semibold py-2.5 px-5 rounded-lg transition-all ${
+                  currentPage === 'users'
+                    ? 'bg-primary text-white shadow-md transform scale-105'
+                    : 'text-primary hover:text-white hover:bg-primary-light'
+                }`}
+              >
+                <UsersIcon className="w-5 h-5" />
+                Usuarios
               </button>
               <button
                 onClick={() => onNavigate && onNavigate('reports')}

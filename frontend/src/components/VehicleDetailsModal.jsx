@@ -10,10 +10,14 @@ import {
   WrenchScrewdriverIcon,
   PencilIcon,
   CheckIcon,
-  XMarkIcon
+  XMarkIcon,
+  ExclamationTriangleIcon,
+  XCircleIcon,
+  CheckCircleIcon,
+  UserIcon
 } from '@heroicons/react/24/outline';
 
-const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate }) => {
+const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, drivers = [] }) => {
   const { success, error } = useAlert();
   const [isEditingDates, setIsEditingDates] = useState(false);
   const [isEditingInfo, setIsEditingInfo] = useState(false);
@@ -27,7 +31,8 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate }) => {
     color: '',
     fuelType: '',
     mileage: '',
-    lastMaintenance: ''
+    lastMaintenance: '',
+    driverId: ''
   });
 
   // Inicializar el formulario cuando el vehículo cambie
@@ -43,7 +48,8 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate }) => {
         color: vehicle.color || '',
         fuelType: vehicle.fuelType || '',
         mileage: vehicle.mileage || '',
-        lastMaintenance: vehicle.lastMaintenance || ''
+        lastMaintenance: vehicle.lastMaintenance || '',
+        driverId: vehicle.driverId || ''
       });
     }
     setIsEditingDates(false);
@@ -78,23 +84,26 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate }) => {
   const getStatusBadge = (dateString) => {
     if (isExpired(dateString)) {
       return (
-        <span className="bg-red-100 text-red-800 text-xs font-bold px-3 py-1 rounded-full">
-          ❌ Vencido
+        <span className="bg-red-100 text-red-800 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+          <XCircleIcon className="w-4 h-4" />
+          Vencido
         </span>
       );
     }
     if (isExpiringSoon(dateString)) {
       const days = getDaysRemaining(dateString);
       return (
-        <span className="bg-yellow-100 text-yellow-800 text-xs font-bold px-3 py-1 rounded-full">
-          ⚠️ {days} días restantes
+        <span className="bg-yellow-100 text-yellow-800 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+          <ExclamationTriangleIcon className="w-4 h-4" />
+          {days} días restantes
         </span>
       );
     }
     const days = getDaysRemaining(dateString);
     return (
-      <span className="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full">
-        ✅ {days} días restantes
+      <span className="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+        <CheckCircleIcon className="w-4 h-4" />
+        {days} días restantes
       </span>
     );
   };
@@ -151,7 +160,7 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate }) => {
 
   const handleSaveInfo = () => {
     // Validar campos requeridos
-    if (!formData.plate || !formData.brand || !formData.model || !formData.year) {
+    if (!formData.plate || !formData.brand || !formData.model || !formData.year || !formData.driverId) {
       error('Por favor completa todos los campos obligatorios');
       return;
     }
@@ -181,7 +190,8 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate }) => {
       color: formData.color,
       fuelType: formData.fuelType,
       mileage: formData.mileage,
-      lastMaintenance: formData.lastMaintenance
+      lastMaintenance: formData.lastMaintenance,
+      driverId: parseInt(formData.driverId)
     };
 
     // Llamar al callback de actualización
@@ -204,7 +214,8 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate }) => {
       color: vehicle.color || '',
       fuelType: vehicle.fuelType || '',
       mileage: vehicle.mileage || '',
-      lastMaintenance: vehicle.lastMaintenance || ''
+      lastMaintenance: vehicle.lastMaintenance || '',
+      driverId: vehicle.driverId || ''
     }));
     setIsEditingInfo(false);
   };
@@ -392,6 +403,29 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate }) => {
                   className="w-full px-4 py-2 border-2 border-primary-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
+
+              {/* Conductor Asignado */}
+              <div>
+                <label className="text-sm text-primary font-semibold block mb-2">
+                  Conductor Asignado *
+                </label>
+                <div className="relative">
+                  <UserIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                  <select
+                    name="driverId"
+                    value={formData.driverId}
+                    onChange={handleInputChange}
+                    className="w-full pl-10 pr-4 py-2 border-2 border-primary-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none"
+                  >
+                    <option value="">Seleccione un conductor</option>
+                    {drivers.map(driver => (
+                      <option key={driver.id} value={driver.id}>
+                        {driver.name} - {driver.cedula}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
 
             <p className="text-xs text-secondary italic">* Campos obligatorios</p>
@@ -425,6 +459,19 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate }) => {
                     <p className="text-xs text-secondary font-semibold mb-1">Último Mantenimiento</p>
                     <p className="text-lg font-bold text-primary">
                       {new Date(vehicle.lastMaintenance).toLocaleDateString('es-CO')}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            {vehicle.driverId && (
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                <div className="flex items-center gap-2">
+                  <UserIcon className="w-5 h-5 text-primary" />
+                  <div className="flex-1">
+                    <p className="text-xs text-secondary font-semibold mb-1">Conductor Asignado</p>
+                    <p className="text-lg font-bold text-primary">
+                      {drivers.find(d => d.id === vehicle.driverId)?.name || 'No asignado'}
                     </p>
                   </div>
                 </div>
@@ -549,9 +596,12 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate }) => {
         {/* Información adicional */}
         {(isEditingDates || isEditingInfo) && (
           <div className="bg-yellow-50 border-l-4 border-yellow-400 rounded-lg p-4">
-            <p className="text-sm text-yellow-800">
-              <strong>⚠️ Nota:</strong> Los cambios se guardarán localmente. Cuando el backend esté disponible, 
-              se sincronizarán automáticamente con el servidor.
+            <p className="text-sm text-yellow-800 flex items-start gap-2">
+              <ExclamationTriangleIcon className="w-5 h-5 flex-shrink-0 mt-0.5" />
+              <span>
+                <strong>Nota:</strong> Los cambios se guardarán localmente. Cuando el backend esté disponible, 
+                se sincronizarán automáticamente con el servidor.
+              </span>
             </p>
           </div>
         )}

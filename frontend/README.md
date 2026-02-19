@@ -150,6 +150,12 @@ import { useState } from 'react';
 
 function MiComponente() {
   const [isOpen, setIsOpen] = useState(false);
+  
+  // Lista de conductores disponibles
+  const drivers = [
+    { id: 1, name: 'Carlos López', cedula: '1234567890', role: 'Conductor' },
+    { id: 2, name: 'José Martínez', cedula: '5555555555', role: 'Conductor' }
+  ];
 
   const handleAddVehicle = (vehicleData) => {
     console.log('Vehículo agregado:', vehicleData);
@@ -164,6 +170,7 @@ function MiComponente() {
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         onSubmit={handleAddVehicle}
+        drivers={drivers}
       />
     </>
   );
@@ -176,6 +183,7 @@ function MiComponente() {
 - ✅ Año
 - ✅ Color
 - ✅ Tipo de combustible
+- ✅ Conductor asignado (obligatorio)
 - ✅ Vencimiento SOAT
 - ✅ Vencimiento Revisión Técnico-Mecánica
 - ✅ Último mantenimiento (opcional)
@@ -185,6 +193,7 @@ function MiComponente() {
 - ✅ Validación en tiempo real
 - ✅ Mensajes de error claros
 - ✅ Formato automático de placa a mayúsculas
+- ✅ Selector de conductor con nombre y cédula
 - ✅ Alertas de éxito/error con useAlert
 - ✅ Responsive design
 
@@ -269,8 +278,13 @@ function MiComponente() {
     soatExpiry: '2026-06-15',
     techReviewExpiry: '2026-08-20',
     lastMaintenance: '2026-01-10',
-    mileage: '45000'
+    mileage: '45000',
+    driverId: 1
   };
+  
+  const drivers = [
+    { id: 1, name: 'Carlos López', cedula: '1234567890', role: 'Conductor' }
+  ];
 
   const handleUpdate = (updatedVehicle) => {
     console.log('Vehículo actualizado:', updatedVehicle);
@@ -291,6 +305,7 @@ function MiComponente() {
         onClose={() => setIsOpen(false)}
         vehicle={selectedVehicle}
         onUpdate={handleUpdate}
+        drivers={drivers}
       />
     </>
   );
@@ -300,18 +315,64 @@ function MiComponente() {
 **Características:**
 - ✅ Vista completa de información del vehículo
 - ✅ **Dos modos de edición independientes:**
-  - **Editar Información:** Actualizar placa, marca, modelo, año, color, tipo de combustible, kilometraje y último mantenimiento
+  - **Editar Información:** Actualizar placa, marca, modelo, año, color, tipo de combustible, kilometraje, último mantenimiento y **conductor asignado**
   - **Editar Fechas:** Actualizar fechas de SOAT y revisión técnico-mecánica
 - ✅ Indicadores visuales de estado (vencido, por vencer, vigente)
 - ✅ Contador de días restantes para cada documento
+- ✅ Visualización del conductor asignado con icono
 - ✅ Validación completa de campos:
   - Formato de placa (ABC-123)
   - Rango de año válido
+  - Conductor obligatorio
   - Campos obligatorios vs opcionales
 - ✅ Integración con sistema de alertas
 - ✅ Diseño responsive y profesional
 - ✅ Botones de acción claros (Editar, Guardar, Cancelar)
 - ✅ Los dos modos de edición no pueden estar activos simultáneamente
+
+**AddUserModal** - Modal para agregar usuarios (Conductores y Supervisores).
+
+**Uso básico:**
+```jsx
+import AddUserModal from './components/AddUserModal';
+import { useState } from 'react';
+
+function MiComponente() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleAddUser = (userData) => {
+    console.log('Usuario agregado:', userData);
+    // Enviar al backend
+  };
+
+  return (
+    <>
+      <button onClick={() => setIsOpen(true)}>Agregar Usuario</button>
+      
+      <AddUserModal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        onSubmit={handleAddUser}
+      />
+    </>
+  );
+}
+```
+
+**Campos del formulario:**
+- ✅ **Nombre Completo** * (mínimo 3 caracteres)
+- ✅ **Número de Cédula** * (6-10 dígitos)
+- ✅ **Número de Celular** * (10 dígitos)
+- ✅ **Área** * (texto libre)
+- ✅ **Cargo/Rol** * (dropdown: Conductor o Supervisor)
+
+**Características:**
+- ✅ Validación completa en tiempo real
+- ✅ Mensajes de error específicos para cada campo
+- ✅ Solo dos roles disponibles: Conductor y Supervisor
+- ✅ Integración con sistema de alertas
+- ✅ Diseño responsive con iconos de Heroicons
+- ✅ Reseteo automático del formulario al cerrar
 
 
 ## 📁 Estructura del Proyecto
@@ -487,7 +548,55 @@ className="hover:bg-primary transition-colors"
 className="focus:ring-2 focus:ring-primary-light"
 ```
 
-## 📝 Próximos Pasos
+## � Páginas Disponibles
+
+### Home (Dashboard)
+- **Ruta**: `/` (página por defecto)
+- **Descripción**: Panel principal con estadísticas y acceso rápido
+- **Características**:
+  - 3 cards de estadísticas (Vehículos, Mantenimientos, Alertas)
+  - 5 botones de acceso rápido (Vehículos, Usuarios, Nuevo Vehículo, Mantenimientos, Reportes)
+  - Integración con modales de alertas y mantenimientos
+
+### VehicleList (Gestión de Vehículos)
+- **Ruta**: `/vehicles`
+- **Descripción**: Lista completa de vehículos con búsqueda y filtros
+- **Características**:
+  - Búsqueda por placa, marca o modelo
+  - Filtro por estado (Activos, Por vencer, Vencidos)
+  - Grid responsive de tarjetas de vehículos
+  - Modal para agregar nuevos vehículos
+  - Modal de detalles con edición de información
+
+### Users (Gestión de Usuarios)
+- **Ruta**: `/users`
+- **Descripción**: Gestión de Conductores y Supervisores
+- **Características**:
+  - 3 cards de estadísticas (Total, Conductores, Supervisores)
+  - Búsqueda por nombre, cédula o área
+  - Filtro por rol (Todos, Conductores, Supervisores)
+  - Grid responsive de tarjetas de usuarios
+  - Modal para agregar nuevos usuarios
+  - Validación completa de campos
+
+### Reports (Reportes)
+- **Ruta**: `/reports`
+- **Descripción**: Generación de reportes del sistema
+- **Características**:
+  - Selector de rango de fechas
+  - 6 tipos de reportes disponibles
+  - Estadísticas de resumen
+  - Exportación de datos
+
+### Login
+- **Ruta**: `/login` (cuando no está autenticado)
+- **Descripción**: Página de inicio de sesión
+- **Características**:
+  - Formulario con email y contraseña
+  - Mostrar/ocultar contraseña
+  - Integración con logo del acueducto
+
+## �📝 Próximos Pasos
 
 - [x] Configurar Tailwind CSS con colores personalizados
 - [x] Configurar fuente Nunito

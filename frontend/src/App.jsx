@@ -5,6 +5,7 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import VehicleList from './pages/VehicleList'
 import Reports from './pages/Reports'
+import Users from './pages/Users'
 import MaintenanceForm from './components/MaintenanceForm'
 import AlertContainer from './components/AlertContainer'
 import { useAlert } from './context/AlertContext'
@@ -57,6 +58,8 @@ function App() {
     switch (currentPage) {
       case 'vehicles':
         return <VehicleList onNavigate={handleNavigate} />;
+      case 'users':
+        return <Users onNavigate={handleNavigate} />;
       case 'reports':
         return <Reports onNavigate={handleNavigate} />;
       case 'maintenance':

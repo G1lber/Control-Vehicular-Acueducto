@@ -5,6 +5,26 @@ import AddVehicleModal from '../components/AddVehicleModal';
 import VehicleDetailsModal from '../components/VehicleDetailsModal';
 
 const VehicleList = ({ onNavigate }) => {
+  // Datos de conductores - estos vendrán del backend
+  const [drivers] = useState([
+    {
+      id: 1,
+      name: 'Carlos Andrés López',
+      cedula: '1234567890',
+      phone: '3001234567',
+      area: 'Operaciones',
+      role: 'Conductor'
+    },
+    {
+      id: 3,
+      name: 'José Luis Martínez',
+      cedula: '5555555555',
+      phone: '3205555555',
+      area: 'Operaciones',
+      role: 'Conductor'
+    },
+  ]);
+
   // Datos de ejemplo - estos vendrán del backend
   const [vehicles] = useState([
     {
@@ -18,7 +38,8 @@ const VehicleList = ({ onNavigate }) => {
       soatExpiry: '2026-06-15',
       techReviewExpiry: '2026-08-20',
       lastMaintenance: '2026-01-10',
-      mileage: '45000'
+      mileage: '45000',
+      driverId: 1
     },
     {
       id: 2,
@@ -31,7 +52,8 @@ const VehicleList = ({ onNavigate }) => {
       soatExpiry: '2026-03-10',
       techReviewExpiry: '2026-02-28',
       lastMaintenance: '2026-01-05',
-      mileage: '68000'
+      mileage: '68000',
+      driverId: 3
     },
     {
       id: 3,
@@ -44,7 +66,8 @@ const VehicleList = ({ onNavigate }) => {
       soatExpiry: '2026-1-20',
       techReviewExpiry: '2027-01-15',
       lastMaintenance: '2026-02-01',
-      mileage: '32000'
+      mileage: '32000',
+      driverId: 1
     },
   ]);
 
@@ -137,14 +160,18 @@ const VehicleList = ({ onNavigate }) => {
       {/* Grid de vehículos */}
       {filteredVehicles.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredVehicles.map(vehicle => (
-            <VehicleCard 
-              key={vehicle.id} 
-              vehicle={vehicle} 
-              onMaintenanceClick={handleMaintenanceClick}
-              onDetailsClick={handleDetailsClick}
-            />
-          ))}
+          {filteredVehicles.map(vehicle => {
+            const driver = drivers.find(d => d.id === vehicle.driverId);
+            return (
+              <VehicleCard 
+                key={vehicle.id} 
+                vehicle={vehicle}
+                driver={driver}
+                onMaintenanceClick={handleMaintenanceClick}
+                onDetailsClick={handleDetailsClick}
+              />
+            );
+          })}
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow-md p-12 text-center">
@@ -159,6 +186,7 @@ const VehicleList = ({ onNavigate }) => {
         isOpen={isAddVehicleModalOpen}
         onClose={() => setIsAddVehicleModalOpen(false)}
         onSubmit={handleAddVehicle}
+        drivers={drivers}
       />
 
       {/* Modal de Detalles del Vehículo */}
@@ -167,6 +195,7 @@ const VehicleList = ({ onNavigate }) => {
         onClose={() => setIsDetailsModalOpen(false)}
         vehicle={selectedVehicle}
         onUpdate={handleVehicleUpdate}
+        drivers={drivers}
       />
     </div>
   );

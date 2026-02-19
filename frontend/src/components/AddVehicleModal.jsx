@@ -1,10 +1,10 @@
 // Componente AddVehicleModal - Modal con formulario para agregar vehículos
 import { useState } from 'react';
 import Modal from './Modal';
-import { TruckIcon } from '@heroicons/react/24/outline';
+import { TruckIcon, UserIcon } from '@heroicons/react/24/outline';
 import { useAlert } from '../context/AlertContext';
 
-const AddVehicleModal = ({ isOpen, onClose, onSubmit }) => {
+const AddVehicleModal = ({ isOpen, onClose, onSubmit, drivers = [] }) => {
   const { success, error } = useAlert();
   
   const [formData, setFormData] = useState({
@@ -17,7 +17,8 @@ const AddVehicleModal = ({ isOpen, onClose, onSubmit }) => {
     lastMaintenance: '',
     color: '',
     fuelType: 'gasoline',
-    mileage: ''
+    mileage: '',
+    driverId: ''
   });
 
   const [errors, setErrors] = useState({});
@@ -66,7 +67,9 @@ const AddVehicleModal = ({ isOpen, onClose, onSubmit }) => {
     if (!formData.techReviewExpiry) {
       newErrors.techReviewExpiry = 'La fecha de vencimiento de la revisión técnico-mecánica es requerida';
     }
-
+    if (!formData.driverId) {
+      newErrors.driverId = 'Debe asignar un conductor al vehículo';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -83,6 +86,7 @@ const AddVehicleModal = ({ isOpen, onClose, onSubmit }) => {
     const vehicleData = {
       ...formData,
       plate: formData.plate.toUpperCase(),
+      driverId: parseInt(formData.driverId),
       id: Date.now() // ID temporal - el backend generará el real
     };
 
@@ -105,7 +109,8 @@ const AddVehicleModal = ({ isOpen, onClose, onSubmit }) => {
       lastMaintenance: '',
       color: '',
       fuelType: 'gasoline',
-      mileage: ''
+      mileage: '',
+      driverId: ''
     });
     setErrors({});
     onClose();
@@ -255,6 +260,37 @@ const AddVehicleModal = ({ isOpen, onClose, onSubmit }) => {
               <option value="hybrid">Híbrido</option>
               <option value="gas">Gas</option>
             </select>
+          </div>
+
+          {/* Conductor Asignado */}
+          <div>
+            <label className="block text-primary-light font-semibold mb-2" htmlFor="driverId">
+              Conductor Asignado *
+            </label>
+            <div className="relative">
+              <UserIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+              <select
+                id="driverId"
+                name="driverId"
+                value={formData.driverId}
+                onChange={handleChange}
+                className={`w-full pl-10 pr-4 py-2 border-2 rounded-lg focus:outline-none transition-colors appearance-none ${
+                  errors.driverId 
+                    ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-200' 
+                    : 'border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary-light'
+                }`}
+              >
+                <option value="">Seleccione un conductor</option>
+                {drivers.map(driver => (
+                  <option key={driver.id} value={driver.id}>
+                    {driver.name} - {driver.cedula}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {errors.driverId && (
+              <p className="text-red-600 text-sm mt-1">{errors.driverId}</p>
+            )}
           </div>
         </div>
 

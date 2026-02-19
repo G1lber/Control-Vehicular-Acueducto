@@ -1,7 +1,8 @@
 // Componente VehicleCard - Tarjeta de información de vehículo
 // Uso: Muestra información general del vehículo con SOAT y revisión técnico-mecánica
+import { UserIcon } from '@heroicons/react/24/outline';
 
-const VehicleCard = ({ vehicle, onMaintenanceClick, onDetailsClick }) => {
+const VehicleCard = ({ vehicle, driver, onMaintenanceClick, onDetailsClick }) => {
   // Ejemplo de datos del vehículo:
   // {
   //   id: 1,
@@ -11,8 +12,10 @@ const VehicleCard = ({ vehicle, onMaintenanceClick, onDetailsClick }) => {
   //   year: 2022,
   //   soatExpiry: "2026-06-15",
   //   techReviewExpiry: "2026-08-20",
-  //   lastMaintenance: "2026-01-10"
+  //   lastMaintenance: "2026-01-10",
+  //   driverId: 1
   // }
+  // driver: { id: 1, name: "Carlos López", ... }
 
   // Función para verificar si una fecha está próxima a vencer (30 días)
   const isExpiringSoon = (dateString) => {
@@ -45,6 +48,19 @@ const VehicleCard = ({ vehicle, onMaintenanceClick, onDetailsClick }) => {
 
       {/* Contenido */}
       <div className="p-4 space-y-4">
+        {/* Conductor Asignado */}
+        {driver && (
+          <div className="bg-blue-50 rounded-lg p-3 border-2 border-blue-200">
+            <div className="flex items-center gap-2">
+              <UserIcon className="w-5 h-5 text-primary" />
+              <div>
+                <p className="text-xs text-secondary font-semibold">Conductor Asignado</p>
+                <p className="text-sm text-primary font-bold">{driver.name}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Información básica */}
         <div>
           <p className="text-secondary text-sm font-semibold mb-2">Año: {vehicle.year}</p>

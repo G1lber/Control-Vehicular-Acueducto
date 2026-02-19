@@ -147,8 +147,9 @@ const MaintenanceHistoryModal = ({ isOpen, onClose, maintenances, vehicles }) =>
                   )}
                 </div>
                 {selectedMonth && (
-                  <p className="text-xs text-primary-light mt-2 font-semibold">
-                    📅 Mostrando: {formatMonthLabel(selectedMonth)}
+                  <p className="text-xs text-primary-light mt-2 font-semibold flex items-center gap-1">
+                    <CalendarIcon className="w-3 h-3" />
+                    Mostrando: {formatMonthLabel(selectedMonth)}
                   </p>
                 )}
               </div>
