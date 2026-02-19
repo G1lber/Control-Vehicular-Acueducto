@@ -8,7 +8,9 @@ import {
   UserPlusIcon,
   UsersIcon,
   TruckIcon,
-  BriefcaseIcon
+  BriefcaseIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon
 } from '@heroicons/react/24/outline';
 
 const Users = () => {
@@ -55,6 +57,10 @@ const Users = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  
+  // Estados de paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6; // Fijo en 6 items por página
 
   // Filtrar usuarios
   const filteredUsers = users.filter(user => {
@@ -67,6 +73,27 @@ const Users = () => {
     
     return matchesSearch && matchesRole;
   });
+
+  // Cálculos de paginación
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentUsers = filteredUsers.slice(startIndex, endIndex);
+
+  // Resetear a página 1 cuando cambia la búsqueda o filtro
+  const handleSearchChange = (value) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handleFilterChange = (value) => {
+    setFilterRole(value);
+    setCurrentPage(1);
+  };
+
+  const goToPage = (page) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
 
   // Contar usuarios por rol
   const conductoresCount = users.filter(u => u.role === 'Conductor').length;
@@ -132,28 +159,28 @@ const Users = () => {
 
       {/* Barra de búsqueda y filtros */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Búsqueda */}
-          <div className="md:col-span-3">
+          <div className="md:col-span-2">
             <div className="relative">
               <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Buscar por nombre, cédula o área..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary-light focus:outline-none transition-colors"
               />
             </div>
           </div>
 
           {/* Filtro por rol */}
-          <div className="md:col-span-2">
+          <div>
             <div className="relative">
               <FunnelIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
               <select
                 value={filterRole}
-                onChange={(e) => setFilterRole(e.target.value)}
+                onChange={(e) => handleFilterChange(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary-light focus:outline-none transition-colors appearance-none"
               >
                 <option value="all">Todos los roles</option>
@@ -165,20 +192,94 @@ const Users = () => {
         </div>
 
         {/* Resultados de búsqueda */}
-        {searchTerm || filterRole !== 'all' ? (
+        {filteredUsers.length > 0 && (
           <div className="mt-4 text-sm text-secondary">
-            Mostrando <span className="font-bold text-primary">{filteredUsers.length}</span> de {users.length} usuarios
+            Mostrando <span className="font-bold text-primary">{startIndex + 1}</span> - <span className="font-bold text-primary">{Math.min(endIndex, filteredUsers.length)}</span> de <span className="font-bold text-primary">{filteredUsers.length}</span> usuarios
           </div>
-        ) : null}
+        )}
       </div>
 
       {/* Grid de usuarios */}
       {filteredUsers.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredUsers.map(user => (
-            <UserCard key={user.id} user={user} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {currentUsers.map(user => (
+              <UserCard key={user.id} user={user} />
+            ))}
+          </div>
+
+          {/* Paginación */}
+          {totalPages > 1 && (
+            <div className="bg-white rounded-lg shadow-md p-4">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                {/* Botón anterior */}
+                <button
+                  onClick={() => goToPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors ${
+                    currentPage === 1
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-primary text-white hover:bg-primary-light'
+                  }`}
+                >
+                  <ChevronLeftIcon className="w-5 h-5" />
+                  Anterior
+                </button>
+
+                {/* Números de página */}
+                <div className="flex items-center gap-2">
+                  {[...Array(totalPages)].map((_, index) => {
+                    const pageNumber = index + 1;
+                    // Mostrar solo páginas cercanas a la actual
+                    if (
+                      pageNumber === 1 ||
+                      pageNumber === totalPages ||
+                      (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                    ) {
+                      return (
+                        <button
+                          key={pageNumber}
+                          onClick={() => goToPage(pageNumber)}
+                          className={`w-10 h-10 rounded-lg font-semibold transition-colors ${
+                            currentPage === pageNumber
+                              ? 'bg-primary text-white'
+                              : 'bg-gray-100 text-primary hover:bg-gray-200'
+                          }`}
+                        >
+                          {pageNumber}
+                        </button>
+                      );
+                    } else if (
+                      pageNumber === currentPage - 2 ||
+                      pageNumber === currentPage + 2
+                    ) {
+                      return (
+                        <span key={pageNumber} className="text-gray-400 px-2">
+                          ...
+                        </span>
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
+
+                {/* Botón siguiente */}
+                <button
+                  onClick={() => goToPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors ${
+                    currentPage === totalPages
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-primary text-white hover:bg-primary-light'
+                  }`}
+                >
+                  Siguiente
+                  <ChevronRightIcon className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       ) : (
         <div className="bg-white rounded-lg shadow-md p-12 text-center">
           <MagnifyingGlassIcon className="w-24 h-24 text-gray-300 mx-auto mb-4" />
@@ -190,6 +291,7 @@ const Users = () => {
               onClick={() => {
                 setSearchTerm('');
                 setFilterRole('all');
+                setCurrentPage(1);
               }}
               className="mt-4 text-primary hover:text-primary-light font-semibold underline"
             >

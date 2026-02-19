@@ -565,8 +565,14 @@ className="focus:ring-2 focus:ring-primary-light"
   - Búsqueda por placa, marca o modelo
   - Filtro por estado (Activos, Por vencer, Vencidos)
   - Grid responsive de tarjetas de vehículos
+  - **Paginación estática (6 vehículos por página)**:
+    - Botones de navegación (Anterior/Siguiente)
+    - Números de página con indicador de página actual
+    - Contador de resultados (mostrando X-Y de Z vehículos)
+    - Reseteo automático a página 1 al cambiar búsqueda o filtros
   - Modal para agregar nuevos vehículos
   - Modal de detalles con edición de información
+  - Visualización del conductor asignado en cada tarjeta
 
 ### Users (Gestión de Usuarios)
 - **Ruta**: `/users`
@@ -576,8 +582,14 @@ className="focus:ring-2 focus:ring-primary-light"
   - Búsqueda por nombre, cédula o área
   - Filtro por rol (Todos, Conductores, Supervisores)
   - Grid responsive de tarjetas de usuarios
+  - **Paginación estática (6 usuarios por página)**:
+    - Botones de navegación (Anterior/Siguiente)
+    - Números de página con indicador de página actual
+    - Contador de resultados (mostrando X-Y de Z usuarios)
+    - Reseteo automático a página 1 al cambiar búsqueda o filtros
   - Modal para agregar nuevos usuarios
   - Validación completa de campos
+  - Diferenciación visual por rol (Conductor/Supervisor)
 
 ### Reports (Reportes)
 - **Ruta**: `/reports`

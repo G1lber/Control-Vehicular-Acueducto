@@ -3,6 +3,7 @@ import { useState } from 'react';
 import VehicleCard from '../components/VehicleCard';
 import AddVehicleModal from '../components/AddVehicleModal';
 import VehicleDetailsModal from '../components/VehicleDetailsModal';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 const VehicleList = ({ onNavigate }) => {
   // Datos de conductores - estos vendrán del backend
@@ -76,6 +77,10 @@ const VehicleList = ({ onNavigate }) => {
   const [isAddVehicleModalOpen, setIsAddVehicleModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  
+  // Estados de paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6; // Fijo en 6 items por página
 
   // Filtrar vehículos
   const filteredVehicles = vehicles.filter(vehicle => {
@@ -86,6 +91,27 @@ const VehicleList = ({ onNavigate }) => {
     // Aquí puedes agregar más filtros según el estado (SOAT vencido, etc.)
     return matchesSearch;
   });
+
+  // Cálculos de paginación
+  const totalPages = Math.ceil(filteredVehicles.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentVehicles = filteredVehicles.slice(startIndex, endIndex);
+
+  // Resetear a página 1 cuando cambia la búsqueda o filtro
+  const handleSearchChange = (value) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handleFilterChange = (value) => {
+    setFilterStatus(value);
+    setCurrentPage(1);
+  };
+
+  const goToPage = (page) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
 
   const handleMaintenanceClick = (vehicle) => {
     // Navegar a la página de mantenimiento con los datos del vehículo
@@ -136,7 +162,7 @@ const VehicleList = ({ onNavigate }) => {
               type="text"
               placeholder="Buscar por placa, marca o modelo..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary-light focus:outline-none transition-colors"
             />
           </div>
@@ -145,7 +171,7 @@ const VehicleList = ({ onNavigate }) => {
           <div>
             <select
               value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
+              onChange={(e) => handleFilterChange(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary-light focus:outline-none transition-colors"
             >
               <option value="all">Todos los estados</option>
@@ -155,24 +181,105 @@ const VehicleList = ({ onNavigate }) => {
             </select>
           </div>
         </div>
+
+        {/* Información de resultados */}
+        {filteredVehicles.length > 0 && (
+          <div className="mt-4 text-sm text-secondary">
+            Mostrando <span className="font-bold text-primary">{startIndex + 1}</span> - <span className="font-bold text-primary">{Math.min(endIndex, filteredVehicles.length)}</span> de <span className="font-bold text-primary">{filteredVehicles.length}</span> vehículos
+          </div>
+        )}
       </div>
 
       {/* Grid de vehículos */}
       {filteredVehicles.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredVehicles.map(vehicle => {
-            const driver = drivers.find(d => d.id === vehicle.driverId);
-            return (
-              <VehicleCard 
-                key={vehicle.id} 
-                vehicle={vehicle}
-                driver={driver}
-                onMaintenanceClick={handleMaintenanceClick}
-                onDetailsClick={handleDetailsClick}
-              />
-            );
-          })}
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {currentVehicles.map(vehicle => {
+              const driver = drivers.find(d => d.id === vehicle.driverId);
+              return (
+                <VehicleCard 
+                  key={vehicle.id} 
+                  vehicle={vehicle}
+                  driver={driver}
+                  onMaintenanceClick={handleMaintenanceClick}
+                  onDetailsClick={handleDetailsClick}
+                />
+              );
+            })}
+          </div>
+
+          {/* Paginación */}
+          {totalPages > 1 && (
+            <div className="bg-white rounded-lg shadow-md p-4">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                {/* Botón anterior */}
+                <button
+                  onClick={() => goToPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors ${
+                    currentPage === 1
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-primary text-white hover:bg-primary-light'
+                  }`}
+                >
+                  <ChevronLeftIcon className="w-5 h-5" />
+                  Anterior
+                </button>
+
+                {/* Números de página */}
+                <div className="flex items-center gap-2">
+                  {[...Array(totalPages)].map((_, index) => {
+                    const pageNumber = index + 1;
+                    // Mostrar solo páginas cercanas a la actual
+                    if (
+                      pageNumber === 1 ||
+                      pageNumber === totalPages ||
+                      (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                    ) {
+                      return (
+                        <button
+                          key={pageNumber}
+                          onClick={() => goToPage(pageNumber)}
+                          className={`w-10 h-10 rounded-lg font-semibold transition-colors ${
+                            currentPage === pageNumber
+                              ? 'bg-primary text-white'
+                              : 'bg-gray-100 text-primary hover:bg-gray-200'
+                          }`}
+                        >
+                          {pageNumber}
+                        </button>
+                      );
+                    } else if (
+                      pageNumber === currentPage - 2 ||
+                      pageNumber === currentPage + 2
+                    ) {
+                      return (
+                        <span key={pageNumber} className="text-gray-400 px-2">
+                          ...
+                        </span>
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
+
+                {/* Botón siguiente */}
+                <button
+                  onClick={() => goToPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors ${
+                    currentPage === totalPages
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-primary text-white hover:bg-primary-light'
+                  }`}
+                >
+                  Siguiente
+                  <ChevronRightIcon className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       ) : (
         <div className="bg-white rounded-lg shadow-md p-12 text-center">
           <p className="text-secondary text-lg">
