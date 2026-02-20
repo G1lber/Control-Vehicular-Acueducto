@@ -7,7 +7,8 @@ import {
   ExclamationTriangleIcon, 
   PlusIcon, 
   DocumentChartBarIcon,
-  UsersIcon
+  UsersIcon,
+  ClipboardDocumentCheckIcon
 } from '@heroicons/react/24/outline';
 import AlertsModal from '../components/AlertsModal';
 import AddVehicleModal from '../components/AddVehicleModal';
@@ -271,7 +272,7 @@ export const Home = ({ onNavigate }) => {
       {/* Menú de acceso rápido */}
       <div className="mb-8">
         <h3 className="text-2xl font-bold text-primary mb-4">Acceso Rápido</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
           <button
             onClick={() => onNavigate && onNavigate('vehicles')}
             className="bg-primary hover:bg-primary-light text-white p-6 rounded-lg shadow-md hover:shadow-xl transition-all transform hover:scale-105 flex flex-col items-center gap-3"
@@ -299,14 +300,14 @@ export const Home = ({ onNavigate }) => {
             <span className="text-sm opacity-90">Registrar vehículo nuevo</span>
           </button>
 
-          <button
+          {/* <button
             onClick={() => setIsMaintenanceHistoryOpen(true)}
             className="bg-primary-light hover:bg-primary text-white p-6 rounded-lg shadow-md hover:shadow-xl transition-all transform hover:scale-105 flex flex-col items-center gap-3"
           >
             <Cog6ToothIcon className="w-12 h-12" />
             <span className="font-bold text-lg">Mantenimientos</span>
             <span className="text-sm opacity-90">Historial y registros</span>
-          </button>
+          </button> */}
 
           <button
             onClick={() => onNavigate && onNavigate('reports')}
@@ -315,6 +316,15 @@ export const Home = ({ onNavigate }) => {
             <DocumentChartBarIcon className="w-12 h-12" />
             <span className="font-bold text-lg">Reportes</span>
             <span className="text-sm opacity-90">Generar informes</span>
+          </button>
+
+          <button
+            onClick={() => onNavigate && onNavigate('surveyTalentoHumano')}
+            className="bg-gradient-to-br from-secondary to-secondary/80 hover:from-secondary/80 hover:to-secondary text-white p-6 rounded-lg shadow-md hover:shadow-xl transition-all transform hover:scale-105 flex flex-col items-center gap-3"
+          >
+            <ClipboardDocumentCheckIcon className="w-12 h-12" />
+            <span className="font-bold text-lg">Cuestionario</span>
+            <span className="text-sm opacity-90">Talento humano</span>
           </button>
         </div>
       </div>

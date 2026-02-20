@@ -1,0 +1,131 @@
+Como informacion en importante arriba del todo
+De acuerdo con la Ley Estatutaria 1581 de 2012 de Protección de Datos y normas concordantes, autorizo con el diligenciamiento y envío de la encuesta de seguridad vial para que mis datos personales registrados en la encuesta sean incorporados en una base de datos responsabilidad de NOMBRE DE LA EMPRESA para que sean tratados con la finalidad de realizar gestión administrativa, gestión de estadísticas internas y realizar la actualización del plan estratégico de seguridad vial.
+Consetimineto de tratamiento de datos Si NO
+Numero de Documento
+Ciudad
+Titulo de seccion 
+Sitio de labor
+Area:
+Cargo:
+Titulo seccion
+Datos generales 
+Edad: A. Menor de 18 Años B. 18-27 años C.28-37 años D.38-47 años E. 48 años o mas 
+Tipo de contratación:A. Contrato A termino fijo B. Contrato a termino Idefinido C. contrato por obra o labor D. contrato de prestacion de Servicio E. Honorarios/servicios profecionales F. Contrato de aprendizaje 
+Genero: A. Femenino B. Masculino 
+Grupo de trabajo al que pertenece: A.Administrativo B.Comercial C:Tecnico D.Operativo E.Otro¿Cual?___
+Medio de transporte usa para el Desplazamiento: A.Transporte que proporciona la empresa B. Transporte publico C. A pie D. vehiculo proporciona
+Que clase de vehiculo usa para su Desplazamient: A.Carro B.Moto C.Bicicleta D. Patines E. Otro Otro¿Cual?___
+Condicional Si Cuenta con licencia de conduccion y usa vehiculo automotor responda el siguinete bloque de preguntas 
+1¿Posee licencia de conduccion? Si_NO_ 
+Si contesto 
+Mencione fecha de vigencia de la licencia
+DIA MES Años
+Mencione la cotegoria de licencia:
+A. A1- Motocicletas de menos de 125 centimetros cubicos
+B. A2- Motocicletas de mas de 125 centimetros cubicos
+C. B1- Automoviles, Motocarros, cuatrimotos, camperos, camioneta y microbuses
+D. B2- Camiones rigidos, busetas y buses
+E. B3 vehiculos articulados y tractocamiones de servicio particular
+F. C1(Antes categoria 4) - Especializados en automoviles, motocarros cuatrimotos camperos camionetas y microbuses de servicio publico
+G. C2(antes categoria 5) - Para conducir camiones rigidos, buses y busetas de servicio publico
+H. C3(antes categoria 6 publico)- para vehiculos articulados de servicio publico
+Experiencia en la conduccion:
+A. de 1 a 4 años
+B. de 5 a 10 años
+C. Mas de 10 años
+¿Ha tenido en los ultimos cinco años algun accidente de transito? Si_ NO_
+Este accidente de transito fue durante el dedarrollo de las activadades misionales de la compañia? Si_NO_
+Cunatos accidentes de transito ha tenido en los ultimos 5 años:
+A. 1
+B. Entre 1 y 5 
+C. Mas de 5
+D. Ninguno
+8¿Cuantos de estos accidentes fueron realizando labores misionales de la compañia:
+A.1
+B. entre 1 y 5
+C. Mas de 5
+D. Ninguno
+9¿Que rol desempeño en el accidente:
+A. Peatón
+B. Conductor de Vehiculo 
+C. Conductor Motocicleta
+D. Pasajero
+¿Ha tenido ne los ultimos 5 años algun incidente de transito produciendo daños materiales, pero no personales ? Si_NO_
+¿Para el cumplimiento de sus funciones debe salir a vias publicas en horarios laborales? Si_ No_ 
+¿Comunmente como realiza estos desplazamientos indique los diferentes medios de transporte que utiliza
+A. Conduccinedo Vehiculo propio 
+B. Pasajero servicio publico
+C.Peaton
+D. Vehiculo asignado por la empresa 
+¿Con que frecuencia realiza desplazamientos en misiones o propias de la comprañia en vehiculo propio?
+A. A diario 
+B. Una o dos veces a la semana 
+C. Una o dos veces de namera bimestral
+E. Una o dos veces de manera trimestral
+F. una o dos veces de manera semestral
+H. No uso mi vehiculo para labores de la compañia
+¿Que vehiculo automotor propio usa para relizar labores misionales o propias de la compañia?
+A. moto 
+B. Carro
+C. Bicicleta
+D. No uso mi vehicuo para labores de la compañia 
+E Otro¿Cual? ___
+Si usa vehiculo propio para labores misionales¿La empresa paga rodamiento?Si_NO_
+Antes de usar su vehiculo para labores de la compañia realizala lista de inspeccion al vehiculo Si_NO_
+Usa vehiculo asignado por la compañia para realizar laborales misionales? Si_NO_
+Si contesto si Con que frecuencia realiza la lista de chequeo a su vehiculo:
+A. diario
+B. Semanal
+C. Mensual
+D. Anual 
+E. No realiza inspeccion al vehiculo
+¿Que vehiculo automotor le fue asignado para realizar labores misionales o propias de la compañia?
+A. Moto
+B. Carro
+C. Bicicleta
+E. Otro¿Cual?___
+Mis desplazamientos en misiones son, en general, planificados por 
+A. Yo los planifico 
+B. La empresa los planifica 
+COn cuanto tiempo de antelacion se suelen prever las labores y recorridos 
+A. 1 Dia antes
+B. 1 Semana Antes
+C. 1 semana antes 
+D. No hay programa 
+Numero de kilometros mensuales recorridos en la laboral misional_____KM
+Antes de usar el vehiculo que le fue asignado para labores propias de la compañia, realiza la lista de inspecciones al vehiculo Si_NO_
+Si contesto si, con que frecuencia realiza la lista de chequeo al vehiculo que le fue asignado
+A. diario
+B. Semanal
+C. Mensual
+D. Anual
+E. No realiza inspeccion al vehiculo
+Pricipales factores de riesgo con los que se encuentra( Tanto en los trayectos ida-vuelta del domicilio al los desplazamientos en mision)
+A. estado de la infraestructura/ via mi vehiculo
+B. La organizacion del trabajo
+C. Mi propia conduccion
+D. Otra¿Cual?____
+Causas que motivan el riesgo(Indique todos los que considera adecuados, en su caso):
+A. condiciones de trafico
+B. Condiciones climatologicas
+C. Tipo de vehiculo o sus caracteristicas estado del vehiculo 
+D. Condiciones laborales( agenda, reuniones, tiempo de entrega, etc)
+E. otros conductores
+F. estado de infraestuctura/via
+G. Falta de informacion o formacion en segurdidad vial 
+H. su propia conduccion
+I. Otra¿Cual?___
+A la fecha tiene comparendos Si_ No_
+Si menciono que si. informe la causa del comparendo
+A. por conducir en vehiculo sin portar licencia de conduccion
+B. Por estacionar un vehiculo en sitio no permitidos
+C.Por no utilizar el cinturo de seguridad
+D. Por conducir un vehiculo a velocidad superior a la maxima 
+E. Por no portar el SOAT
+F. por no relizar la revicion tecnico-mecanica del Vehiculo
+G. Por utilizar sistemas moviles de comunicacion o telefonos al volante
+H. Por transitar en contra via
+I. Por no detenerse ante la luz roja del semaforo o una señal de transitos
+J. Conducir en estado de embriaguez 
+K otra¿Cual? ___
+Gracias 
