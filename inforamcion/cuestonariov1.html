@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Encuesta PESV</title>
+</head>
+<body>
+
+<h2>ENCUESTA DE SEGURIDAD VIAL</h2>
+
+<form method="POST">
+
+<h3>CONSENTIMIENTO INFORMADO</h3>
+
+<p>
+¿Autoriza el tratamiento de sus datos personales?
+<br>
+<input type="radio" name="consentimiento" value="SI" required> SI
+<input type="radio" name="consentimiento" value="NO"> NO
+</p>
+
+<h3>DATOS GENERALES</h3>
+
+Nombre y Apellidos:<br>
+<input type="text" name="nombre"><br><br>
+
+Número de Identificación:<br>
+<input type="text" name="identificacion"><br><br>
+
+Ciudad:<br>
+<input type="text" name="ciudad"><br><br>
+
+Edad:<br>
+<input type="radio" name="edad" value="Menor de 18"> Menor de 18<br>
+<input type="radio" name="edad" value="18-27"> 18 - 27<br>
+<input type="radio" name="edad" value="28-37"> 28 - 37<br>
+<input type="radio" name="edad" value="38-47"> 38 - 47<br>
+<input type="radio" name="edad" value="48 o mas"> 48 años o más<br><br>
+
+Género:<br>
+<input type="radio" name="genero" value="Masculino"> Masculino
+<input type="radio" name="genero" value="Femenino"> Femenino<br><br>
+
+Grupo de trabajo:<br>
+<input type="radio" name="grupo" value="Administrativo"> Administrativo<br>
+<input type="radio" name="grupo" value="Comercial"> Comercial<br>
+<input type="radio" name="grupo" value="Tecnico"> Técnico<br>
+<input type="radio" name="grupo" value="Operativo"> Operativo<br>
+<input type="radio" name="grupo" value="Otro"> Otro<br>
+Explique:<br>
+<input type="text" name="grupo_otro"><br><br>
+
+Cargo:<br>
+<input type="text" name="cargo"><br><br>
+
+<h3>MEDIO DE TRANSPORTE</h3>
+
+Medio de transporte que usa:<br>
+<input type="text" name="medio_transporte"><br><br>
+
+Tiempo diario de desplazamiento (horas):<br>
+<input type="text" name="tiempo_desplazamiento"><br><br>
+
+<h3>LICENCIA DE CONDUCCIÓN</h3>
+
+¿Posee licencia de conducción?<br>
+<input type="radio" name="licencia" value="SI"> SI
+<input type="radio" name="licencia" value="NO"> NO<br><br>
+
+Categoría de licencia:<br>
+<input type="text" name="categoria_licencia"><br><br>
+
+Fecha de vigencia:<br>
+<input type="date" name="vigencia_licencia"><br><br>
+
+Experiencia en conducción (años):<br>
+<input type="number" name="experiencia"><br><br>
+
+<h3>ANTECEDENTES</h3>
+
+¿Ha tenido accidente en los últimos 5 años?<br>
+<input type="radio" name="accidente" value="SI"> SI
+<input type="radio" name="accidente" value="NO"> NO<br><br>
+
+¿Ha tenido incidente con daños materiales?<br>
+<input type="radio" name="incidente" value="SI"> SI
+<input type="radio" name="incidente" value="NO"> NO<br><br>
+
+¿Debe salir a vías públicas en horas laborales?<br>
+<input type="radio" name="vias_publicas" value="SI"> SI
+<input type="radio" name="vias_publicas" value="NO"> NO<br><br>
+
+¿Usa vehículo propio para labores de la compañía?<br>
+<input type="radio" name="vehiculo_propio" value="SI"> SI
+<input type="radio" name="vehiculo_propio" value="NO"> NO<br><br>
+
+Frecuencia de uso vehículo propio:<br>
+<input type="radio" name="frecuencia_propio" value="Diario"> A diario<br>
+<input type="radio" name="frecuencia_propio" value="Semanal"> Una o dos veces a la semana<br>
+<input type="radio" name="frecuencia_propio" value="Mensual"> Una o dos veces al mes<br>
+<input type="radio" name="frecuencia_propio" value="Bimestral"> Bimestral<br>
+<input type="radio" name="frecuencia_propio" value="Trimestral"> Trimestral<br>
+<input type="radio" name="frecuencia_propio" value="Semestral"> Semestral<br>
+<input type="radio" name="frecuencia_propio" value="No usa"> No uso mi vehículo<br><br>
+
+Elementos de seguridad que usa (vehículo propio):<br>
+<input type="checkbox" name="seguridad_propio[]" value="Casco"> Casco<br>
+<input type="checkbox" name="seguridad_propio[]" value="Guantes"> Guantes<br>
+<input type="checkbox" name="seguridad_propio[]" value="Coderas"> Coderas<br>
+<input type="checkbox" name="seguridad_propio[]" value="Rodilleras"> Rodilleras<br>
+<input type="checkbox" name="seguridad_propio[]" value="Botas"> Botas<br>
+<input type="checkbox" name="seguridad_propio[]" value="Impermeable"> Impermeable<br>
+<input type="checkbox" name="seguridad_propio[]" value="Reflectivos"> Reflectivos<br><br>
+
+Última tecnomecánica (vehículo propio):<br>
+<input type="date" name="tecno_propio"><br><br>
+
+Vencimiento SOAT (vehículo propio):<br>
+<input type="date" name="soat_propio"><br><br>
+
+<h3>PLANIFICACIÓN</h3>
+
+¿Quién planifica los desplazamientos?<br>
+<input type="radio" name="planificacion" value="Yo"> Yo<br>
+<input type="radio" name="planificacion" value="Empresa"> La empresa<br><br>
+
+Antelación de programación:<br>
+<input type="radio" name="antelacion" value="1 dia"> 1 día antes<br>
+<input type="radio" name="antelacion" value="1 semana"> 1 semana antes<br>
+<input type="radio" name="antelacion" value="1 mes"> 1 mes antes<br>
+<input type="radio" name="antelacion" value="No programacion"> No hay programación<br><br>
+
+Kilómetros mensuales recorridos:<br>
+<input type="number" name="km_mensuales"><br><br>
+
+<h3>FACTORES DE RIESGO</h3>
+
+Principales factores de riesgo:<br>
+<input type="checkbox" name="riesgos[]" value="Infraestructura"> Estado de la infraestructura / vía<br>
+<input type="checkbox" name="riesgos[]" value="Organizacion"> Organización del trabajo<br>
+<input type="checkbox" name="riesgos[]" value="Conduccion"> Mi propia conducción<br>
+<input type="checkbox" name="riesgos[]" value="Otros"> Otros<br><br>
+
+Causas del riesgo:<br>
+<input type="checkbox" name="causas[]" value="Trafico"> Intensidad del tráfico<br>
+<input type="checkbox" name="causas[]" value="Clima"> Condiciones climatológicas<br>
+<input type="checkbox" name="causas[]" value="Vehiculo"> Estado del vehículo<br>
+<input type="checkbox" name="causas[]" value="Organizacion"> Organización del trabajo<br>
+<input type="checkbox" name="causas[]" value="Psicofisico"> Estado psicofísico<br>
+<input type="checkbox" name="causas[]" value="Otros conductores"> Otros conductores<br>
+<input type="checkbox" name="causas[]" value="Infraestructura"> Estado de la infraestructura<br>
+<input type="checkbox" name="causas[]" value="Falta formacion"> Falta de formación<br>
+Otras:<br>
+<input type="text" name="otras_causas"><br><br>
+
+<br>
+<button type="submit">Enviar Encuesta</button>
+
+</form>
+
+</body>
+</html>
