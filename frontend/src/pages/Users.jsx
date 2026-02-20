@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import UserCard from '../components/UserCard';
 import AddUserModal from '../components/AddUserModal';
+import UserDetailsModal from '../components/UserDetailsModal';
 import { 
   MagnifyingGlassIcon, 
   FunnelIcon,
@@ -54,9 +55,65 @@ const Users = () => {
     },
   ]);
 
+  // Datos de ejemplo del cuestionario - estos vendrán del backend
+  const [surveyDataExample] = useState({
+    '1234567890': {
+      consentimiento: 'SI',
+      ciudad: 'Popayán',
+      sitio_labor: 'Planta Central',
+      cargo: 'Conductor de camión',
+      edad: '28-37',
+      tipo_contratacion: 'Termino indefinido',
+      genero: 'Masculino',
+      grupo: 'Operativo',
+      licencia: 'SI',
+      vigencia_licencia_dia: '15',
+      vigencia_licencia_mes: '12',
+      vigencia_licencia_anio: '2027',
+      categoria_licencia: 'C1',
+      experiencia: '5-10',
+      accidente_5_anios: 'NO',
+      incidente: 'NO',
+      vias_publicas: 'SI',
+      frecuencia_vehiculo_propio: 'Siempre',
+      tipo_vehiculo_propio: 'Camión',
+      usa_vehiculo_empresa: 'SI',
+      tipo_vehiculo_empresa: 'Camión cisterna',
+      realiza_inspeccion_empresa: 'SI',
+      frecuencia_chequeo_empresa: 'Diario',
+      planificacion: 'SI',
+      antelacion: '1 día',
+      km_mensuales: '800',
+      tiene_comparendos: 'Si',
+      informacion_adicional: 'Conductor responsable con 8 años de experiencia'
+    },
+    '9876543210': null, // Usuario sin cuestionario
+    '5555555555': {
+      consentimiento: 'SI',
+      ciudad: 'Popayán',
+      sitio_labor: 'Área Metropolitana',
+      cargo: 'Técnico',
+      edad: '38-47',
+      tipo_contratacion: 'Contrato de obra o labor',
+      genero: 'Masculino',
+      licencia: 'SI',
+      categoria_licencia: 'B1',
+      experiencia: '10+',
+      accidente_5_anios: 'SI',
+      accidente_laboral: 'NO',
+      cantidad_accidentes: '1',
+      rol_accidente: 'Conductor',
+      incidente: 'SI',
+      vias_publicas: 'SI',
+      tiene_comparendos: 'NO'
+    }
+  });
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
   
   // Estados de paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -102,6 +159,12 @@ const Users = () => {
   const handleAddUser = (userData) => {
     console.log('Usuario agregado:', userData);
     // Aquí se enviará al backend cuando esté disponible
+  };
+
+  // Manejar vista de detalles del usuario
+  const handleViewDetails = (user) => {
+    setSelectedUser(user);
+    setIsDetailsModalOpen(true);
   };
 
   return (
@@ -204,7 +267,11 @@ const Users = () => {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {currentUsers.map(user => (
-              <UserCard key={user.id} user={user} />
+              <UserCard 
+                key={user.id} 
+                user={user}
+                onViewDetails={handleViewDetails}
+              />
             ))}
           </div>
 
@@ -306,6 +373,17 @@ const Users = () => {
         isOpen={isAddUserModalOpen}
         onClose={() => setIsAddUserModalOpen(false)}
         onSubmit={handleAddUser}
+      />
+
+      {/* Modal de Detalles del Usuario */}
+      <UserDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={() => {
+          setIsDetailsModalOpen(false);
+          setSelectedUser(null);
+        }}
+        user={selectedUser}
+        surveyData={selectedUser ? surveyDataExample[selectedUser.cedula] : null}
       />
     </div>
   );

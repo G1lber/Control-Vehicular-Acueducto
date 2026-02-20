@@ -6,10 +6,11 @@ import {
   BuildingOfficeIcon,
   ShieldCheckIcon,
   TruckIcon,
-  BriefcaseIcon
+  BriefcaseIcon,
+  ArrowDownTrayIcon
 } from '@heroicons/react/24/outline';
 
-const UserCard = ({ user }) => {
+const UserCard = ({ user, onViewDetails }) => {
   // Función para obtener el color del rol
   const getRoleColor = (role) => {
     switch (role) {
@@ -93,11 +94,18 @@ const UserCard = ({ user }) => {
 
         {/* Botones de acción */}
         <div className="flex gap-2 pt-3">
-          <button className="flex-1 bg-primary hover:bg-primary-light text-white font-semibold py-2 px-4 rounded transition-colors text-sm">
+          <button 
+            onClick={() => onViewDetails(user)}
+            className="flex-1 bg-primary hover:bg-primary-light text-white font-semibold py-2 px-4 rounded transition-colors text-sm"
+          >
             Ver Detalles
           </button>
-          <button className="flex-1 bg-white hover:bg-gray-50 text-primary border-2 border-primary font-semibold py-2 px-4 rounded transition-colors text-sm">
-            Editar
+          <button 
+            onClick={() => console.log('Descargar hoja de vida:', user.cedula)}
+            className="flex-1 bg-white hover:bg-gray-50 text-primary border-2 border-primary font-semibold py-2 px-3 rounded transition-colors text-sm flex items-center justify-center gap-2"
+          >
+            <ArrowDownTrayIcon className="w-4 h-4" />
+            Descargar
           </button>
         </div>
       </div>
