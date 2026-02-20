@@ -1,6 +1,48 @@
 # Frontend - Control Vehicular Acueducto
 
-Frontend del sistema de Control Vehicular desarrollado con React y Vite.
+Documentación técnica del frontend desarrollado con React y Vite.
+
+> 📖 Para información general del proyecto, ver [README principal](../README.md)
+
+## 📋 Tabla de Contenidos
+
+- [Tecnologías](#-tecnologías)
+- [Sistema de Diseño](#-sistema-de-diseño)
+- [Componentes Reutilizables](#componentes-reutilizables)
+- [Páginas Disponibles](#-páginas-disponibles)
+- [Configuración](#️-configuración)
+- [Scripts Disponibles](#-scripts-disponibles)
+- [Conexión con Backend](#-conexión-con-el-backend)
+- [Desarrollo](#-desarrollo)
+
+## 📊 Componentes Implementados
+
+### Modales
+- **Modal** - Componente base reutilizable con 4 tamaños
+- **AddVehicleModal** - Agregar vehículos con validación completa
+- **VehicleDetailsModal** - Ver/editar detalles de vehículo (dual edit)
+- **AddUserModal** - Agregar usuarios (Conductores/Supervisores)
+- **UserDetailsModal** - Ver/editar perfil completo + cuestionario PESV
+- **MaintenanceForm** - Registrar mantenimientos
+- **MaintenanceHistoryModal** - Historial con filtros temporales
+- **AlertsModal** - Gestión de alertas del sistema
+
+### Cards (Tarjetas)
+- **VehicleCard** - Tarjeta de vehículo con alertas de vencimiento
+- **UserCard** - Tarjeta de usuario con rol y acciones
+
+### Páginas
+- **Home** - Dashboard con estadísticas y accesos rápidos
+- **VehicleList** - Gestión de vehículos con paginación
+- **Users** - Gestión de usuarios con paginación
+- **Reports** - Generación de 6 tipos de reportes
+- **Login** - Autenticación
+- **SurveyTalentoHumano** - Cuestionario PESV (54 campos)
+
+### Contextos y Servicios
+- **AlertContext** - Sistema de notificaciones toast
+- **api.service.js** - Cliente HTTP con interceptores
+- **example.service.js** - Plantilla para servicios CRUD
 
 ## 🚀 Tecnologías
 
@@ -374,6 +416,60 @@ function MiComponente() {
 - ✅ Diseño responsive con iconos de Heroicons
 - ✅ Reseteo automático del formulario al cerrar
 
+#### UserDetailsModal
+Modal completo para visualizar y editar toda la información del usuario, incluyendo datos del cuestionario de seguridad vial.
+
+**Uso básico:**
+```jsx
+import UserDetailsModal from './components/UserDetailsModal';
+import { useState } from 'react';
+
+function MiComponente() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [surveyData, setSurveyData] = useState(null);
+
+  return (
+    <>
+      <button onClick={() => {
+        setSelectedUser(user);
+        setIsOpen(true);
+      }}>
+        Ver Detalles
+      </button>
+      
+      <UserDetailsModal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        user={selectedUser}
+        surveyData={surveyData}
+      />
+    </>
+  );
+}
+```
+
+**Secciones del modal:**
+- ✅ **Header con degradado**: Muestra nombre, rol y cédula del usuario
+- ✅ **Datos Básicos**: Nombre, cédula, celular, área, rol (editable)
+- ✅ **Cuestionario de Seguridad Vial** (si está completado):
+  - 🔵 Datos Generales (ciudad, sitio labor, cargo, edad, etc.)
+  - 🟢 Licencia de Conducción (categoría, vigencia, experiencia)
+  - 🔴 Accidentes e Incidentes (últimos 5 años)
+  - 🟡 Desplazamientos Laborales (vehículo propio y empresa)
+  - 🟣 Planificación (KM mensuales, antelación)
+  - 🟠 Comparendos
+  - ⚫ Información Adicional
+
+**Características:**
+- ✅ Dos modos de edición independientes (datos básicos y cuestionario)
+- ✅ Diseño con degradados y bordes de colores por sección
+- ✅ Scroll único optimizado
+- ✅ Validación de campos
+- ✅ Integración con sistema de alertas
+- ✅ Mensaje claro cuando el usuario no ha completado el cuestionario
+- ✅ Diseño responsive y profesional
+
 
 ## 📁 Estructura del Proyecto
 
@@ -425,57 +521,166 @@ npm run lint
 
 ## 🔌 Conexión con el Backend
 
-El proyecto está configurado para conectarse con un backend MERN (MongoDB, Express, React, Node.js) con arquitectura hexagonal.
+El frontend está preparado para conectarse con un backend Express.js + MySQL.
 
 ### Configuración del Proxy
 
-El servidor de desarrollo de Vite está configurado para hacer proxy de las peticiones `/api/*` al backend en `http://localhost:3000`. Esto evita problemas de CORS durante el desarrollo.
+El servidor Vite está configurado para proxear peticiones `/api/*` al backend en `http://localhost:3000`, evitando problemas de CORS durante el desarrollo.
 
-### Uso de los Servicios
-
-**Ejemplo de uso del servicio API:**
-
+**Configuración en `vite.config.js`:**
 ```javascript
-import { exampleService } from './services/example.service';
-
-// Obtener todos los elementos
-const items = await exampleService.getAll();
-
-// Crear un nuevo elemento
-const newItem = await exampleService.create({ name: 'Nuevo Item' });
-
-// Actualizar
-await exampleService.update(id, { name: 'Actualizado' });
-
-// Eliminar
-await exampleService.delete(id);
+server: {
+  proxy: {
+    '/api': {
+      target: 'http://localhost:3000',
+      changeOrigin: true
+    }
+  }
+}
 ```
 
-**Crear nuevos servicios:**
+### Servicios API
 
-Crea archivos en `src/services/` siguiendo el patrón de `example.service.js`. Por ejemplo, para vehículos:
+El cliente HTTP está en `src/services/api.service.js` con interceptores configurados para:
+- Agregar automáticamente token JWT desde `localStorage`
+- Redirigir a `/login` si la sesión expira (401)
+- Manejar errores de forma centralizada
+
+**Ejemplo de uso:**
+
+```javascript
+import { apiService } from './services/api.service';
+
+// GET request
+const response = await apiService.get('/vehicles');
+
+// POST request  
+await apiService.post('/vehicles', vehicleData);
+
+// PUT request
+await apiService.put(`/vehicles/${id}`, updatedData);
+
+// DELETE request
+await apiService.delete(`/vehicles/${id}`);
+```
+
+**Crear un servicio específico:**
 
 ```javascript
 // src/services/vehicle.service.js
 import { apiService } from './api.service';
 
 export const vehicleService = {
-  getAll: async () => {
-    const response = await apiService.get('/vehicles');
-    return response.data;
-  },
-  // ... más métodos
+  getAll: () => apiService.get('/vehicles'),
+  getById: (id) => apiService.get(`/vehicles/${id}`),
+  create: (data) => apiService.post('/vehicles', data),
+  update: (id, data) => apiService.put(`/vehicles/${id}`, data),
+  delete: (id) => apiService.delete(`/vehicles/${id}`)
 };
 ```
 
-### Autenticación
+### Estado de Integración
 
-El servicio API está configurado para:
-- Agregar automáticamente el token JWT desde `localStorage` a las peticiones
-- Redirigir a `/login` si la sesión expira (401)
-- Manejar errores de forma centralizada
+⚠️ **Backend en desarrollo** - Las llamadas API actuales usan datos de ejemplo (mock data).
 
-## 🎨 Empezar a Maquetear
+Para conectar con el backend real:
+1. Asegúrate de que el backend esté corriendo en `http://localhost:3000`
+2. Reemplaza los datos mock en las páginas por llamadas a los servicios
+3. Maneja los estados de carga y error apropiadamente
+
+## 📄 Páginas Disponibles
+
+### Home (Dashboard)
+- **Ruta**: `/` (página por defecto)
+- **Descripción**: Panel principal con estadísticas y acceso rápido
+- **Características**:
+  - 3 cards de estadísticas (Vehículos, Mantenimientos, Alertas)
+  - 6 botones de acceso rápido:
+    - Vehículos, Usuarios, Nuevo Vehículo
+    - Mantenimientos, Reportes
+    - **Cuestionario de Seguridad Vial** (nuevo)
+  - Integración con modales de alertas y mantenimientos
+  - Grid responsive adaptable
+
+### VehicleList (Gestión de Vehículos)
+- **Ruta**: `/vehicles`
+- **Descripción**: Lista completa de vehículos con búsqueda y filtros
+- **Características**:
+  - Búsqueda por placa, marca o modelo
+  - Filtro por estado (Activos, Por vencer, Vencidos)
+  - Grid responsive de tarjetas de vehículos
+  - **Paginación estática (6 vehículos por página)**:
+    - Botones de navegación (Anterior/Siguiente)
+    - Números de página con indicador de página actual
+    - Contador de resultados (mostrando X-Y de Z vehículos)
+    - Reseteo automático a página 1 al cambiar búsqueda o filtros
+  - Modal para agregar nuevos vehículos
+  - Modal de detalles con edición de información
+  - Visualización del conductor asignado en cada tarjeta
+
+### Users (Gestión de Usuarios)
+- **Ruta**: `/users`
+- **Descripción**: Gestión completa de Conductores y Supervisores
+- **Características**:
+  - 3 cards de estadísticas (Total, Conductores, Supervisores)
+  - Búsqueda por nombre, cédula o área
+  - Filtro por rol (Todos, Conductores, Supervisores)
+  - Grid responsive de tarjetas de usuarios
+  - **Paginación estática (6 usuarios por página)**:
+    - Botones de navegación (Anterior/Siguiente)
+    - Números de página con indicador de página actual
+    - Contador de resultados (mostrando X-Y de Z usuarios)
+    - Reseteo automático a página 1 al cambiar búsqueda o filtros
+  - Modal para agregar nuevos usuarios con validación completa
+  - **Modal de Detalles del Usuario** (UserDetailsModal):
+    - Visualización completa de datos básicos
+    - Visualización de cuestionario de seguridad vial (si existe)
+    - Edición de datos básicos (nombre, celular, área, rol)
+    - Edición de información del cuestionario
+    - Header con degradado mostrando nombre, rol y cédula
+    - Scroll optimizado con secciones por colores
+  - **Botón de Descargar Hoja de Vida** en cada tarjeta
+  - Diferenciación visual por rol (Conductor/Supervisor)
+
+### SurveyTalentoHumano (Cuestionario de Seguridad Vial)
+- **Ruta**: `/surveyTalentoHumano`
+- **Descripción**: Cuestionario de Seguridad Vial según normativa colombiana (Ley 1581)
+- **Acceso**: Card en el Home (no aparece en menú)
+- **Características**:
+  - ✅ Formulario de consentimiento informado
+  - ✅ 7 secciones completas:
+    1. **DATOS GENERALES** - Información personal y laboral
+    2. **LICENCIA DE CONDUCCIÓN** - Categoría, vigencia, experiencia
+    3. **DESPLAZAMIENTOS LABORALES** - Uso de vehículos (propio/empresa)
+    4. **PLANIFICACIÓN** - Organización de desplazamientos
+    5. **FACTORES DE RIESGO** - Identificación de riesgos
+    6. **COMPARENDOS** - Infracciones de tránsito
+    7. **INFORMACIÓN ADICIONAL** - Observaciones
+  - ✅ Lógica condicional avanzada (preguntas que aparecen según respuestas previas)
+  - ✅ Validación completa de campos obligatorios
+  - ✅ Diseño completamente responsive (mobile a 4K)
+  - ✅ Integración con AlertContext
+  - ✅ 54 campos de datos estructurados
+  - ✅ Integrado con base de datos MySQL (tabla `informacion_adicional`)
+
+### Reports (Reportes)
+- **Ruta**: `/reports`
+- **Descripción**: Generación de reportes del sistema
+- **Características**:
+  - Selector de rango de fechas
+  - 6 tipos de reportes disponibles
+  - Estadísticas de resumen
+  - Exportación de datos
+
+### Login
+- **Ruta**: `/login` (cuando no está autenticado)
+- **Descripción**: Página de inicio de sesión
+- **Características**:
+  - Formulario con email y contraseña
+  - Mostrar/ocultar contraseña
+  - Integración con logo del acueducto
+
+## 📝 Desarrollo
 
 ### Componentes de Ejemplo
 
@@ -488,38 +693,6 @@ Revisa [src/utils/tailwind-examples.jsx](src/utils/tailwind-examples.jsx) para v
 - ✅ Inputs personalizados
 - ✅ Navbar
 - ✅ Tablas
-
-### Crear Componentes
-
-1. Crea componentes en `src/components/`
-2. Crea páginas en `src/pages/`
-3. Usa las clases de Tailwind con los colores personalizados
-
-**Ejemplo de componente para vehículos:**
-
-```jsx
-// src/components/VehicleCard.jsx
-export const VehicleCard = ({ vehicle }) => {
-  return (
-    <div className="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transition-shadow">
-      <h3 className="text-primary font-bold text-xl mb-2">
-        {vehicle.plate}
-      </h3>
-      <p className="text-primary-light font-semibold">
-        {vehicle.model}
-      </p>
-      <div className="mt-4 space-y-2">
-        <p className="text-gray-600 text-sm">
-          <span className="font-semibold">SOAT:</span> {vehicle.soatExpiry}
-        </p>
-        <p className="text-gray-600 text-sm">
-          <span className="font-semibold">Revisión TM:</span> {vehicle.techReviewExpiry}
-        </p>
-      </div>
-    </div>
-  );
-};
-```
 
 ### Clases de Tailwind Más Usadas
 
@@ -548,83 +721,62 @@ className="hover:bg-primary transition-colors"
 className="focus:ring-2 focus:ring-primary-light"
 ```
 
-## � Páginas Disponibles
+### Crear Nuevos Componentes
 
-### Home (Dashboard)
-- **Ruta**: `/` (página por defecto)
-- **Descripción**: Panel principal con estadísticas y acceso rápido
-- **Características**:
-  - 3 cards de estadísticas (Vehículos, Mantenimientos, Alertas)
-  - 5 botones de acceso rápido (Vehículos, Usuarios, Nuevo Vehículo, Mantenimientos, Reportes)
-  - Integración con modales de alertas y mantenimientos
+1. Crea el archivo en `src/components/` o `src/pages/`
+2. Usa los componentes reutilizables (Modal, Cards)
+3. Aplica el sistema de diseño (colores, fuentes, iconos)
+4. Integra con AlertContext para notificaciones
+5. Usa servicios API para llamadas al backend
 
-### VehicleList (Gestión de Vehículos)
-- **Ruta**: `/vehicles`
-- **Descripción**: Lista completa de vehículos con búsqueda y filtros
-- **Características**:
-  - Búsqueda por placa, marca o modelo
-  - Filtro por estado (Activos, Por vencer, Vencidos)
-  - Grid responsive de tarjetas de vehículos
-  - **Paginación estática (6 vehículos por página)**:
-    - Botones de navegación (Anterior/Siguiente)
-    - Números de página con indicador de página actual
-    - Contador de resultados (mostrando X-Y de Z vehículos)
-    - Reseteo automático a página 1 al cambiar búsqueda o filtros
-  - Modal para agregar nuevos vehículos
-  - Modal de detalles con edición de información
-  - Visualización del conductor asignado en cada tarjeta
+**Ejemplo:**
 
-### Users (Gestión de Usuarios)
-- **Ruta**: `/users`
-- **Descripción**: Gestión de Conductores y Supervisores
-- **Características**:
-  - 3 cards de estadísticas (Total, Conductores, Supervisores)
-  - Búsqueda por nombre, cédula o área
-  - Filtro por rol (Todos, Conductores, Supervisores)
-  - Grid responsive de tarjetas de usuarios
-  - **Paginación estática (6 usuarios por página)**:
-    - Botones de navegación (Anterior/Siguiente)
-    - Números de página con indicador de página actual
-    - Contador de resultados (mostrando X-Y de Z usuarios)
-    - Reseteo automático a página 1 al cambiar búsqueda o filtros
-  - Modal para agregar nuevos usuarios
-  - Validación completa de campos
-  - Diferenciación visual por rol (Conductor/Supervisor)
+```jsx
+// src/components/MiComponente.jsx
+import { useAlert } from '../context/AlertContext';
+import { UserIcon } from '@heroicons/react/24/outline';
 
-### Reports (Reportes)
-- **Ruta**: `/reports`
-- **Descripción**: Generación de reportes del sistema
-- **Características**:
-  - Selector de rango de fechas
-  - 6 tipos de reportes disponibles
-  - Estadísticas de resumen
-  - Exportación de datos
+export const MiComponente = () => {
+  const { success, error } = useAlert();
 
-### Login
-- **Ruta**: `/login` (cuando no está autenticado)
-- **Descripción**: Página de inicio de sesión
-- **Características**:
-  - Formulario con email y contraseña
-  - Mostrar/ocultar contraseña
-  - Integración con logo del acueducto
+  const handleAction = () => {
+    try {
+      // Lógica aquí
+      success('¡Operación exitosa!');
+    } catch (err) {
+      error('Ocurrió un error');
+    }
+  };
 
-## �📝 Próximos Pasos
+  return (
+    <div className="bg-white rounded-lg shadow-lg p-6">
+      <div className="flex items-center gap-3 mb-4">
+        <UserIcon className="w-6 h-6 text-primary" />
+        <h2 className="text-xl font-bold text-primary">Título</h2>
+      </div>
+      <button
+        onClick={handleAction}
+        className="bg-primary hover:bg-primary-light text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+      >
+        Acción
+      </button>
+    </div>
+  );
+};
+```
 
-- [x] Configurar Tailwind CSS con colores personalizados
-- [x] Configurar fuente Nunito
-- [ ] Instalar React Router para navegación entre páginas
-- [ ] Crear componentes para gestión de vehículos
-- [ ] Crear formularios para mantenimientos
-- [ ] Implementar sistema de autenticación
-- [ ] Integrar con el backend cuando esté disponible
+---
 
-## 🔗 Backend
+## 📚 Recursos Adicionales
 
-El backend utilizará:
-- **MongoDB** - Base de datos
-- **Express.js** - Framework web
-- **Node.js** - Runtime
-- **Arquitectura Hexagonal** - Patrón de diseño
+- **Tailwind CSS**: https://tailwindcss.com/docs
+- **Heroicons**: https://heroicons.com
+- **React**: https://react.dev
+- **Vite**: https://vitejs.dev
 
-Para desarrollo local, asegúrate de que el backend esté corriendo en `http://localhost:3000`.
+## 🔗 Enlaces
+
+- [README Principal](../README.md) - Información general del proyecto
+- [Schema de Base de Datos](../db.sql) - Estructura de la base de datos
+- [ALERTS_README](src/components/ALERTS_README.md) - Documentación del sistema de alertas
 
