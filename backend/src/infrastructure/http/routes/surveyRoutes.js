@@ -6,6 +6,12 @@
  */
 
 import { Router } from 'express';
+import { 
+  validateSurvey, 
+  validateGetSurveyByCedula,
+  handleValidationErrors 
+} from '../../middlewares/validator.js';
+import { writeLimiter } from '../../middlewares/rateLimiter.js';
 
 /**
  * Factory function para crear las rutas del cuestionario
@@ -78,8 +84,15 @@ export function createSurveyRoutes(additionalInfoController) {
    * Obtener cuestionario de un usuario específico por su cédula
    * 
    * Ejemplo: GET /api/survey/user/1234567890
+   * 
+   * Protecciones:
+   * - Validación del formato de cédula
    */
-  router.get('/user/:idUsuario', additionalInfoController.getSurveyByUserId);
+  router.get('/user/:cedula', 
+    validateGetSurveyByCedula,
+    handleValidationErrors,
+    additionalInfoController.getSurveyByUserId
+  );
 
   /**
    * GET /api/survey/:id
@@ -128,8 +141,17 @@ export function createSurveyRoutes(additionalInfoController) {
    *   "kmMensuales": 350,
    *   ...
    * }
+   * 
+   * Protecciones:
+   * - Rate limiting: Máximo 20 envíos por minuto
+   * - Validación de datos obligatorios y formatos
    */
-  router.post('/', additionalInfoController.saveSurvey);
+  router.post('/', 
+    writeLimiter,
+    validateSurvey,
+    handleValidationErrors,
+    additionalInfoController.saveSurvey
+  );
 
   /**
    * PUT /api/survey/:id
@@ -143,16 +165,28 @@ export function createSurveyRoutes(additionalInfoController) {
    *   "vigenciaLicencia": "2028-06-30",
    *   "categoriaLicencia": "C1"
    * }
+   * 
+   * Protecciones:
+   * - Rate limiting: Máximo 20 actualizaciones por minuto
    */
-  router.put('/:id', additionalInfoController.updateSurvey);
+  router.put('/:id', 
+    writeLimiter,
+    additionalInfoController.updateSurvey
+  );
 
   /**
    * DELETE /api/survey/:id
    * Eliminar cuestionario
    * 
    * Ejemplo: DELETE /api/survey/5
+   * 
+   * Protecciones:
+   * - Rate limiting: Máximo 20 eliminaciones por minuto
    */
-  router.delete('/:id', additionalInfoController.deleteSurvey);
+  router.delete('/:id', 
+    writeLimiter,
+    additionalInfoController.deleteSurvey
+  );
 
   return router;
 }

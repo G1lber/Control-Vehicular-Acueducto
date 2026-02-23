@@ -29,6 +29,11 @@ import AdditionalInfoUseCases from './application/use-cases/AdditionalInfoUseCas
 import AdditionalInfoController from './infrastructure/http/controllers/AdditionalInfoController.js';
 import { createSurveyRoutes } from './infrastructure/http/routes/surveyRoutes.js';
 
+// Importar middlewares
+import logger from './infrastructure/middlewares/logger.js';
+import errorHandler from './infrastructure/middlewares/errorHandler.js';
+import { generalLimiter } from './infrastructure/middlewares/rateLimiter.js';
+
 // Configuración
 dotenv.config();
 const app = express();
@@ -37,15 +42,21 @@ const PORT = process.env.PORT || 3000;
 // =====================================================
 // MIDDLEWARES GLOBALES
 // =====================================================
-app.use(cors()); // Permitir peticiones del frontend
+// IMPORTANTE: El orden de los middlewares importa
+
+// 1. CORS - Permitir peticiones del frontend
+app.use(cors());
+
+// 2. Parseo de datos
 app.use(express.json()); // Parsear JSON en body
 app.use(express.urlencoded({ extended: true })); // Parsear form data
 
-// Logger simple de peticiones
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
-  next();
-});
+// 3. Logger - Registrar todas las peticiones HTTP
+app.use(logger);
+
+// 4. Rate Limiting General - Limitar peticiones por IP
+// Aplica a todas las rutas de /api
+app.use('/api', generalLimiter);
 
 // =====================================================
 // DEPENDENCY INJECTION - COMPOSICIÓN DE LA ARQUITECTURA
@@ -117,21 +128,16 @@ app.get('/', (req, res) => {
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: 'Ruta no encontrada'
+    message: 'Ruta no encontrada',
+    ruta: req.originalUrl
   });
 });
 
 // =====================================================
-// MANEJO GLOBAL DE ERRORES
+// MANEJO GLOBAL DE ERRORES (DEBE IR AL FINAL)
 // =====================================================
-app.use((error, req, res, next) => {
-  console.error('Error global:', error);
-  res.status(500).json({
-    success: false,
-    message: 'Error interno del servidor',
-    error: process.env.NODE_ENV === 'development' ? error.message : undefined
-  });
-});
+// Este middleware captura TODOS los errores de la aplicación
+app.use(errorHandler);
 
 // =====================================================
 // INICIAR SERVIDOR

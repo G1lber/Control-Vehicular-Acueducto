@@ -3,11 +3,25 @@
 ## 🎯 Estado Actual
 - ✅ Arquitectura hexagonal implementada
 - ✅ API de vehículos completa (CRUD + filtros + stats)
-- ✅ API de usuarios completa (CRUD + filtros + stats + auth)
+- ✅ API de usuarios completa (CRUD + filtros + stats + auth dual)
 - ✅ API de mantenimientos completa (CRUD + filtros + stats + alertas)
+- ✅ API de cuestionario PESV completa (upsert + stats + filtros)
+- ✅ Autenticación JWT dual (login principal + survey)
+- ✅ Middleware de autorización (5 funciones)
+- ✅ Frontend Login completo (2 tipos de acceso)
+- ✅ Frontend Survey con autocompleción y carga de datos
+- ✅ Environment variables configuradas
+- ✅ Diseño responsivo implementado
 - ✅ Conexión a MySQL funcionando
 - ✅ Datos de prueba disponibles
-- ✅ Documentación completa
+- ✅ Documentación parcial (ENVIRONMENT_VARIABLES.md)
+
+## 🚀 Próximos Pasos Inmediatos
+1. ⏳ Aplicar middleware de autenticación a rutas del backend
+2. ⏳ Testing completo de flujos en navegador
+3. ⏳ Implementar API de reportes
+4. ⏳ Completar integración de frontend (Vehículos, Usuarios, Reportes)
+5. ⏳ Documentar sistema de autenticación (AUTH_SYSTEM.md)
 
 ## 📋 Tareas Pendientes
 
@@ -69,45 +83,74 @@
 - ✅ Foreign key constraint validado
 - ✅ 100% probado y funcional
 
-### 3️⃣ API de Información Adicional (Cuestionario PESV)
-- [ ] Crear `domain/entities/AdditionalInfo.js`
-- [ ] Crear `domain/repositories/AdditionalInfoRepository.js`
-- [ ] Crear `infrastructure/database/MySQLAdditionalInfoRepository.js`
-- [ ] Crear `application/use-cases/AdditionalInfoUseCases.js`
-- [ ] Crear `infrastructure/http/controllers/AdditionalInfoController.js`
-- [ ] Crear `infrastructure/http/routes/additionalInfoRoutes.js`
-- [ ] Conectar en `server.js`
-- [ ] **Funcionalidades:**
-  - GET /api/survey/:id_usuario - Ver cuestionario de un usuario
-  - POST /api/survey - Crear/actualizar cuestionario
-  - GET /api/survey/stats - Estadísticas (cuántos completados, accidentes, etc.)
+### 3️⃣ API de Información Adicional (Cuestionario PESV) ✅ COMPLETADA
+- ✅ Crear `domain/entities/Survey.js`
+- ✅ Crear `domain/repositories/SurveyRepository.js`
+- ✅ Crear `infrastructure/database/MySQLSurveyRepository.js`
+- ✅ Crear `application/use-cases/SurveyUseCases.js`
+- ✅ Crear `infrastructure/http/controllers/SurveyController.js`
+- ✅ Crear `infrastructure/http/routes/surveyRoutes.js`
+- ✅ Conectar en `server.js`
+- ✅ **Funcionalidades:**
+  - ✅ GET /api/survey/user/:cedula - Ver cuestionario de un usuario
+  - ✅ POST /api/survey - Crear/actualizar cuestionario (upsert)
+  - ✅ GET /api/survey/stats - Estadísticas completas (completados, accidentes, licencias, etc.)
+  - ✅ GET /api/survey - Listar todas las encuestas
 
-**Consideraciones especiales:**
-- Campos JSON (medio_desplazamiento, riesgos, causas, causas_comparendo)
-- Validaciones complejas con lógica condicional
+**✅ Características implementadas:**
+- ✅ Manejo de campos JSON (medio_desplazamiento, riesgos, causas, causas_comparendo)
+- ✅ Validaciones condicionales según tipo de respuesta
+- ✅ Sistema de upsert (INSERT ON DUPLICATE KEY UPDATE)
+- ✅ Estadísticas detalladas por categoría
+- ✅ Foreign key con usuarios validado
+- ✅ 100% probado y funcional
 
-### 4️⃣ Autenticación y Autorización (Alta Prioridad)
-- [ ] Crear `infrastructure/middlewares/auth.js`
-- [ ] Implementar login endpoint:
-  - POST /api/auth/login - Login con cédula + password
-  - Generar JWT token
-  - Solo Supervisores y Admins pueden hacer login
-- [ ] Crear middleware para verificar JWT
-- [ ] Proteger rutas con middleware auth
-- [ ] Implementar niveles de permisos:
-  - **Conductor:** Solo puede ver sus propios datos
-  - **Supervisor:** Puede ver y editar todo
-  - **Admin:** Control total
+### 4️⃣ Autenticación y Autorización (Alta Prioridad) ✅ COMPLETADA
+- ✅ Crear `infrastructure/middlewares/auth.middleware.js`
+- ✅ Implementar login endpoints:
+  - ✅ POST /api/users/auth/login - Login con cédula + password (24h token)
+  - ✅ POST /api/users/auth/login-survey - Login solo con cédula (2h token, survey_only)
+  - ✅ Generar JWT token con jsonwebtoken 9.0.2
+  - ✅ Solo Supervisores y Admins pueden hacer login principal
+  - ✅ Todos los usuarios pueden acceder al cuestionario
+- ✅ Crear middleware para verificar JWT (5 funciones)
+- ✅ Implementar niveles de permisos:
+  - ✅ `verifyToken()` - Verificación base de JWT
+  - ✅ `requireSupervisor()` - Solo supervisores y admins (id_rol >= 2)
+  - ✅ `requireAdmin()` - Solo administradores (id_rol === 3)
+  - ✅ `requireSurveyAccess()` - Permite acceso full y survey_only
+  - ✅ `optionalAuth()` - Verificación no bloqueante
 
-**Estructura de JWT:**
+**✅ Estructura de JWT implementada:**
 ```javascript
+// Token principal (24h)
 {
-  id_cedula: 1002345678,
+  cedula: 1002345678,
   nombre: "Roberto Sánchez",
   id_rol: 2,
-  nombre_rol: "Supervisor"
+  nombre_rol: "Supervisor",
+  ✅ Middleware de autenticación JWT implementado
+- [ ] Crear `infrastructure/middlewares/validator.js`
+- [ ] Validar datos de entrada con express-validator
+- [ ] Middleware para manejo de errores centralizado
+- [ ] Middleware para logging de peticiones
+- [ ] Middleware para rate limiting (opcional)
+- [ ] Aplicar auth middleware a rutas protegidas
+  cedula: 1001234567,
+  nombre: "Carlos López",
+  id_rol: 1,
+  nombre_rol: "Conductor",
+  access_type: "survey_only"
 }
 ```
+
+**✅ Características implementadas:**
+- ✅ Passwords hasheados con bcrypt 5.1.1
+- ✅ JWT_SECRET en variables de entorno
+- ✅ Manejo de TokenExpiredError y JsonWebTokenError
+- ✅ Headers Authorization: Bearer <token>
+- ✅ Sistema de acceso dual (full/survey_only)
+- ✅ Protección contra acceso de conductores al login principal
 
 ### 5️⃣ Validaciones y Middlewares
 - [ ] Crear `infrastructure/middlewares/validator.js`
@@ -126,7 +169,9 @@
   - GET /api/reports/drivers - Reporte de conductores
   - GET /api/reports/expiring - Documentos próximos a vencer
   - GET /api/reports/expired - Documentos vencidos
-
+✅ Variables de entorno configuradas (.env para backend)
+- ✅ JWT_SECRET, DB_*, PORT configurados
+- 
 ### 7️⃣ Mejoras de Infraestructura
 - [ ] Implementar sistema de logging (Winston)
 - [ ] Crear archivo de configuración para constantes
@@ -139,10 +184,12 @@
 - [ ] Configurar Jest o Mocha
 - [ ] Tests unitarios para entidades del Domain
 - [ ] Tests de integración para repositories
-- [ ] Tests de casos de uso
-- [ ] Tests E2E para endpoints HTTP
-
-### 9️⃣ Documentación
+- ✅ ENVIRONMENT_VARIABLES.md creado (frontend y backend)
+- [ ] Agregar Swagger/OpenAPI documentation
+- [ ] Crear colección de Postman
+- [ ] Documentar códigos de error
+- [ ] Documentar formato de respuestas
+- [ ] Crear AUTH_SYSTEM.md con detalles de autenticación
 - [ ] Agregar Swagger/OpenAPI documentation
 - [ ] Crear colección de Postman
 - [ ] Documentar códigos de error
@@ -151,29 +198,32 @@
 ### 🔟 Deployment
 - [ ] Configurar variables de entorno para producción
 - [ ] Configurar HTTPS
-- [ ] Configurar PM2 para mantener el servidor activo
-- [ ] Configurar nginx como reverse proxy (opcional)
-- [ ] Configurar backup automático de base de datos
+- [📅 Cronograma de Desarrollo
 
-## ✅ API de usuarios (completado)
-4. API de mantenimientos (siguiente)
-### Semana 1 - Fundamentos
+### Semana 1 - Fundamentos ✅ COMPLETADA
 1. ✅ Arquitectura base (completado)
 2. ✅ API de vehículos (completado)
 3. ✅ API de usuarios (completado)
 4. ✅ API de mantenimientos (completado)
 
-### Semana 2 - Autenticación
-1. Sistema de autenticación JWT
-2. Middleware de autorización
-3. Proteger rutas según roles
+### Semana 2 - Autenticación ✅ COMPLETADA
+1. ✅ Sistema de autenticación JWT (dual login)
+2. ✅ Middleware de autorización (5 funciones)
+3. ⏳ Proteger rutas según roles (middleware creado, falta aplicar)
 
-### Semana 3 - Completar APIs
-1. API de cuestionario PESV
-2. API de reportes
-3. Validaciones completas
+### Semana 3 - Completar APIs ✅ COMPLETADA
+1. ✅ API de cuestionario PESV (completa con upsert)
+2. ⏳ API de reportes (pendiente)
+3. ⏳ Validaciones completas (en progreso)
 
-### Semana 4 - Integración
+### Semana 4 - Integración ✅ EN PROGRESO
+1. ✅ Conectar frontend con backend (Login + Survey integrados)
+2. ✅ Frontend Login principal y Survey (con autocompleción)
+3. ✅ Environment variables configuradas
+4. ✅ Diseño responsivo implementado
+5. ⏳ Testing manual completo (en progreso)
+6. ⏳ Corrección de bugs
+7. ⏳# Semana 4 - Integración
 1. Conectar frontend con backend
 2. Testing manual completo
 3. Corrección de bugs
@@ -198,14 +248,26 @@
 ```bash
 git commit -m "feat: add User entity and repository"
 git commit -m "feat: implement MySQL User repository"
-git commit -m "feat: add User use cases"
-git commit -m "feat: add User HTTP endpoints"
-git commit -m "feat: implement JWT authentication"
-```
+### Backend completo con:
+- ✅ 4 APIs principales (Vehículos, Usuarios, Mantenimientos, Cuestionario PESV)
+- ✅ Autenticación JWT con roles (dual login: principal + survey)
+- ✅ Middleware de autorización (5 niveles de protección)
+- ⏳ Validaciones completas (en progreso)
+- ⏳ Sistema de reportes (pendiente)
+- ⏳ Documentación API (parcial)
+- ✅ Integración con frontend (Login + Survey funcionando)
+- ⏳ Ready para producción (falta aplicar middleware a rutas)
 
-## 🎯 Objetivo Final
-
-Backend completo con:
+### Frontend completo con:
+- ✅ Login principal (Login.jsx) - Supervisores/Admins con password
+- ✅ Login de cuestionario (LoginSurvey.jsx) - Todos los usuarios sin password
+- ✅ Cuestionario PESV (SurveyTalentoHumano.jsx) - Con autocompleción y carga de datos previos
+- ✅ Sistema de sesión persistente (localStorage)
+- ✅ Manejo de acceso dual (full vs survey_only)
+- ✅ Environment variables (.env con VITE_API_URL)
+- ✅ Diseño responsivo completo (móvil, tablet, escritorio)
+- ✅ Esquema de colores azul consistente
+- ⏳ Integración completa de todos los módulos (en progreso)
 - ✅ 4 APIs principales (Vehículos, Usuarios, Mantenimientos, Cuestionario PESV)
 - ✅ Autenticación JWT con roles
 - ✅ Validaciones completas

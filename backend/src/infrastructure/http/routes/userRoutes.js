@@ -5,6 +5,13 @@
  */
 
 import express from 'express';
+import { 
+  validateLogin, 
+  validateLoginSurvey,
+  validateCreateUser,
+  handleValidationErrors 
+} from '../../middlewares/validator.js';
+import { loginLimiter, surveyLoginLimiter, writeLimiter } from '../../middlewares/rateLimiter.js';
 
 const createUserRoutes = (userController) => {
   const router = express.Router();
@@ -77,7 +84,12 @@ const createUserRoutes = (userController) => {
    *   "password": "123456" (solo requerido si id_rol es 2 o 3)
    * }
    */
-  router.post('/', (req, res) => userController.createUser(req, res));
+  router.post('/', 
+    writeLimiter,
+    validateCreateUser, 
+    handleValidationErrors,
+    (req, res) => userController.createUser(req, res)
+  );
 
   /**
    * PUT /api/users/:cedula
@@ -87,7 +99,10 @@ const createUserRoutes = (userController) => {
    * {
    *   "name": "Nuevo nombre",
    *   "id_rol": 2,
-   *   "area": "Nueva área",
+   *   "area": "Nueva áre
+    writeLimiter,
+    (req, res) => userController.updateUser(req, res)
+  
    *   "phone": "3009876543",
    *   "password": "nuevaContraseña" (opcional)
    * }
@@ -99,6 +114,9 @@ const createUserRoutes = (userController) => {
    * Elimina un usuario
    * Ejemplo: DELETE /api/users/1001234567
    * 
+    writeLimiter,
+    (req, res) => userController.deleteUser(req, res)
+  
    * NOTA: No se puede eliminar si el usuario tiene vehículos asignados
    */
   router.delete('/:cedula', (req, res) => userController.deleteUser(req, res));
@@ -111,13 +129,16 @@ const createUserRoutes = (userController) => {
    * POST /api/users/auth/login
    * Autentica un usuario (Supervisores y Administradores únicamente)
    * 
-   * Body:
-   * {
-   *   "cedula": "1002345678",
-   *   "password": "contraseña123"
-   * }
+   * Protecciones:
+   * - Rate limiting: Máximo 5 intentos por IP cada 15 minutos
+   * - Validación de datos: Cédula y password obligatorios
    */
-  router.post('/auth/login', (req, res) => userController.login(req, res));
+  router.post('/auth/login', 
+    loginLimiter,
+    validateLogin,
+    handleValidationErrors,
+    (req, res) => userController.login(req, res)
+  );
 
   /**
    * POST /api/users/auth/login-survey
@@ -128,8 +149,17 @@ const createUserRoutes = (userController) => {
    * {
    *   "cedula": "1001234567"
    * }
+   * 
+   * Protecciones:
+   * - Rate limiting: Máximo 10 intentos por IP cada 15 minutos
+   * - Validación de datos: Cédula obligatoria y formato correcto
    */
-  router.post('/auth/login-survey', (req, res) => userController.loginSurvey(req, res));
+  router.post('/auth/login-survey', 
+    surveyLoginLimiter,
+    validateLoginSurvey,
+    handleValidationErrors,
+    (req, res) => userController.loginSurvey(req, res)
+  );
 
   return router;
 };
