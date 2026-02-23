@@ -4,7 +4,7 @@ import { useAlert } from '../context/AlertContext';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export const SurveyTalentoHumano = ({ onNavigate, currentUser }) => {
+export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => {
   const { success, error, warning, info } = useAlert();
   const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState({
@@ -257,19 +257,22 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser }) => {
 
   return (
     <div className="py-4 md:py-8 px-4 md:px-6 max-w-5xl mx-auto">
-      <button
-        onClick={() => onNavigate && onNavigate('home')}
-        className="mb-4 md:mb-6 flex items-center gap-2 text-primary hover:text-primary-light transition-colors"
-      >
-        <ArrowLeftIcon className="w-5 h-5" />
-        Volver al Inicio
-      </button>
+      {/* Botón volver solo para usuarios con acceso completo */}
+      {accessType !== 'survey_only' && (
+        <button
+          onClick={() => onNavigate && onNavigate('home')}
+          className="mb-4 md:mb-6 flex items-center gap-2 text-primary hover:text-primary-light transition-colors"
+        >
+          <ArrowLeftIcon className="w-5 h-5" />
+          Volver al Inicio
+        </button>
+      )}
 
       {/* Indicador de carga */}
       {isLoading && (
-        <div className="bg-white rounded-lg shadow-lg p-8 text-center">
+        <div className="bg-white rounded-lg shadow-lg p-4 md:p-8 text-center">
           <div className="flex flex-col items-center justify-center space-y-4">
-            <svg className="animate-spin h-12 w-12 text-primary" viewBox="0 0 24 24">
+            <svg className="animate-spin h-10 w-10 md:h-12 md:w-12 text-primary" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
@@ -280,17 +283,17 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser }) => {
 
       {!isLoading && (
       <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 lg:p-8">
-        <h2 className="text-3xl font-bold text-primary mb-6 text-center">
+        <h2 className="text-2xl md:text-3xl font-bold text-primary mb-4 md:mb-6 text-center">
           ENCUESTA DE SEGURIDAD VIAL
         </h2>
 
         {/* Mostrar información del usuario */}
         {currentUser && (
-          <div className="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded">
-            <p className="text-green-800 font-semibold">
-                Encuesta para: <span className="text-green-900">{currentUser.nombre || currentUser.name}</span>
+          <div className="mb-4 md:mb-6 bg-blue-50 border-l-4 border-blue-500 p-3 md:p-4 rounded">
+            <p className="text-blue-800 font-semibold text-sm md:text-base">
+                Encuesta para: <span className="text-blue-900">{currentUser.nombre || currentUser.name}</span>
             </p>
-            <p className="text-green-700 text-sm mt-1">
+            <p className="text-blue-700 text-xs md:text-sm mt-1">
               Documento: {currentUser.cedula} • Área: {currentUser.area}
             </p>
           </div>
@@ -756,8 +759,8 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser }) => {
                   </div>
 
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">¿Ha tenido en los últimos cinco años algún accidente de tránsito?</label>
-                    <div className="flex gap-6">
+                    <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">¿Ha tenido en los últimos cinco años algún accidente de tránsito?</label>
+                    <div className="flex flex-wrap gap-3 md:gap-6">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
                           type="radio"
@@ -786,10 +789,10 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser }) => {
                   {formData.accidente_5_anios === 'SI' && (
                     <>
                       <div>
-                        <label className="block text-gray-700 font-semibold mb-2">
+                        <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">
                           Este accidente de tránsito fue durante el desarrollo de las actividades misionales de la compañía?
                         </label>
-                        <div className="flex gap-6">
+                        <div className="flex flex-wrap gap-3 md:gap-6">
                           <label className="flex items-center gap-2 cursor-pointer">
                             <input
                               type="radio"
@@ -894,10 +897,10 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser }) => {
                   )}
 
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">
+                    <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">
                       ¿Ha tenido en los últimos 5 años algún incidente de tránsito produciendo daños materiales, pero no personales?
                     </label>
-                    <div className="flex gap-6">
+                    <div className="flex flex-wrap gap-3 md:gap-6">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
                           type="radio"
@@ -1059,10 +1062,10 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser }) => {
                       </div>
 
                       <div>
-                        <label className="block text-gray-700 font-semibold mb-2">
+                        <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">
                           Si usa vehículo propio para labores misionales, ¿La empresa paga rodamiento?
                         </label>
-                        <div className="flex gap-6">
+                        <div className="flex flex-wrap gap-3 md:gap-6">
                           <label className="flex items-center gap-2 cursor-pointer">
                             <input
                               type="radio"
@@ -1089,10 +1092,10 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser }) => {
                       </div>
 
                       <div>
-                        <label className="block text-gray-700 font-semibold mb-2">
+                        <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">
                           Antes de usar su vehículo para labores de la compañía, ¿Realiza la lista de inspección al vehículo?
                         </label>
-                        <div className="flex gap-6">
+                        <div className="flex flex-wrap gap-3 md:gap-6">
                           <label className="flex items-center gap-2 cursor-pointer">
                             <input
                               type="radio"
@@ -1150,10 +1153,10 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser }) => {
                   )}
 
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">
+                    <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">
                       ¿Usa vehículo asignado por la compañía para realizar labores misionales?
                     </label>
-                    <div className="flex gap-6">
+                    <div className="flex flex-wrap gap-3 md:gap-6">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
                           type="radio"
@@ -1220,10 +1223,10 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser }) => {
                       </div>
 
                       <div>
-                        <label className="block text-gray-700 font-semibold mb-2">
+                        <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">
                           Antes de usar el vehículo que le fue asignado para labores propias de la compañía, ¿Realiza la lista de inspecciones al vehículo?
                         </label>
-                        <div className="flex gap-6">
+                        <div className="flex flex-wrap gap-3 md:gap-6">
                           <label className="flex items-center gap-2 cursor-pointer">
                             <input
                               type="radio"

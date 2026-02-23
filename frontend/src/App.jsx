@@ -118,17 +118,17 @@ function App() {
         <AlertContainer />
         <div className="min-h-screen bg-gray-50">
           {/* Header simple para cuestionario */}
-          <div className="bg-gradient-to-r from-blue-600 to-green-600 text-white py-4 px-6 shadow-lg">
-            <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-4 px-4 md:px-6 shadow-lg">
+            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
               <div>
-                <h1 className="text-xl font-bold">Cuestionario PESV</h1>
-                <p className="text-sm text-white/90">
+                <h1 className="text-lg md:text-xl font-bold">Cuestionario PESV</h1>
+                <p className="text-xs md:text-sm text-white/90">
                   {currentUser?.nombre} - {currentUser?.area}
                 </p>
               </div>
               <button
                 onClick={handleLogout}
-                className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                className="bg-white/20 hover:bg-white/30 px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-semibold transition-colors"
               >
                 Salir
               </button>
@@ -136,7 +136,11 @@ function App() {
           </div>
           
           <div className="max-w-7xl mx-auto py-6 px-4">
-            <SurveyTalentoHumano onNavigate={handleNavigate} currentUser={currentUser} />
+            <SurveyTalentoHumano 
+              onNavigate={handleNavigate} 
+              currentUser={currentUser}
+              accessType={accessType}
+            />
           </div>
         </div>
       </>
@@ -153,7 +157,11 @@ function App() {
       case 'reports':
         return <Reports onNavigate={handleNavigate} />;
       case 'surveyTalentoHumano':
-        return <SurveyTalentoHumano onNavigate={handleNavigate} />;
+        return <SurveyTalentoHumano 
+          onNavigate={handleNavigate} 
+          currentUser={currentUser}
+          accessType={accessType}
+        />;
       case 'maintenance':
         return (
           <div className="py-8">
