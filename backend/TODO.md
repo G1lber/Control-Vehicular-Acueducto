@@ -3,33 +3,39 @@
 ## 🎯 Estado Actual
 - ✅ Arquitectura hexagonal implementada
 - ✅ API de vehículos completa (CRUD + filtros + stats)
+- ✅ API de usuarios completa (CRUD + filtros + stats + auth)
 - ✅ Conexión a MySQL funcionando
 - ✅ Datos de prueba disponibles
 - ✅ Documentación completa
 
 ## 📋 Tareas Pendientes
 
-### 1️⃣ API de Usuarios (Alta Prioridad)
-- [ ] Crear `domain/entities/User.js`
-- [ ] Crear `domain/repositories/UserRepository.js`
-- [ ] Crear `infrastructure/database/MySQLUserRepository.js`
-- [ ] Crear `application/use-cases/UserUseCases.js`
-- [ ] Crear `infrastructure/http/controllers/UserController.js`
-- [ ] Crear `infrastructure/http/routes/userRoutes.js`
-- [ ] Conectar en `server.js`
-- [ ] **Funcionalidades:**
-  - GET /api/users - Listar todos
-  - GET /api/users/:id - Ver uno
-  - GET /api/users/role/:role - Filtrar por rol
-  - POST /api/users - Crear (con hash de password si es Supervisor)
-  - PUT /api/users/:id - Actualizar
-  - DELETE /api/users/:id - Eliminar
-  - GET /api/users/stats - Estadísticas (total, conductores, supervisores)
+### 1️⃣ API de Usuarios (Alta Prioridad) ✅ COMPLETADA
+- ✅ Crear `domain/entities/User.js`
+- ✅ Crear `domain/repositories/UserRepository.js`
+- ✅ Crear `infrastructure/database/MySQLUserRepository.js`
+- ✅ Crear `application/use-cases/UserUseCases.js`
+- ✅ Crear `infrastructure/http/controllers/UserController.js`
+- ✅ Crear `infrastructure/http/routes/userRoutes.js`
+- ✅ Conectar en `server.js`
+- ✅ **Funcionalidades:**
+  - ✅ GET /api/users - Listar todos
+  - ✅ GET /api/users/:id - Ver uno
+  - ✅ GET /api/users/role/:role - Filtrar por rol
+  - ✅ POST /api/users - Crear (con hash de password si es Supervisor)
+  - ✅ PUT /api/users/:id - Actualizar
+  - ✅ DELETE /api/users/:id - Eliminar
+  - ✅ GET /api/users/stats - Estadísticas (total, conductores, supervisores)
+  - ✅ POST /api/users/auth/login - Login básico
 
-**Consideraciones especiales:**
-- Solo Supervisores tienen password (usar bcrypt para hash)
-- Validar que cédula sea única
-- Incluir rol en respuestas (join con tabla roles)
+**✅ Características implementadas:**
+- ✅ Solo Supervisores y Admins tienen password (hasheado con bcrypt)
+- ✅ Validación de cédula única
+- ✅ JOIN con tabla roles para obtener nombre_rol
+- ✅ Password NUNCA se incluye en respuestas (seguridad)
+- ✅ Validaciones completas en la entidad
+- ✅ Manejo de errores específicos
+- ✅ 100% probado y funcional
 
 ### 2️⃣ API de Mantenimientos (Alta Prioridad)
 - [ ] Crear `domain/entities/Maintenance.js`
@@ -135,8 +141,8 @@
 - [ ] Configurar nginx como reverse proxy (opcional)
 - [ ] Configurar backup automático de base de datos
 
-## 🚀 Prioridades Sugeridas
-
+## ✅ API de usuarios (completado)
+4. API de mantenimientos (siguiente)
 ### Semana 1 - Fundamentos
 1. ✅ Arquitectura base (completado)
 2. ✅ API de vehículos (completado)

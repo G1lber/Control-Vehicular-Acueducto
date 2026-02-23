@@ -14,6 +14,11 @@ import { VehicleUseCases } from './application/use-cases/VehicleUseCases.js';
 import { VehicleController } from './infrastructure/http/controllers/VehicleController.js';
 import { createVehicleRouter } from './infrastructure/http/routes/vehicleRoutes.js';
 
+import MySQLUserRepository from './infrastructure/database/MySQLUserRepository.js';
+import UserUseCases from './application/use-cases/UserUseCases.js';
+import UserController from './infrastructure/http/controllers/UserController.js';
+import createUserRoutes from './infrastructure/http/routes/userRoutes.js';
+
 // Configuración
 dotenv.config();
 const app = express();
@@ -38,6 +43,7 @@ app.use((req, res, next) => {
 // Aquí es donde conectamos las capas de la arquitectura hexagonal
 // Siguiendo el principio de Inversión de Dependencias
 
+// === VEHICLES API ===
 // 1. Infrastructure: Crear el repositorio (implementación concreta)
 const vehicleRepository = new MySQLVehicleRepository();
 
@@ -50,10 +56,18 @@ const vehicleController = new VehicleController(vehicleUseCases);
 // 4. Infrastructure/HTTP: Crear rutas inyectando el controlador
 const vehicleRouter = createVehicleRouter(vehicleController);
 
+// === USERS API ===
+// Seguir el mismo patrón de inyección de dependencias
+const userRepository = new MySQLUserRepository();
+const userUseCases = new UserUseCases(userRepository);
+const userController = new UserController(userUseCases);
+const userRouter = createUserRoutes(userController);
+
 // =====================================================
 // RUTAS DE LA API
 // =====================================================
 app.use('/api/vehicles', vehicleRouter);
+app.use('/api/users', userRouter);
 
 // Ruta de prueba de salud
 app.get('/api/health', (req, res) => {
@@ -117,12 +131,20 @@ const startServer = async () => {
       console.log(`✅ Base de datos: ${process.env.DB_NAME}`);
       console.log('\n📍 Rutas disponibles:');
       console.log(`   GET    http://localhost:${PORT}/api/health`);
+      console.log('\n🚗 Vehículos:');
       console.log(`   GET    http://localhost:${PORT}/api/vehicles`);
       console.log(`   GET    http://localhost:${PORT}/api/vehicles/stats`);
       console.log(`   GET    http://localhost:${PORT}/api/vehicles/:id`);
       console.log(`   POST   http://localhost:${PORT}/api/vehicles`);
       console.log(`   PUT    http://localhost:${PORT}/api/vehicles/:id`);
       console.log(`   DELETE http://localhost:${PORT}/api/vehicles/:id`);
+      console.log('\n👥 Usuarios:');
+      console.log(`   GET    http://localhost:${PORT}/api/users`);
+      console.log(`   GET    http://localhost:${PORT}/api/users/stats`);
+      console.log(`   GET    http://localhost:${PORT}/api/users/:cedula`);
+      console.log(`   POST   http://localhost:${PORT}/api/users`);
+      console.log(`   PUT    http://localhost:${PORT}/api/users/:cedula`);
+      console.log(`   DELETE http://localhost:${PORT}/api/users/:cedula`);
       console.log('\n' + '='.repeat(50) + '\n');
     });
 
