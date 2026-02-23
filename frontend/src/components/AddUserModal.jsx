@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import Modal from './Modal';
 import { useAlert } from '../context/AlertContext';
-import { UserIcon } from '@heroicons/react/24/outline';
+import { UserIcon, EyeIcon, EyeSlashIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 
 const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
   const { success, error } = useAlert();
@@ -11,9 +11,13 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
     cedula: '',
     phone: '',
     area: '',
-    role: ''
+    role: '',
+    password: '',
+    confirmPassword: ''
   });
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -64,6 +68,21 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
       newErrors.role = 'El cargo/rol es obligatorio';
     }
 
+    // Validar contraseña solo si es Supervisor
+    if (formData.role === 'Supervisor') {
+      if (!formData.password) {
+        newErrors.password = 'La contraseña es obligatoria para Supervisores';
+      } else if (formData.password.length < 6) {
+        newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
+      }
+
+      if (!formData.confirmPassword) {
+        newErrors.confirmPassword = 'Debe confirmar la contraseña';
+      } else if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'Las contraseñas no coinciden';
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -78,13 +97,18 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
 
     // Crear objeto de usuario
     const userData = {
-      ...formData,
       name: formData.name.trim(),
       cedula: formData.cedula.trim(),
       phone: formData.phone.trim(),
       area: formData.area.trim(),
+      role: formData.role,
       createdAt: new Date().toISOString()
     };
+
+    // Incluir contraseña solo si es Supervisor
+    if (formData.role === 'Supervisor') {
+      userData.password = formData.password;
+    }
 
     // Llamar al callback
     if (onSubmit) {
@@ -101,9 +125,13 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
       cedula: '',
       phone: '',
       area: '',
-      role: ''
+      role: '',
+      password: '',
+      confirmPassword: ''
     });
     setErrors({});
+    setShowPassword(false);
+    setShowConfirmPassword(false);
     onClose();
   };
 
@@ -229,6 +257,88 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
             <p className="text-red-500 text-sm mt-1">{errors.role}</p>
           )}
         </div>
+
+        {/* Contraseña (solo para Supervisores) */}
+        {formData.role === 'Supervisor' && (
+          <>
+            <div className="bg-yellow-50 border-l-4 border-yellow-500 rounded-lg p-4">
+              <div className="flex items-center gap-2">
+                <LockClosedIcon className="w-5 h-5 text-yellow-600" />
+                <p className="text-sm text-yellow-800">
+                  <strong>Supervisor:</strong> Se requiere contraseña para acceso al sistema.
+                </p>
+              </div>
+            </div>
+
+            {/* Contraseña */}
+            <div>
+              <label htmlFor="password" className="block text-sm font-semibold text-primary mb-2">
+                Contraseña *
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-2 pr-12 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${
+                    errors.password ? 'border-red-500' : 'border-primary-light'
+                  }`}
+                  placeholder="Mínimo 6 caracteres"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-primary transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="w-5 h-5" />
+                  ) : (
+                    <EyeIcon className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+              )}
+            </div>
+
+            {/* Confirmar Contraseña */}
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-semibold text-primary mb-2">
+                Confirmar Contraseña *
+              </label>
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-2 pr-12 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${
+                    errors.confirmPassword ? 'border-red-500' : 'border-primary-light'
+                  }`}
+                  placeholder="Repita la contraseña"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-primary transition-colors"
+                >
+                  {showConfirmPassword ? (
+                    <EyeSlashIcon className="w-5 h-5" />
+                  ) : (
+                    <EyeIcon className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+              {errors.confirmPassword && (
+                <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+              )}
+            </div>
+          </>
+        )}
 
         {/* Información adicional */}
         <div className="bg-blue-50 border-l-4 border-primary rounded-lg p-4">

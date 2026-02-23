@@ -13,7 +13,10 @@ import {
   TruckIcon,
   ExclamationTriangleIcon,
   CalendarIcon,
-  MapPinIcon
+  MapPinIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  LockClosedIcon
 } from '@heroicons/react/24/outline';
 
 const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null }) => {
@@ -27,8 +30,13 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null }) => {
     cedula: '',
     celular: '',
     area: '',
-    role: ''
+    role: '',
+    password: '',
+    confirmPassword: ''
   });
+  
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Datos del cuestionario
   const [formData, setFormData] = useState({
@@ -111,7 +119,9 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null }) => {
         cedula: user.cedula || '',
         celular: user.phone || '',
         area: user.area || '',
-        role: user.role || ''
+        role: user.role || '',
+        password: '',
+        confirmPassword: ''
       });
 
       // Si hay datos del cuestionario, cargarlos
@@ -121,6 +131,14 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null }) => {
           ...surveyData
         });
       }
+    }
+    
+    // Resetear estados de edición cuando se cierra el modal
+    if (!isOpen) {
+      setIsEditingBasic(false);
+      setIsEditingSurvey(false);
+      setShowPassword(false);
+      setShowConfirmPassword(false);
     }
   }, [isOpen, user, surveyData]);
 
@@ -160,10 +178,30 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null }) => {
       return;
     }
 
+    // Validar contraseña solo si es Supervisor y se proporcionó una nueva
+    if (basicData.role === 'Supervisor' && basicData.password) {
+      if (basicData.password.length < 6) {
+        error('La contraseña debe tener al menos 6 caracteres');
+        return;
+      }
+      if (basicData.password !== basicData.confirmPassword) {
+        error('Las contraseñas no coinciden');
+        return;
+      }
+    }
+
     console.log('Guardando datos básicos:', basicData);
     // Aquí se enviará al backend
     success('Datos básicos actualizados correctamente');
     setIsEditingBasic(false);
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+    // Limpiar campos de contraseña después de guardar
+    setBasicData(prev => ({
+      ...prev,
+      password: '',
+      confirmPassword: ''
+    }));
   };
 
   // Guardar datos del cuestionario
@@ -259,12 +297,16 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null }) => {
                   <button
                     onClick={() => {
                       setIsEditingBasic(false);
+                      setShowPassword(false);
+                      setShowConfirmPassword(false);
                       setBasicData({
                         nombre: user.name || '',
                         cedula: user.cedula || '',
                         celular: user.phone || '',
                         area: user.area || '',
-                        role: user.role || ''
+                        role: user.role || '',
+                        password: '',
+                        confirmPassword: ''
                       });
                     }}
                     className="flex items-center gap-2 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm shadow-md hover:shadow-lg"
@@ -300,6 +342,70 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null }) => {
                 <label className="text-sm text-secondary font-semibold mb-1 block">Rol *</label>
                 {renderField('Rol', basicData.role, 'role', isEditingBasic, handleBasicChange, 'select', ['Conductor', 'Supervisor'])}
               </div>
+
+              {/* Contraseña (solo para Supervisores en modo edición) */}
+              {isEditingBasic && basicData.role === 'Supervisor' && (
+                <>
+                  <div className="col-span-full bg-yellow-50 border-l-4 border-yellow-500 rounded-lg p-3">
+                    <div className="flex items-center gap-2">
+                      <LockClosedIcon className="w-5 h-5 text-yellow-600" />
+                      <p className="text-sm text-yellow-800">
+                        <strong>Cambiar Contraseña:</strong> Deja estos campos vacíos si no deseas cambiar la contraseña actual.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm text-secondary font-semibold mb-1 block">Nueva Contraseña</label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        name="password"
+                        value={basicData.password || ''}
+                        onChange={handleBasicChange}
+                        className="w-full px-3 py-2 pr-12 border-2 border-primary/30 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary-light focus:outline-none"
+                        placeholder="Mínimo 6 caracteres"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-primary transition-colors"
+                      >
+                        {showPassword ? (
+                          <EyeSlashIcon className="w-5 h-5" />
+                        ) : (
+                          <EyeIcon className="w-5 h-5" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm text-secondary font-semibold mb-1 block">Confirmar Nueva Contraseña</label>
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        name="confirmPassword"
+                        value={basicData.confirmPassword || ''}
+                        onChange={handleBasicChange}
+                        className="w-full px-3 py-2 pr-12 border-2 border-primary/30 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary-light focus:outline-none"
+                        placeholder="Repita la contraseña"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-primary transition-colors"
+                      >
+                        {showConfirmPassword ? (
+                          <EyeSlashIcon className="w-5 h-5" />
+                        ) : (
+                          <EyeIcon className="w-5 h-5" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
