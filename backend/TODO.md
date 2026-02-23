@@ -15,13 +15,18 @@
 - ✅ Conexión a MySQL funcionando
 - ✅ Datos de prueba disponibles
 - ✅ Documentación parcial (ENVIRONMENT_VARIABLES.md)
+- ✅ Validaciones completas con express-validator
+- ✅ Middleware de autenticación aplicado a todas las rutas
+- ✅ Rate limiting implementado (4 configuraciones)
+- ✅ Sistema de logging de peticiones HTTP
+- ✅ Manejo centralizado de errores
 
 ## 🚀 Próximos Pasos Inmediatos
-1. ⏳ Aplicar middleware de autenticación a rutas del backend
-2. ⏳ Testing completo de flujos en navegador
-3. ⏳ Implementar API de reportes
-4. ⏳ Completar integración de frontend (Vehículos, Usuarios, Reportes)
-5. ⏳ Documentar sistema de autenticación (AUTH_SYSTEM.md)
+1. ⏳ Testing completo de flujos en navegador
+2. ⏳ Implementar API de reportes
+3. ⏳ Completar integración de frontend (Vehículos, Usuarios, Reportes)
+4. ⏳ Documentar sistema de autenticación (AUTH_SYSTEM.md)
+5. ⏳ Documentación API con Swagger/OpenAPI
 
 ## 📋 Tareas Pendientes
 
@@ -152,12 +157,59 @@
 - ✅ Sistema de acceso dual (full/survey_only)
 - ✅ Protección contra acceso de conductores al login principal
 
-### 5️⃣ Validaciones y Middlewares
-- [ ] Crear `infrastructure/middlewares/validator.js`
-- [ ] Validar datos de entrada con express-validator
-- [ ] Middleware para manejo de errores centralizado
-- [ ] Middleware para logging de peticiones
-- [ ] Middleware para rate limiting (opcional)
+### 5️⃣ Validaciones y Middlewares ✅ COMPLETADA
+- ✅ Crear `infrastructure/middlewares/validator.js`
+- ✅ Validar datos de entrada con express-validator
+- ✅ Middleware para manejo de errores centralizado
+- ✅ Middleware para logging de peticiones
+- ✅ Middleware para rate limiting
+- ✅ Aplicar middlewares a todas las rutas del backend
+
+**✅ Características implementadas:**
+- ✅ **express-validator 7.2.1** - Validación de datos de entrada
+  - ✅ validateLogin - Login principal (cédula + password)
+  - ✅ validateLoginSurvey - Login cuestionario (solo cédula)
+  - ✅ validateCreateUser - Creación de usuarios
+  - ✅ validateCreateVehicle - Creación de vehículos
+  - ✅ validateUpdateVehicle - Actualización de vehículos
+  - ✅ validateCreateMaintenance - Creación de mantenimientos
+  - ✅ validateUpdateMaintenance - Actualización de mantenimientos
+  - ✅ validateSurvey - Cuestionario PESV (40+ campos)
+  - ✅ handleValidationErrors - Formateador de errores
+
+- ✅ **express-rate-limit 7.4.1** - Prevención de abuso
+  - ✅ generalLimiter - 100 req/15min (toda la API)
+  - ✅ loginLimiter - 5 intentos/15min (anti fuerza bruta)
+  - ✅ surveyLoginLimiter - 10 intentos/15min (moderado)
+  - ✅ writeLimiter - 20 operaciones/min (POST/PUT/DELETE)
+
+- ✅ **errorHandler.js** - Manejo centralizado de errores
+  - ✅ Detección de errores de BD (ER_DUP_ENTRY, ER_NO_REFERENCED_ROW_2, ER_ROW_IS_REFERENCED_2)
+  - ✅ Detección de errores JWT (TokenExpiredError, JsonWebTokenError)
+  - ✅ Manejo de códigos HTTP (400, 401, 403, 404, 500)
+  - ✅ Respuestas JSON consistentes
+  - ✅ Stack traces solo en desarrollo
+
+- ✅ **logger.js** - Logging de peticiones HTTP
+  - ✅ Timestamp, método, URL, status, duración
+  - ✅ Color-coded por status (verde=2xx, amarillo=4xx, rojo=5xx)
+  - ✅ Detección de peticiones lentas (>1000ms)
+  - ✅ Logs en consola con formato legible
+
+- ✅ **Protección de rutas implementada:**
+  - ✅ `/api/vehicles` - Token JWT + Supervisor+ para modificaciones
+  - ✅ `/api/maintenances` - Token JWT + Supervisor+ para modificaciones
+  - ✅ `/api/users` - Token JWT + Admin para modificaciones
+  - ✅ `/api/survey` - Token JWT para consultas, sin restricción de rol para crear/editar propio cuestionario
+  - ✅ Rate limiting aplicado a todas las operaciones de escritura
+  - ✅ Validación de datos en todos los endpoints de creación/actualización
+
+**✅ Pruebas realizadas:**
+- ✅ Autenticación JWT bloqueando acceso sin token (401)
+- ✅ Rate limiting bloqueando después de límite (429)
+- ✅ Validación rechazando datos con formato incorrecto (400)
+- ✅ Error handler devolviendo mensajes consistentes
+- ✅ Logger registrando todas las peticiones HTTP
 
 ### 6️⃣ API de Reportes
 - [ ] Crear `application/use-cases/ReportUseCases.js`
@@ -209,12 +261,15 @@
 ### Semana 2 - Autenticación ✅ COMPLETADA
 1. ✅ Sistema de autenticación JWT (dual login)
 2. ✅ Middleware de autorización (5 funciones)
-3. ⏳ Proteger rutas según roles (middleware creado, falta aplicar)
+3. ✅ Proteger rutas según roles (aplicado a todas las rutas)
 
 ### Semana 3 - Completar APIs ✅ COMPLETADA
 1. ✅ API de cuestionario PESV (completa con upsert)
 2. ⏳ API de reportes (pendiente)
-3. ⏳ Validaciones completas (en progreso)
+3. ✅ Validaciones completas (implementadas con express-validator)
+4. ✅ Rate limiting (4 configuraciones activas)
+5. ✅ Logging de peticiones HTTP
+6. ✅ Manejo centralizado de errores
 
 ### Semana 4 - Integración ✅ EN PROGRESO
 1. ✅ Conectar frontend con backend (Login + Survey integrados)
@@ -252,11 +307,15 @@ git commit -m "feat: implement MySQL User repository"
 - ✅ 4 APIs principales (Vehículos, Usuarios, Mantenimientos, Cuestionario PESV)
 - ✅ Autenticación JWT con roles (dual login: principal + survey)
 - ✅ Middleware de autorización (5 niveles de protección)
-- ⏳ Validaciones completas (en progreso)
+- ✅ Validaciones completas (express-validator con 9 validadores)
+- ✅ Rate limiting (4 configuraciones: general, login, surveyLogin, write)
+- ✅ Logging de peticiones HTTP (logger.js con colores)
+- ✅ Manejo centralizado de errores (errorHandler.js)
+- ✅ Protección de rutas aplicada (auth + validación + rate limiting)
 - ⏳ Sistema de reportes (pendiente)
 - ⏳ Documentación API (parcial)
 - ✅ Integración con frontend (Login + Survey funcionando)
-- ⏳ Ready para producción (falta aplicar middleware a rutas)
+- ✅ Ready para producción (todas las capas de seguridad activas)
 
 ### Frontend completo con:
 - ✅ Login principal (Login.jsx) - Supervisores/Admins con password

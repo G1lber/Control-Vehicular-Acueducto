@@ -12,6 +12,7 @@ import {
   handleValidationErrors 
 } from '../../middlewares/validator.js';
 import { writeLimiter } from '../../middlewares/rateLimiter.js';
+import { verifyToken } from '../../middlewares/auth.middleware.js';
 
 /**
  * Factory function para crear las rutas del cuestionario
@@ -29,6 +30,8 @@ export function createSurveyRoutes(additionalInfoController) {
    * GET /api/survey/stats
    * Obtener estadísticas del cuestionario
    * 
+   * Protección: Token JWT requerido
+   * 
    * Respuesta:
    * {
    *   general: { totalRegistros, conLicencia, conAccidentes, ... },
@@ -36,48 +39,80 @@ export function createSurveyRoutes(additionalInfoController) {
    *   porEdad: { "28-37": 8, "38-48": 7, ... }
    * }
    */
-  router.get('/stats', additionalInfoController.getSurveyStats);
+  router.get('/stats', 
+    verifyToken,
+    additionalInfoController.getSurveyStats
+  );
 
   /**
    * GET /api/survey/alerts
    * Obtener alertas de seguridad vial
    * (licencias vencidas, próximas a vencer, usuarios alto riesgo, etc.)
+   * 
+   * Protección: Token JWT requerido
    */
-  router.get('/alerts', additionalInfoController.getSecurityAlerts);
+  router.get('/alerts', 
+    verifyToken,
+    additionalInfoController.getSecurityAlerts
+  );
 
   /**
    * GET /api/survey/expired-licenses
    * Obtener usuarios con licencias vencidas
+   * 
+   * Protección: Token JWT requerido
    */
-  router.get('/expired-licenses', additionalInfoController.getExpiredLicenses);
+  router.get('/expired-licenses', 
+    verifyToken,
+    additionalInfoController.getExpiredLicenses
+  );
 
   /**
    * GET /api/survey/upcoming-licenses
    * Obtener usuarios con licencias próximas a vencer
    * Query params: dias (default: 30)
    * 
+   * Protección: Token JWT requerido
    * Ejemplo: GET /api/survey/upcoming-licenses?dias=15
    */
-  router.get('/upcoming-licenses', additionalInfoController.getUpcomingLicenses);
+  router.get('/upcoming-licenses', 
+    verifyToken,
+    additionalInfoController.getUpcomingLicenses
+  );
 
   /**
    * GET /api/survey/high-risk
    * Obtener usuarios de alto riesgo
    * (con accidentes, comparendos, licencia vencida, alto kilometraje)
+   * 
+   * Protección: Token JWT requerido
    */
-  router.get('/high-risk', additionalInfoController.getHighRiskUsers);
+  router.get('/high-risk', 
+    verifyToken,
+    additionalInfoController.getHighRiskUsers
+  );
 
   /**
    * GET /api/survey/with-accidents
    * Obtener usuarios que tuvieron accidentes en los últimos 5 años
+   * 
+   * Protección: Token JWT requerido
    */
-  router.get('/with-accidents', additionalInfoController.getUsersWithAccidents);
+  router.get('/with-accidents', 
+    verifyToken,
+    additionalInfoController.getUsersWithAccidents
+  );
 
   /**
    * GET /api/survey/with-comparendos
    * Obtener usuarios con comparendos de tránsito
+   * 
+   * Protección: Token JWT requerido
    */
-  router.get('/with-comparendos', additionalInfoController.getUsersWithComparendos);
+  router.get('/with-comparendos', 
+    verifyToken,
+    additionalInfoController.getUsersWithComparendos
+  );
 
   /**
    * GET /api/survey/user/:idUsuario
@@ -86,9 +121,11 @@ export function createSurveyRoutes(additionalInfoController) {
    * Ejemplo: GET /api/survey/user/1234567890
    * 
    * Protecciones:
+   * - Token JWT requerido
    * - Validación del formato de cédula
    */
   router.get('/user/:cedula', 
+    verifyToken,
     validateGetSurveyByCedula,
     handleValidationErrors,
     additionalInfoController.getSurveyByUserId
@@ -98,15 +135,24 @@ export function createSurveyRoutes(additionalInfoController) {
    * GET /api/survey/:id
    * Obtener cuestionario por ID del registro
    * 
+   * Protección: Token JWT requerido
    * Ejemplo: GET /api/survey/5
    */
-  router.get('/:id', additionalInfoController.getSurveyById);
+  router.get('/:id', 
+    verifyToken,
+    additionalInfoController.getSurveyById
+  );
 
   /**
    * GET /api/survey
    * Listar todos los cuestionarios registrados
+   * 
+   * Protección: Token JWT requerido
    */
-  router.get('/', additionalInfoController.getAllSurveys);
+  router.get('/', 
+    verifyToken,
+    additionalInfoController.getAllSurveys
+  );
 
   // ==========================================
   // RUTAS DE MODIFICACIÓN
@@ -143,10 +189,12 @@ export function createSurveyRoutes(additionalInfoController) {
    * }
    * 
    * Protecciones:
+   * - Token JWT requerido (cualquier usuario autenticado)
    * - Rate limiting: Máximo 20 envíos por minuto
    * - Validación de datos obligatorios y formatos
    */
   router.post('/', 
+    verifyToken,
     writeLimiter,
     validateSurvey,
     handleValidationErrors,
@@ -167,9 +215,11 @@ export function createSurveyRoutes(additionalInfoController) {
    * }
    * 
    * Protecciones:
+   * - Token JWT requerido
    * - Rate limiting: Máximo 20 actualizaciones por minuto
    */
   router.put('/:id', 
+    verifyToken,
     writeLimiter,
     additionalInfoController.updateSurvey
   );
@@ -181,9 +231,11 @@ export function createSurveyRoutes(additionalInfoController) {
    * Ejemplo: DELETE /api/survey/5
    * 
    * Protecciones:
+   * - Token JWT requerido
    * - Rate limiting: Máximo 20 eliminaciones por minuto
    */
   router.delete('/:id', 
+    verifyToken,
     writeLimiter,
     additionalInfoController.deleteSurvey
   );

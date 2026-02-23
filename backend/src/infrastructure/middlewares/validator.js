@@ -174,6 +174,198 @@ const handleValidationErrors = (req, res, next) => {
   next();
 };
 
+// ==================== VALIDACIONES PARA VEHÍCULOS ====================
+
+const validateCreateVehicle = [
+  body('placa')
+    .notEmpty().withMessage('La placa es obligatoria')
+    .isString().withMessage('La placa debe ser texto')
+    .trim()
+    .isLength({ min: 6, max: 10 }).withMessage('La placa debe tener entre 6 y 10 caracteres')
+    .matches(/^[A-Z0-9-]+$/).withMessage('La placa solo puede contener letras mayúsculas, números y guiones'),
+  
+  body('modelo')
+    .optional()
+    .isString().withMessage('El modelo debe ser texto')
+    .trim()
+    .isLength({ max: 50 }).withMessage('El modelo no puede exceder 50 caracteres'),
+  
+  body('marca')
+    .optional()
+    .isString().withMessage('La marca debe ser texto')
+    .trim()
+    .isLength({ max: 50 }).withMessage('La marca no puede exceder 50 caracteres'),
+  
+  body('anio')
+    .optional()
+    .isInt({ min: 1900, max: new Date().getFullYear() + 1 }).withMessage(`El año debe estar entre 1900 y ${new Date().getFullYear() + 1}`),
+  
+  body('color')
+    .optional()
+    .isString().withMessage('El color debe ser texto')
+    .trim()
+    .isLength({ max: 30 }).withMessage('El color no puede exceder 30 caracteres'),
+  
+  body('tipo_combustible')
+    .optional()
+    .isString().withMessage('El tipo de combustible debe ser texto')
+    .trim()
+    .isLength({ max: 30 }).withMessage('El tipo de combustible no puede exceder 30 caracteres'),
+  
+  body('kilometraje_actual')
+    .optional()
+    .isInt({ min: 0 }).withMessage('El kilometraje debe ser un número positivo'),
+  
+  body('id_usuario')
+    .optional()
+    .isString().withMessage('El ID de usuario debe ser texto')
+    .matches(/^\d+$/).withMessage('El ID de usuario debe contener solo números'),
+  
+  body('soat')
+    .optional()
+    .matches(/^\d{4}-\d{2}-\d{2}$/).withMessage('Formato de fecha SOAT inválido (YYYY-MM-DD)'),
+  
+  body('tecno')
+    .optional()
+    .matches(/^\d{4}-\d{2}-\d{2}$/).withMessage('Formato de fecha tecnomecánica inválido (YYYY-MM-DD)')
+];
+
+const validateUpdateVehicle = [
+  body('modelo')
+    .optional()
+    .isString().withMessage('El modelo debe ser texto')
+    .trim()
+    .isLength({ max: 50 }).withMessage('El modelo no puede exceder 50 caracteres'),
+  
+  body('marca')
+    .optional()
+    .isString().withMessage('La marca debe ser texto')
+    .trim()
+    .isLength({ max: 50 }).withMessage('La marca no puede exceder 50 caracteres'),
+  
+  body('anio')
+    .optional()
+    .isInt({ min: 1900, max: new Date().getFullYear() + 1 }).withMessage(`El año debe estar entre 1900 y ${new Date().getFullYear() + 1}`),
+  
+  body('color')
+    .optional()
+    .isString().withMessage('El color debe ser texto')
+    .trim()
+    .isLength({ max: 30 }).withMessage('El color no puede exceder 30 caracteres'),
+  
+  body('tipo_combustible')
+    .optional()
+    .isString().withMessage('El tipo de combustible debe ser texto')
+    .trim()
+    .isLength({ max: 30 }).withMessage('El tipo de combustible no puede exceder 30 caracteres'),
+  
+  body('kilometraje_actual')
+    .optional()
+    .isInt({ min: 0 }).withMessage('El kilometraje debe ser un número positivo'),
+  
+  body('id_usuario')
+    .optional()
+    .isString().withMessage('El ID de usuario debe ser texto')
+    .matches(/^\d+$/).withMessage('El ID de usuario debe contener solo números'),
+  
+  body('soat')
+    .optional()
+    .matches(/^\d{4}-\d{2}-\d{2}$/).withMessage('Formato de fecha SOAT inválido (YYYY-MM-DD)'),
+  
+  body('tecno')
+    .optional()
+    .matches(/^\d{4}-\d{2}-\d{2}$/).withMessage('Formato de fecha tecnomecánica inválido (YYYY-MM-DD)')
+];
+
+const validateGetVehicleByPlaca = [
+  param('id')
+    .notEmpty().withMessage('La placa es obligatoria')
+    .isString().withMessage('La placa debe ser texto')
+    .matches(/^[A-Z0-9-]+$/i).withMessage('Placa inválida')
+];
+
+// ==================== VALIDACIONES PARA MANTENIMIENTOS ====================
+
+const validateCreateMaintenance = [
+  body('placa')
+    .notEmpty().withMessage('La placa del vehículo es obligatoria')
+    .isString().withMessage('La placa debe ser texto')
+    .trim()
+    .isLength({ min: 6, max: 10 }).withMessage('La placa debe tener entre 6 y 10 caracteres'),
+  
+  body('tipo')
+    .notEmpty().withMessage('El tipo de mantenimiento es obligatorio')
+    .isString().withMessage('El tipo debe ser texto')
+    .trim()
+    .isLength({ min: 3, max: 100 }).withMessage('El tipo debe tener entre 3 y 100 caracteres'),
+  
+  body('fechaRealizado')
+    .notEmpty().withMessage('La fecha de realización es obligatoria')
+    .matches(/^\d{4}-\d{2}-\d{2}$/).withMessage('Formato de fecha inválido (YYYY-MM-DD)'),
+  
+  body('fechaProxima')
+    .optional()
+    .matches(/^\d{4}-\d{2}-\d{2}$/).withMessage('Formato de fecha próxima inválido (YYYY-MM-DD)'),
+  
+  body('kilometraje')
+    .optional()
+    .isInt({ min: 0 }).withMessage('El kilometraje debe ser un número positivo'),
+  
+  body('costo')
+    .optional()
+    .isFloat({ min: 0 }).withMessage('El costo debe ser un número positivo'),
+  
+  body('descripcion')
+    .optional()
+    .isString().withMessage('La descripción debe ser texto')
+    .trim(),
+  
+  body('informacionAdicional')
+    .optional()
+    .isString().withMessage('La información adicional debe ser texto')
+    .trim()
+];
+
+const validateUpdateMaintenance = [
+  body('tipo')
+    .optional()
+    .isString().withMessage('El tipo debe ser texto')
+    .trim()
+    .isLength({ min: 3, max: 100 }).withMessage('El tipo debe tener entre 3 y 100 caracteres'),
+  
+  body('fechaRealizado')
+    .optional()
+    .matches(/^\d{4}-\d{2}-\d{2}$/).withMessage('Formato de fecha inválido (YYYY-MM-DD)'),
+  
+  body('fechaProxima')
+    .optional()
+    .matches(/^\d{4}-\d{2}-\d{2}$/).withMessage('Formato de fecha próxima inválido (YYYY-MM-DD)'),
+  
+  body('kilometraje')
+    .optional()
+    .isInt({ min: 0 }).withMessage('El kilometraje debe ser un número positivo'),
+  
+  body('costo')
+    .optional()
+    .isFloat({ min: 0 }).withMessage('El costo debe ser un número positivo'),
+  
+  body('descripcion')
+    .optional()
+    .isString().withMessage('La descripción debe ser texto')
+    .trim(),
+  
+  body('informacionAdicional')
+    .optional()
+    .isString().withMessage('La información adicional debe ser texto')
+    .trim()
+];
+
+const validateGetMaintenanceById = [
+  param('id')
+    .notEmpty().withMessage('El ID del mantenimiento es obligatorio')
+    .isInt({ min: 1 }).withMessage('El ID debe ser un número entero positivo')
+];
+
 // ==================== EXPORTS ====================
 
 export {
@@ -187,6 +379,16 @@ export {
   // Cuestionario
   validateSurvey,
   validateGetSurveyByCedula,
+  
+  // Vehículos
+  validateCreateVehicle,
+  validateUpdateVehicle,
+  validateGetVehicleByPlaca,
+  
+  // Mantenimientos
+  validateCreateMaintenance,
+  validateUpdateMaintenance,
+  validateGetMaintenanceById,
   
   // Handler de errores
   handleValidationErrors

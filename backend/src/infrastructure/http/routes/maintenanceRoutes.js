@@ -6,6 +6,14 @@
  */
 
 import { Router } from 'express';
+import {
+  validateCreateMaintenance,
+  validateUpdateMaintenance,
+  validateGetMaintenanceById,
+  handleValidationErrors
+} from '../../middlewares/validator.js';
+import { writeLimiter } from '../../middlewares/rateLimiter.js';
+import { verifyToken, requireSupervisor } from '../../middlewares/auth.middleware.js';
 
 /**
  * Factory function para crear las rutas de mantenimientos
@@ -16,7 +24,7 @@ export function createMaintenanceRoutes(maintenanceController) {
   const router = Router();
 
   // ==========================================
-  // RUTAS DE CONSULTA
+  // RUTAS DE CONSULTA (Requieren autenticación)
   // ==========================================
 
   /**
@@ -24,14 +32,19 @@ export function createMaintenanceRoutes(maintenanceController) {
    * Obtener estadísticas de mantenimientos (costos, conteo por tipo)
    * Query params opcionales: placa, tipo, fechaInicio, fechaFin
    * 
+   * Protección: Token JWT requerido
    * Ejemplo: GET /api/maintenances/stats?placa=ABC-123
    */
-  router.get('/stats', maintenanceController.getMaintenanceStats);
+  router.get('/stats', 
+    verifyToken,
+    maintenanceController.getMaintenanceStats
+  );
 
   /**
    * GET /api/maintenances/alerts
    * Obtener alertas de mantenimientos (vencidos y próximos)
    * 
+   * Protección: Token JWT requerido
    * Respuesta:
    * {
    *   vencidos: [...],
@@ -40,43 +53,66 @@ export function createMaintenanceRoutes(maintenanceController) {
    *   totalProximos: 3
    * }
    */
-  router.get('/alerts', maintenanceController.getMaintenanceAlerts);
+  router.get('/alerts', 
+    verifyToken,
+    maintenanceController.getMaintenanceAlerts
+  );
 
   /**
    * GET /api/maintenances/upcoming
    * Obtener mantenimientos próximos a vencer
    * Query params: dias (default: 30)
    * 
+   * Protección: Token JWT requerido
    * Ejemplo: GET /api/maintenances/upcoming?dias=15
    */
-  router.get('/upcoming', maintenanceController.getUpcomingMaintenances);
+  router.get('/upcoming', 
+    verifyToken,
+    maintenanceController.getUpcomingMaintenances
+  );
 
   /**
    * GET /api/maintenances/overdue
    * Obtener mantenimientos vencidos
+   * 
+   * Protección: Token JWT requerido
    */
-  router.get('/overdue', maintenanceController.getOverdueMaintenances);
+  router.get('/overdue', 
+    verifyToken,
+    maintenanceController.getOverdueMaintenances
+  );
 
   /**
    * GET /api/maintenances/vehicle/:placa/last
    * Obtener el último mantenimiento de un vehículo específico
    * 
+   * Protección: Token JWT requerido
    * Ejemplo: GET /api/maintenances/vehicle/ABC-123/last
    */
-  router.get('/vehicle/:placa/last', maintenanceController.getLastMaintenanceByVehicle);
+  router.get('/vehicle/:placa/last', 
+    verifyToken,
+    maintenanceController.getLastMaintenanceByVehicle
+  );
 
   /**
    * GET /api/maintenances/:id
    * Obtener un mantenimiento específico por ID
    * 
+   * Protección: Token JWT requerido + validación de ID
    * Ejemplo: GET /api/maintenances/5
    */
-  router.get('/:id', maintenanceController.getMaintenanceById);
+  router.get('/:id', 
+    verifyToken,
+    validateGetMaintenanceById,
+    handleValidationErrors,
+    maintenanceController.getMaintenanceById
+  );
 
   /**
    * GET /api/maintenances
    * Listar todos los mantenimientos con filtros opcionales
    * 
+   * Protección: Token JWT requerido
    * Query params:
    * - placa: Filtrar por placa de vehículo
    * - tipo: Filtrar por tipo de mantenimiento
@@ -89,15 +125,24 @@ export function createMaintenanceRoutes(maintenanceController) {
    * GET /api/maintenances?tipo=Cambio%20de%20aceite
    * GET /api/maintenances?year=2026&month=2
    */
-  router.get('/', maintenanceController.getAllMaintenances);
+  router.get('/', 
+    verifyToken,
+    maintenanceController.getAllMaintenances
+  );
 
   // ==========================================
-  // RUTAS DE MODIFICACIÓN
+  // RUTAS DE MODIFICACIÓN (Requieren Supervisor+)
   // ==========================================
 
   /**
    * POST /api/maintenances
    * Crear un nuevo mantenimiento
+   * 
+   * Protecciones:
+   * - Token JWT requerido
+   * - Rol Supervisor o Administrador
+   * - Rate limiting: 20 operaciones por minuto
+   * - Validación de datos obligatorios
    * 
    * Body requerido:
    * {
@@ -115,11 +160,24 @@ export function createMaintenanceRoutes(maintenanceController) {
    *   "informacionAdicional": "Se revisó filtro de aire"
    * }
    */
-  router.post('/', maintenanceController.createMaintenance);
+  router.post('/', 
+    verifyToken,
+    requireSupervisor,
+    writeLimiter,
+    validateCreateMaintenance,
+    handleValidationErrors,
+    maintenanceController.createMaintenance
+  );
 
   /**
    * PUT /api/maintenances/:id
    * Actualizar un mantenimiento existente
+   * 
+   * Protecciones:
+   * - Token JWT requerido
+   * - Rol Supervisor o Administrador
+   * - Rate limiting: 20 operaciones por minuto
+   * - Validación de datos
    * 
    * Body: Cualquier campo del mantenimiento que se desee actualizar
    * 
@@ -129,15 +187,32 @@ export function createMaintenanceRoutes(maintenanceController) {
    *   "descripcion": "Cambio de aceite y filtros"
    * }
    */
-  router.put('/:id', maintenanceController.updateMaintenance);
+  router.put('/:id', 
+    verifyToken,
+    requireSupervisor,
+    writeLimiter,
+    validateUpdateMaintenance,
+    handleValidationErrors,
+    maintenanceController.updateMaintenance
+  );
 
   /**
    * DELETE /api/maintenances/:id
    * Eliminar un mantenimiento
    * 
+   * Protecciones:
+   * - Token JWT requerido
+   * - Rol Supervisor o Administrador
+   * - Rate limiting: 20 operaciones por minuto
+   * 
    * Ejemplo: DELETE /api/maintenances/5
    */
-  router.delete('/:id', maintenanceController.deleteMaintenance);
+  router.delete('/:id', 
+    verifyToken,
+    requireSupervisor,
+    writeLimiter,
+    maintenanceController.deleteMaintenance
+  );
 
   return router;
 }

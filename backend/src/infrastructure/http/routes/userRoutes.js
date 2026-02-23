@@ -12,6 +12,7 @@ import {
   handleValidationErrors 
 } from '../../middlewares/validator.js';
 import { loginLimiter, surveyLoginLimiter, writeLimiter } from '../../middlewares/rateLimiter.js';
+import { verifyToken, requireAdmin } from '../../middlewares/auth.middleware.js';
 
 const createUserRoutes = (userController) => {
   const router = express.Router();
@@ -25,33 +26,55 @@ const createUserRoutes = (userController) => {
    * Obtiene estadísticas de usuarios por rol
    * IMPORTANTE: Esta ruta debe ir ANTES de /api/users/:cedula
    * para evitar que 'stats' sea interpretada como una cédula
+   * 
+   * Protección: Token JWT requerido
    */
-  router.get('/stats', (req, res) => userController.getUserStats(req, res));
+  router.get('/stats', 
+    verifyToken,
+    (req, res) => userController.getUserStats(req, res)
+  );
 
   /**
    * GET /api/users/exists/:cedula
    * Verifica si existe un usuario con una cédula
+   * 
+   * Protección: Token JWT requerido
    */
-  router.get('/exists/:cedula', (req, res) => userController.checkUserExists(req, res));
+  router.get('/exists/:cedula', 
+    verifyToken,
+    (req, res) => userController.checkUserExists(req, res)
+  );
 
   /**
    * GET /api/users/role/:role
    * Obtiene usuarios por rol específico
    * Ejemplo: /api/users/role/conductor
    * Valores válidos: conductor, supervisor, administrador
+   * 
+   * Protección: Token JWT requerido
    */
-  router.get('/role/:role', (req, res) => userController.getUsersByRole(req, res));
+  router.get('/role/:role', 
+    verifyToken,
+    (req, res) => userController.getUsersByRole(req, res)
+  );
 
   /**
    * GET /api/users/:cedula
    * Obtiene un usuario específico por cédula
    * Ejemplo: /api/users/1001234567
+   * 
+   * Protección: Token JWT requerido
    */
-  router.get('/:cedula', (req, res) => userController.getUserByCedula(req, res));
+  router.get('/:cedula', 
+    verifyToken,
+    (req, res) => userController.getUserByCedula(req, res)
+  );
 
   /**
    * GET /api/users
    * Obtiene todos los usuarios
+   * 
+   * Protección: Token JWT requerido
    * 
    * Query params opcionales:
    * - role: Filtrar por rol (conductor, supervisor, administrador)
@@ -64,7 +87,10 @@ const createUserRoutes = (userController) => {
    * - /api/users?area=Operaciones
    * - /api/users?search=Carlos
    */
-  router.get('/', (req, res) => userController.getAllUsers(req, res));
+  router.get('/', 
+    verifyToken,
+    (req, res) => userController.getAllUsers(req, res)
+  );
 
   // ======================
   // RUTAS DE MODIFICACIÓN
@@ -73,6 +99,12 @@ const createUserRoutes = (userController) => {
   /**
    * POST /api/users
    * Crea un nuevo usuario
+   * 
+   * Protecciones:
+   * - Token JWT requerido
+   * - Rol Administrador (solo admins pueden crear usuarios)
+   * - Rate limiting: 20 operaciones por minuto
+   * - Validación de datos obligatorios
    * 
    * Body esperado:
    * {
@@ -85,6 +117,8 @@ const createUserRoutes = (userController) => {
    * }
    */
   router.post('/', 
+    verifyToken,
+    requireAdmin,
     writeLimiter,
     validateCreateUser, 
     handleValidationErrors,
@@ -95,31 +129,45 @@ const createUserRoutes = (userController) => {
    * PUT /api/users/:cedula
    * Actualiza un usuario existente
    * 
+   * Protecciones:
+   * - Token JWT requerido
+   * - Rol Administrador (solo admins pueden modificar usuarios)
+   * - Rate limiting: 20 operaciones por minuto
+   * 
    * Body puede incluir cualquiera de estos campos:
    * {
    *   "name": "Nuevo nombre",
    *   "id_rol": 2,
-   *   "area": "Nueva áre
-    writeLimiter,
-    (req, res) => userController.updateUser(req, res)
-  
+   *   "area": "Nueva área",
    *   "phone": "3009876543",
    *   "password": "nuevaContraseña" (opcional)
    * }
    */
-  router.put('/:cedula', (req, res) => userController.updateUser(req, res));
+  router.put('/:cedula', 
+    verifyToken,
+    requireAdmin,
+    writeLimiter,
+    (req, res) => userController.updateUser(req, res)
+  );
 
   /**
    * DELETE /api/users/:cedula
    * Elimina un usuario
    * Ejemplo: DELETE /api/users/1001234567
    * 
-    writeLimiter,
-    (req, res) => userController.deleteUser(req, res)
-  
+   * Protecciones:
+   * - Token JWT requerido
+   * - Rol Administrador (solo admins pueden eliminar usuarios)
+   * - Rate limiting: 20 operaciones por minuto
+   * 
    * NOTA: No se puede eliminar si el usuario tiene vehículos asignados
    */
-  router.delete('/:cedula', (req, res) => userController.deleteUser(req, res));
+  router.delete('/:cedula', 
+    verifyToken,
+    requireAdmin,
+    writeLimiter,
+    (req, res) => userController.deleteUser(req, res)
+  );
 
   // ======================
   // AUTENTICACIÓN (futuro)
