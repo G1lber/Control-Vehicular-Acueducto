@@ -1,12 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useAlert } from '../context/AlertContext';
 
-export const SurveyTalentoHumano = ({ onNavigate }) => {
+const API_URL = 'http://localhost:3000/api';
+
+export const SurveyTalentoHumano = ({ onNavigate, currentUser }) => {
   const { success, error, warning, info } = useAlert();
+  const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState({
     consentimiento: '',
     identificacion: '',
+    nombre: '',
     ciudad: '',
     sitio_labor: '',
     area: '',
@@ -56,6 +60,87 @@ export const SurveyTalentoHumano = ({ onNavigate }) => {
     causa_comparendo_otra: ''
   });
 
+  // Cargar datos del usuario y encuesta previa al montar el componente
+  useEffect(() => {
+    const loadUserDataAndSurvey = async () => {
+      setIsLoading(true);
+      
+      try {
+        // Autocompletar datos básicos del usuario logueado
+        if (currentUser) {
+          setFormData(prev => ({
+            ...prev,
+            identificacion: currentUser.cedula || '',
+            nombre: currentUser.nombre || currentUser.name || '',
+            area: currentUser.area || ''
+          }));
+
+          // Intentar cargar encuesta previa del usuario
+          try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_URL}/survey/user/${currentUser.cedula}`, {
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+
+            if (response.ok) {
+              const result = await response.json();
+              if (result.success && result.data) {
+                const survey = result.data;
+                
+                // Mapear datos de la encuesta a formData
+                setFormData(prev => ({
+                  ...prev,
+                  consentimiento: survey.consentimiento || '',
+                  ciudad: survey.ciudad || '',
+                  sitio_labor: survey.sitioLabor || '',
+                  cargo: survey.cargo || '',
+                  edad: survey.edad?.toString() || '',
+                  tipo_contratacion: survey.tipoContratacion || '',
+                  genero: survey.genero || '',
+                  grupo: survey.grupo || '',
+                  medio_transporte_desplazamiento: survey.medioTransporteDesplazamiento || '',
+                  clase_vehiculo: survey.claseVehiculo || '',
+                  licencia: survey.licencia || '',
+                  vigencia_licencia_dia: survey.vigenciaLicencia ? new Date(survey.vigenciaLicencia).getDate().toString() : '',
+                  vigencia_licencia_mes: survey.vigenciaLicencia ? (new Date(survey.vigenciaLicencia).getMonth() + 1).toString() : '',
+                  vigencia_licencia_anio: survey.vigenciaLicencia ? new Date(survey.vigenciaLicencia).getFullYear().toString() : '',
+                  categoria_licencia: survey.categoriaLicencia || '',
+                  experiencia: survey.experiencia?.toString() || '',
+                  accidente_5_anios: survey.accidente5Anios || '',
+                  accidente_laboral: survey.accidenteLaboral || '',
+                  cantidad_accidentes: survey.cantidadAccidentes?.toString() || '',
+                  vias_publicas: survey.viasPublicas || '',
+                  medio_desplazamiento: survey.medioDesplazamiento || [],
+                  frecuencia_vehiculo_propio: survey.frecuenciaVehiculoPropio || '',
+                  usa_vehiculo_empresa: survey.usaVehiculoEmpresa || '',
+                  planificacion: survey.planificacion || '',
+                  km_mensuales: survey.kmMensuales?.toString() || '',
+                  tiene_comparendos: survey.tieneComparendos || '',
+                  riesgos: survey.riesgos || [],
+                  causas: survey.causas || [],
+                  causas_comparendo: survey.causasComparendo || []
+                }));
+
+                info('Tus datos previos han sido cargados. Puedes actualizarlos si es necesario.');
+              }
+            }
+          } catch (err) {
+            console.log('No hay encuesta previa o error al cargar:', err.message);
+            // No mostrar error, es normal que no haya datos previos
+          }
+        }
+      } catch (err) {
+        console.error('Error al cargar datos:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadUserDataAndSurvey();
+  }, [currentUser]);
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     
@@ -88,7 +173,7 @@ export const SurveyTalentoHumano = ({ onNavigate }) => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Validar que ha dado consentimiento
@@ -98,23 +183,76 @@ export const SurveyTalentoHumano = ({ onNavigate }) => {
     }
 
     // Validar campos obligatorios básicos
-    if (!formData.identificacion || !formData.ciudad) {
-      warning('Por favor complete los campos obligatorios: Número de Documento y Ciudad');
+    if (!formData.identificacion || !formData.nombre || !formData.ciudad) {
+      warning('Por favor complete los campos obligatorios: Documento, Nombre y Ciudad');
       return;
     }
 
-    console.log('Datos del cuestionario:', formData);
-    
-    // Aquí se enviará al backend cuando esté disponible
-    success('¡Cuestionario enviado exitosamente! Gracias por su participación', 6000);
-    
-    // Opcional: limpiar formulario después de un delay
-    setTimeout(() => {
-      info('Redirigiendo al inicio...');
+    try {
+      // Preparar datos para enviar al backend
+      const surveyData = {
+        idUsuario: formData.identificacion,
+        consentimiento: formData.consentimiento,
+        ciudad: formData.ciudad,
+        sitioLabor: formData.sitio_labor,
+        cargo: formData.cargo,
+        edad: formData.edad ? parseInt(formData.edad) : null,
+        tipoContratacion: formData.tipo_contratacion,
+        genero: formData.genero,
+        grupo: formData.grupo,
+        medioTransporteDesplazamiento: formData.medio_transporte_desplazamiento,
+        claseVehiculo: formData.clase_vehiculo,
+        licencia: formData.licencia,
+        vigenciaLicencia: formData.vigencia_licencia_anio && formData.vigencia_licencia_mes && formData.vigencia_licencia_dia
+          ? `${formData.vigencia_licencia_anio}-${formData.vigencia_licencia_mes.padStart(2, '0')}-${formData.vigencia_licencia_dia.padStart(2, '0')}`
+          : null,
+        categoriaLicencia: formData.categoria_licencia,
+        experiencia: formData.experiencia ? parseInt(formData.experiencia) : null,
+        accidente5Anios: formData.accidente_5_anios,
+        accidenteLaboral: formData.accidente_laboral,
+        cantidadAccidentes: formData.cantidad_accidentes ? parseInt(formData.cantidad_accidentes) : null,
+        viasPublicas: formData.vias_publicas,
+        frecuenciaVehiculoPropio: formData.frecuencia_vehiculo_propio,
+        usaVehiculoEmpresa: formData.usa_vehiculo_empresa,
+        planificacion: formData.planificacion,
+        kmMensuales: formData.km_mensuales ? parseInt(formData.km_mensuales) : null,
+        tieneComparendos: formData.tiene_comparendos,
+        medioDesplazamiento: formData.medio_desplazamiento || [],
+        riesgos: formData.riesgos || [],
+        causas: formData.causas || [],
+        causasComparendo: formData.causas_comparendo || []
+      };
+
+      // Enviar al backend
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/survey`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(surveyData)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Error al enviar el cuestionario');
+      }
+
+      success('¡Cuestionario enviado exitosamente! Gracias por su participación', 6000);
+      
+      // Redirigir después de un delay
       setTimeout(() => {
-        onNavigate && onNavigate('home');
-      }, 1500);
-    }, 2000);
+        info('Redirigiendo...');
+        setTimeout(() => {
+          onNavigate && onNavigate('home');
+        }, 1500);
+      }, 2000);
+    } catch (err) {
+      console.error('Error al enviar cuestionario:', err);
+      error(err.message || 'Error al enviar el cuestionario. Por favor intenta nuevamente.');
+    }
   };
 
   return (
@@ -127,10 +265,36 @@ export const SurveyTalentoHumano = ({ onNavigate }) => {
         Volver al Inicio
       </button>
 
+      {/* Indicador de carga */}
+      {isLoading && (
+        <div className="bg-white rounded-lg shadow-lg p-8 text-center">
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <svg className="animate-spin h-12 w-12 text-primary" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+            <p className="text-gray-600 font-semibold">Cargando tus datos...</p>
+          </div>
+        </div>
+      )}
+
+      {!isLoading && (
       <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 lg:p-8">
         <h2 className="text-3xl font-bold text-primary mb-6 text-center">
           ENCUESTA DE SEGURIDAD VIAL
         </h2>
+
+        {/* Mostrar información del usuario */}
+        {currentUser && (
+          <div className="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded">
+            <p className="text-green-800 font-semibold">
+                Encuesta para: <span className="text-green-900">{currentUser.nombre || currentUser.name}</span>
+            </p>
+            <p className="text-green-700 text-sm mt-1">
+              Documento: {currentUser.cedula} • Área: {currentUser.area}
+            </p>
+          </div>
+        )}
 
         <div className="mb-6 bg-blue-50 border-l-4 border-primary p-4 rounded">
           <p className="text-primary font-semibold text-sm">
@@ -205,8 +369,26 @@ export const SurveyTalentoHumano = ({ onNavigate }) => {
                   value={formData.identificacion}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  readOnly
+                  className="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-50"
                 />
+                <p className="text-xs text-gray-500 mt-1">Campo autocompletado</p>
+              </div>
+
+              <div>
+                <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">
+                  Nombre Completo <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="nombre"
+                  value={formData.nombre}
+                  onChange={handleInputChange}
+                  required
+                  readOnly
+                  className="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-50"
+                />
+                <p className="text-xs text-gray-500 mt-1">Campo autocompletado</p>
               </div>
 
               <div>
@@ -1360,6 +1542,7 @@ export const SurveyTalentoHumano = ({ onNavigate }) => {
           )}
         </form>
       </div>
+      )}
     </div>
   );
 };
