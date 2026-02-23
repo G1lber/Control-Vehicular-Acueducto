@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useAlert } from '../context/AlertContext';
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = import.meta.env.VITE_API_URL;
 
 export const SurveyTalentoHumano = ({ onNavigate, currentUser }) => {
   const { success, error, warning, info } = useAlert();

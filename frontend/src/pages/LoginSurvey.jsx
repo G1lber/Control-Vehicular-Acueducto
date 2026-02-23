@@ -4,7 +4,7 @@ import { IdentificationIcon, ClipboardDocumentCheckIcon } from '@heroicons/react
 import logo from '../assets/logo_acueducto_individual.png';
 import { useAlert } from '../context/AlertContext';
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const LoginSurvey = ({ onLogin }) => {
   const [cedula, setCedula] = useState('');
