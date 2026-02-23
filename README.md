@@ -37,10 +37,12 @@ Control-Vehicular-Acueducto/
 - **Diseño Responsive** - Mobile, tablet, desktop y 4K
 
 ### 🔜 Backend (En Desarrollo)
-- Express.js con Arquitectura Hexagonal
-- API RESTful
-- Autenticación JWT
-- MySQL 8 con InnoDB
+- ✅ Express.js con Arquitectura Hexagonal
+- ✅ API RESTful para vehículos
+- ✅ MySQL 8 con pool de conexiones
+- ✅ Estructura Domain-Application-Infrastructure
+- ⏳ Autenticación JWT (pendiente)
+- ⏳ APIs para usuarios, mantenimientos, reportes (pendiente)
 
 ## 📦 Base de Datos
 
@@ -88,13 +90,25 @@ mysql -u root -p
 source db.sql
 ```
 
-### Backend (Próximamente)
+### Backend
 
 ```bash
+# Navegar a la carpeta backend
 cd backend
+
+# Instalar dependencias
 npm install
+
+# Configurar variables de entorno
+# Editar backend/.env con tus credenciales de MySQL
+
+# Iniciar servidor de desarrollo
 npm run dev
 ```
+
+🚀 API disponible en: http://localhost:3000
+
+Ver documentación completa en [backend/README.md](backend/README.md)
 
 ## 🛠️ Tecnologías
 
@@ -124,9 +138,11 @@ npm run dev
 |--------|--------|----------|
 | Frontend | ✅ Completado | 100% |
 | Base de Datos | ✅ Completado | 100% |
-| Backend | 🔄 En desarrollo | 0% |
-| Autenticación | ⏳ Pendiente | 0% |
-| Integración | ⏳ Pendiente | 0% |
+| Backend - Vehículos | ✅ Completado | 100% |
+| Backend - Usuarios | ⏳ Pendiente | 0% |
+| Backend - Mantenimientos | ⏳ Pendiente | 0% |
+| Autenticación JWT | ⏳ Pendiente | 0% |
+| Integración Frontend-Backend | ⏳ Pendiente | 0% |
 
 ## 📁 Estructura del Proyecto
 
