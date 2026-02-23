@@ -19,6 +19,11 @@ import UserUseCases from './application/use-cases/UserUseCases.js';
 import UserController from './infrastructure/http/controllers/UserController.js';
 import createUserRoutes from './infrastructure/http/routes/userRoutes.js';
 
+import MySQLMaintenanceRepository from './infrastructure/database/MySQLMaintenanceRepository.js';
+import MaintenanceUseCases from './application/use-cases/MaintenanceUseCases.js';
+import MaintenanceController from './infrastructure/http/controllers/MaintenanceController.js';
+import { createMaintenanceRoutes } from './infrastructure/http/routes/maintenanceRoutes.js';
+
 // Configuración
 dotenv.config();
 const app = express();
@@ -63,11 +68,19 @@ const userUseCases = new UserUseCases(userRepository);
 const userController = new UserController(userUseCases);
 const userRouter = createUserRoutes(userController);
 
+// === MAINTENANCES API ===
+// Patrón de inyección de dependencias para mantenimientos
+const maintenanceRepository = new MySQLMaintenanceRepository();
+const maintenanceUseCases = new MaintenanceUseCases(maintenanceRepository);
+const maintenanceController = new MaintenanceController(maintenanceUseCases);
+const maintenanceRouter = createMaintenanceRoutes(maintenanceController);
+
 // =====================================================
 // RUTAS DE LA API
 // =====================================================
 app.use('/api/vehicles', vehicleRouter);
 app.use('/api/users', userRouter);
+app.use('/api/maintenances', maintenanceRouter);
 
 // Ruta de prueba de salud
 app.get('/api/health', (req, res) => {
@@ -145,6 +158,14 @@ const startServer = async () => {
       console.log(`   POST   http://localhost:${PORT}/api/users`);
       console.log(`   PUT    http://localhost:${PORT}/api/users/:cedula`);
       console.log(`   DELETE http://localhost:${PORT}/api/users/:cedula`);
+      console.log('\n🔧 Mantenimientos:');
+      console.log(`   GET    http://localhost:${PORT}/api/maintenances`);
+      console.log(`   GET    http://localhost:${PORT}/api/maintenances/stats`);
+      console.log(`   GET    http://localhost:${PORT}/api/maintenances/alerts`);
+      console.log(`   GET    http://localhost:${PORT}/api/maintenances/:id`);
+      console.log(`   POST   http://localhost:${PORT}/api/maintenances`);
+      console.log(`   PUT    http://localhost:${PORT}/api/maintenances/:id`);
+      console.log(`   DELETE http://localhost:${PORT}/api/maintenances/:id`);
       console.log('\n' + '='.repeat(50) + '\n');
     });
 

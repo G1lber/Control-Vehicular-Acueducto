@@ -4,6 +4,7 @@
 - ✅ Arquitectura hexagonal implementada
 - ✅ API de vehículos completa (CRUD + filtros + stats)
 - ✅ API de usuarios completa (CRUD + filtros + stats + auth)
+- ✅ API de mantenimientos completa (CRUD + filtros + stats + alertas)
 - ✅ Conexión a MySQL funcionando
 - ✅ Datos de prueba disponibles
 - ✅ Documentación completa
@@ -37,23 +38,36 @@
 - ✅ Manejo de errores específicos
 - ✅ 100% probado y funcional
 
-### 2️⃣ API de Mantenimientos (Alta Prioridad)
-- [ ] Crear `domain/entities/Maintenance.js`
-- [ ] Crear `domain/repositories/MaintenanceRepository.js`
-- [ ] Crear `infrastructure/database/MySQLMaintenanceRepository.js`
-- [ ] Crear `application/use-cases/MaintenanceUseCases.js`
-- [ ] Crear `infrastructure/http/controllers/MaintenanceController.js`
-- [ ] Crear `infrastructure/http/routes/maintenanceRoutes.js`
-- [ ] Conectar en `server.js`
-- [ ] **Funcionalidades:**
-  - GET /api/maintenances - Listar todos
-  - GET /api/maintenances/vehicle/:placa - Por vehículo
-  - GET /api/maintenances/type/:type - Por tipo
-  - GET /api/maintenances/date?month=X&year=Y - Filtrar por fecha
-  - POST /api/maintenances - Registrar nuevo
-  - PUT /api/maintenances/:id - Actualizar
-  - DELETE /api/maintenances/:id - Eliminar
-  - GET /api/maintenances/stats - Estadísticas de costos
+### 2️⃣ API de Mantenimientos (Alta Prioridad) ✅ COMPLETADA
+- ✅ Crear `domain/entities/Maintenance.js`
+- ✅ Crear `domain/repositories/MaintenanceRepository.js`
+- ✅ Crear `infrastructure/database/MySQLMaintenanceRepository.js`
+- ✅ Crear `application/use-cases/MaintenanceUseCases.js`
+- ✅ Crear `infrastructure/http/controllers/MaintenanceController.js`
+- ✅ Crear `infrastructure/http/routes/maintenanceRoutes.js`
+- ✅ Conectar en `server.js`
+- ✅ **Funcionalidades:**
+  - ✅ GET /api/maintenances - Listar todos (con filtros: placa, tipo, year, month)
+  - ✅ GET /api/maintenances/:id - Por ID
+  - ✅ GET /api/maintenances/vehicle/:placa/last - Último del vehículo
+  - ✅ GET /api/maintenances/upcoming - Próximos a vencer
+  - ✅ GET /api/maintenances/overdue - Vencidos
+  - ✅ GET /api/maintenances/alerts - Alertas (vencidos + próximos)
+  - ✅ POST /api/maintenances - Registrar nuevo
+  - ✅ PUT /api/maintenances/:id - Actualizar
+  - ✅ DELETE /api/maintenances/:id - Eliminar
+  - ✅ GET /api/maintenances/stats - Estadísticas de costos y conteo por tipo
+
+**✅ Características implementadas:**
+- ✅ Validación completa de fechas (no futuras, próxima posterior a realizada)
+- ✅ Cálculo automático de días transcurridos y días hasta próximo
+- ✅ Estados automáticos: vencido, próximo, al_dia, sin_fecha
+- ✅ Filtros avanzados por placa, tipo, año y mes
+- ✅ Estadísticas de costos (total, promedio, mínimo, máximo)
+- ✅ Conteo por tipo de mantenimiento
+- ✅ Sistema de alertas para mantenimientos críticos
+- ✅ Foreign key constraint validado
+- ✅ 100% probado y funcional
 
 ### 3️⃣ API de Información Adicional (Cuestionario PESV)
 - [ ] Crear `domain/entities/AdditionalInfo.js`
@@ -146,8 +160,8 @@
 ### Semana 1 - Fundamentos
 1. ✅ Arquitectura base (completado)
 2. ✅ API de vehículos (completado)
-3. API de usuarios
-4. API de mantenimientos
+3. ✅ API de usuarios (completado)
+4. ✅ API de mantenimientos (completado)
 
 ### Semana 2 - Autenticación
 1. Sistema de autenticación JWT
