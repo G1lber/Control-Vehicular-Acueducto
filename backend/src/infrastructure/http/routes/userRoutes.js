@@ -119,6 +119,18 @@ const createUserRoutes = (userController) => {
    */
   router.post('/auth/login', (req, res) => userController.login(req, res));
 
+  /**
+   * POST /api/users/auth/login-survey
+   * Login simplificado para acceder al cuestionario
+   * Solo requiere cédula (para todos los usuarios, especialmente conductores)
+   * 
+   * Body:
+   * {
+   *   "cedula": "1001234567"
+   * }
+   */
+  router.post('/auth/login-survey', (req, res) => userController.loginSurvey(req, res));
+
   return router;
 };
 

@@ -24,6 +24,11 @@ import MaintenanceUseCases from './application/use-cases/MaintenanceUseCases.js'
 import MaintenanceController from './infrastructure/http/controllers/MaintenanceController.js';
 import { createMaintenanceRoutes } from './infrastructure/http/routes/maintenanceRoutes.js';
 
+import MySQLAdditionalInfoRepository from './infrastructure/database/MySQLAdditionalInfoRepository.js';
+import AdditionalInfoUseCases from './application/use-cases/AdditionalInfoUseCases.js';
+import AdditionalInfoController from './infrastructure/http/controllers/AdditionalInfoController.js';
+import { createSurveyRoutes } from './infrastructure/http/routes/surveyRoutes.js';
+
 // Configuración
 dotenv.config();
 const app = express();
@@ -75,12 +80,20 @@ const maintenanceUseCases = new MaintenanceUseCases(maintenanceRepository);
 const maintenanceController = new MaintenanceController(maintenanceUseCases);
 const maintenanceRouter = createMaintenanceRoutes(maintenanceController);
 
+// === SURVEY API (Cuestionario PESV) ===
+// Patrón de inyección de dependencias para información adicional
+const surveyRepository = new MySQLAdditionalInfoRepository();
+const surveyUseCases = new AdditionalInfoUseCases(surveyRepository);
+const surveyController = new AdditionalInfoController(surveyUseCases);
+const surveyRouter = createSurveyRoutes(surveyController);
+
 // =====================================================
 // RUTAS DE LA API
 // =====================================================
 app.use('/api/vehicles', vehicleRouter);
 app.use('/api/users', userRouter);
 app.use('/api/maintenances', maintenanceRouter);
+app.use('/api/survey', surveyRouter);
 
 // Ruta de prueba de salud
 app.get('/api/health', (req, res) => {
@@ -166,6 +179,14 @@ const startServer = async () => {
       console.log(`   POST   http://localhost:${PORT}/api/maintenances`);
       console.log(`   PUT    http://localhost:${PORT}/api/maintenances/:id`);
       console.log(`   DELETE http://localhost:${PORT}/api/maintenances/:id`);
+      console.log('\n📋 Cuestionario PESV:');
+      console.log(`   GET    http://localhost:${PORT}/api/survey`);
+      console.log(`   GET    http://localhost:${PORT}/api/survey/stats`);
+      console.log(`   GET    http://localhost:${PORT}/api/survey/alerts`);
+      console.log(`   GET    http://localhost:${PORT}/api/survey/user/:cedula`);
+      console.log(`   POST   http://localhost:${PORT}/api/survey`);
+      console.log(`   PUT    http://localhost:${PORT}/api/survey/:id`);
+      console.log(`   DELETE http://localhost:${PORT}/api/survey/:id`);
       console.log('\n' + '='.repeat(50) + '\n');
     });
 

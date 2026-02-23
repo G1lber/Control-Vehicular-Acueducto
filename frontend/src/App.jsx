@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import Layout from './components/Layout'
 import Home from './pages/Home'
 import Login from './pages/Login'
+import LoginSurvey from './pages/LoginSurvey'
 import VehicleList from './pages/VehicleList'
 import Reports from './pages/Reports'
 import Users from './pages/Users'
@@ -13,23 +14,76 @@ import { useAlert } from './context/AlertContext'
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [accessType, setAccessType] = useState(null); // 'full' o 'survey_only'
+  const [loginMode, setLoginMode] = useState('main'); // 'main' o 'survey'
   const [currentPage, setCurrentPage] = useState('home');
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const { success, error, info } = useAlert();
 
-  const handleLogin = () => {
+  // Verificar si hay sesión al cargar
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    const savedAccessType = localStorage.getItem('access_type') || 'full';
+
+    if (token && userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        setCurrentUser(user);
+        setAccessType(savedAccessType);
+        setIsAuthenticated(true);
+        
+        // Si es acceso solo al cuestionario, ir directo allí
+        if (savedAccessType === 'survey_only') {
+          setCurrentPage('surveyTalentoHumano');
+        }
+      } catch (err) {
+        console.error('Error al restaurar sesión:', err);
+        localStorage.clear();
+      }
+    }
+  }, []);
+
+  // Detectar cambio de ruta para mostrar el login correcto
+  useEffect(() => {
+    const path = window.location.pathname;
+    if (path === '/survey-login') {
+      setLoginMode('survey');
+    } else {
+      setLoginMode('main');
+    }
+  }, []);
+
+  const handleLogin = (user, access = 'full') => {
     setIsAuthenticated(true);
-    setCurrentPage('home');
-    success('Bienvenido al Sistema de Control Vehicular');
+    setCurrentUser(user);
+    setAccessType(access);
+    
+    // Si es acceso solo al cuestionario, ir directo allí
+    if (access === 'survey_only') {
+      setCurrentPage('surveyTalentoHumano');
+    } else {
+      setCurrentPage('home');
+    }
   };
 
   const handleLogout = () => {
+    localStorage.clear();
     setIsAuthenticated(false);
+    setCurrentUser(null);
+    setAccessType(null);
     setCurrentPage('home');
     info('Sesión cerrada correctamente');
   };
 
   const handleNavigate = (page, vehicleData = null) => {
+    // Si es acceso solo al cuestionario, solo permitir página del cuestionario
+    if (accessType === 'survey_only' && page !== 'surveyTalentoHumano') {
+      error('Solo tienes acceso al cuestionario');
+      return;
+    }
+    
     setCurrentPage(page);
     if (vehicleData) {
       setSelectedVehicle(vehicleData);
@@ -39,7 +93,6 @@ function App() {
   const handleMaintenanceSubmit = (formData) => {
     console.log('Mantenimiento registrado:', formData);
     success('Mantenimiento registrado exitosamente');
-    // Volver a la lista de vehículos
     setCurrentPage('vehicles');
     setSelectedVehicle(null);
   };

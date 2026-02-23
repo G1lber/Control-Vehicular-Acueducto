@@ -5,6 +5,8 @@
  * Transforma requests HTTP en llamadas a casos de uso.
  */
 
+import jwt from 'jsonwebtoken';
+
 class UserController {
   constructor(userUseCases) {
     this.userUseCases = userUseCases;
@@ -279,7 +281,7 @@ class UserController {
 
   /**
    * POST /api/users/auth/login
-   * Autentica un usuario (para futuro sistema de login)
+   * Autentica un usuario y genera un JWT token
    */
   async login(req, res) {
     try {
@@ -301,11 +303,26 @@ class UserController {
         });
       }
 
+      // Generar JWT token
+      const token = jwt.sign(
+        {
+          cedula: user.cedula,
+          nombre: user.name,
+          id_rol: user.id_rol,
+          nombre_rol: user.role
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
+      );
+
       return res.status(200).json({
         success: true,
         message: 'Login exitoso',
-        data: user
-        // TODO: Aquí se generaría un JWT token en el futuro
+        data: {
+          user: user,
+          token: token,
+          expiresIn: process.env.JWT_EXPIRES_IN || '24h'
+        }
       });
     } catch (error) {
       console.error('Error en login:', error);
@@ -321,6 +338,68 @@ class UserController {
       return res.status(500).json({
         success: false,
         message: 'Error al autenticar usuario',
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * POST /api/users/auth/login-survey
+   * Login simple para conductores que acceden al cuestionario
+   * Solo requiere cédula (sin password)
+   */
+  async loginSurvey(req, res) {
+    try {
+      const { cedula } = req.body;
+
+      if (!cedula) {
+        return res.status(400).json({
+          success: false,
+          message: 'Cédula es requerida'
+        });
+      }
+
+      // Buscar el usuario por cédula
+      const user = await this.userUseCases.getUserByCedula(cedula);
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'Usuario no encontrado. Verifica tu número de documento.'
+        });
+      }
+
+      // Generar JWT token simplificado para el cuestionario
+      const token = jwt.sign(
+        {
+          cedula: user.cedula,
+          nombre: user.name,
+          id_rol: user.id_rol,
+          access_type: 'survey_only' // Marca especial para acceso limitado
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '2h' } // Token de 2 horas para el cuestionario
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: 'Acceso al cuestionario concedido',
+        data: {
+          user: {
+            cedula: user.cedula,
+            nombre: user.name,
+            area: user.area,
+            role: user.role
+          },
+          token: token,
+          expiresIn: '2h'
+        }
+      });
+    } catch (error) {
+      console.error('Error en loginSurvey:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error al autenticar para el cuestionario',
         error: error.message
       });
     }
