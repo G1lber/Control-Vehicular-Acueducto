@@ -265,5 +265,21 @@ GROUP BY u.area;
 */
 
 -- =====================================================
+-- DATOS INICIALES
+-- =====================================================
+
+-- Insertar roles predeterminados
+INSERT INTO roles (id_rol, nombre_rol) VALUES
+(1, 'Conductor'),
+(2, 'Supervisor'),
+(3, 'Administrador');
+
+-- Insertar usuario predeterminado (Administrador)
+-- Cédula: 1061716233
+-- Contraseña: 123456 (hasheada con bcrypt)
+INSERT INTO usuarios (id_cedula, nombre, id_rol, area, celular, password) VALUES
+(1061716233, 'Administrador Sistema', 3, 'Sistemas', '3001234567', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
+
+-- =====================================================
 -- FIN DEL SCRIPT
 -- =====================================================
