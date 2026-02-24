@@ -1,5 +1,5 @@
 // Componente MaintenanceHistoryModal - Modal para mostrar historial de mantenimientos
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Modal from './Modal';
 import { 
   Cog6ToothIcon,
@@ -10,10 +10,66 @@ import {
   FunnelIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
+import maintenanceService from '../services/maintenance.service';
 
-const MaintenanceHistoryModal = ({ isOpen, onClose, maintenances, vehicles }) => {
+const MaintenanceHistoryModal = ({ isOpen, onClose, maintenances: initialMaintenances, vehicles }) => {
   const [selectedMonth, setSelectedMonth] = useState('');
   const [filterMode, setFilterMode] = useState('all'); // 'all' o 'custom'
+  const [maintenances, setMaintenances] = useState(initialMaintenances || []);
+  const [loading, setLoading] = useState(false);
+
+  // Cargar mantenimientos cuando se abre el modal
+  useEffect(() => {
+    if (isOpen && !initialMaintenances) {
+      loadMaintenances();
+    } else if (initialMaintenances) {
+      setMaintenances(initialMaintenances);
+    }
+  }, [isOpen, initialMaintenances]);
+
+  const loadMaintenances = async () => {
+    try {
+      setLoading(true);
+      const response = await maintenanceService.getAllMaintenances();
+      
+      if (response.success) {
+        // Mapear datos del backend al frontend
+        const mapped = response.data.map(m => ({
+          id: m.id_mantenimiento,
+          vehicleId: m.id_placa,
+          maintenanceType: mapMaintenanceTypeToFrontend(m.tipo_mantenimiento),
+          description: m.descripcion,
+          date: m.fecha_realizado,
+          cost: m.costo,
+          mileage: m.kilometraje,
+          nextMaintenanceDate: m.fecha_proxima
+        }));
+        setMaintenances(mapped);
+      }
+    } catch (err) {
+      console.error('Error al cargar mantenimientos:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Mapear tipo de mantenimiento del backend al frontend
+  const mapMaintenanceTypeToFrontend = (tipo) => {
+    const mapping = {
+      'Cambio de aceite': 'oil_change',
+      'Cambio de llantas': 'tire_change',
+      'Líquido de frenos': 'brake_fluid',
+      'Kit de arrastre': 'drive_kit',
+      'Cambio de filtros': 'filters',
+      'Cambio de batería': 'battery',
+      'Mantenimiento de frenos': 'brakes',
+      'Mantenimiento de suspensión': 'suspension',
+      'Mantenimiento de motor': 'engine',
+      'Mantenimiento de transmisión': 'transmission',  
+      'Otro': 'other'
+    };
+    return mapping[tipo] || 'other';
+  };
 
   // Función para obtener datos del vehículo por ID
   const getVehicleById = (vehicleId) => {
@@ -104,7 +160,11 @@ const MaintenanceHistoryModal = ({ isOpen, onClose, maintenances, vehicles }) =>
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Historial de Mantenimientos" size="lg">
-      {maintenances.length === 0 ? (
+      {loading ? (
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      ) : maintenances.length === 0 ? (
         <div className="text-center py-12">
           <div className="bg-gray-50 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
             <Cog6ToothIcon className="w-12 h-12 text-gray-400" />

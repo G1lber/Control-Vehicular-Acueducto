@@ -1,11 +1,18 @@
 // Componente AddVehicleModal - Modal con formulario para agregar vehículos
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Modal from './Modal';
 import { TruckIcon, UserIcon } from '@heroicons/react/24/outline';
 import { useAlert } from '../context/AlertContext';
 
 const AddVehicleModal = ({ isOpen, onClose, onSubmit, drivers = [] }) => {
   const { success, error } = useAlert();
+  
+  // Debug: Mostrar conductores disponibles
+  useEffect(() => {
+    if (isOpen) {
+      console.log('Conductores disponibles en modal:', drivers);
+    }
+  }, [isOpen, drivers]);
   
   const [formData, setFormData] = useState({
     plate: '',
@@ -67,9 +74,12 @@ const AddVehicleModal = ({ isOpen, onClose, onSubmit, drivers = [] }) => {
     if (!formData.techReviewExpiry) {
       newErrors.techReviewExpiry = 'La fecha de vencimiento de la revisión técnico-mecánica es requerida';
     }
-    if (!formData.driverId) {
-      newErrors.driverId = 'Debe asignar un conductor al vehículo';
-    }
+    
+    // Conductor es opcional
+    // if (!formData.driverId) {
+    //   newErrors.driverId = 'Debe asignar un conductor al vehículo';
+    // }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -86,7 +96,9 @@ const AddVehicleModal = ({ isOpen, onClose, onSubmit, drivers = [] }) => {
     const vehicleData = {
       ...formData,
       plate: formData.plate.toUpperCase(),
-      driverId: parseInt(formData.driverId),
+      year: formData.year ? parseInt(formData.year) : null,
+      mileage: formData.mileage ? parseInt(formData.mileage) : null,
+      driverId: formData.driverId || null,
       id: Date.now() // ID temporal - el backend generará el real
     };
 
@@ -265,7 +277,7 @@ const AddVehicleModal = ({ isOpen, onClose, onSubmit, drivers = [] }) => {
           {/* Conductor Asignado */}
           <div>
             <label className="block text-primary-light font-semibold mb-2" htmlFor="driverId">
-              Conductor Asignado *
+              Conductor Asignado (Opcional)
             </label>
             <div className="relative">
               <UserIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />

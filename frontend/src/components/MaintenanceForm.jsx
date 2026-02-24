@@ -2,8 +2,13 @@
 // Registra: cambio de aceite, llantas, líquido de frenos, kit de arrastre, etc.
 
 import { useState } from 'react';
+import maintenanceService from '../services/maintenance.service';
+import { useAlert } from '../context/AlertContext';
 
 const MaintenanceForm = ({ vehicleId, onSubmit, onCancel }) => {
+  const { success, error } = useAlert();
+  const [isSaving, setIsSaving] = useState(false);
+  
   const [formData, setFormData] = useState({
     vehicleId: vehicleId || '',
     maintenanceType: '',
@@ -38,9 +43,57 @@ const MaintenanceForm = ({ vehicleId, onSubmit, onCancel }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    
+    try {
+      setIsSaving(true);
+      
+      // Mapear el tipo de mantenimiento del frontend al backend
+      const typeMapping = {
+        'oil_change': 'Cambio de aceite',
+        'tire_change': 'Cambio de llantas',
+        'brake_fluid': 'Líquido de frenos',
+        'drive_kit': 'Kit de arrastre',
+        'filters': 'Cambio de filtros',
+        'battery': 'Cambio de batería',
+        'brakes': 'Mantenimiento de frenos',
+        'suspension': 'Mantenimiento de suspensión',
+        'engine': 'Mantenimiento de motor',
+        'transmission': 'Mantenimiento de transmisión',
+        'other': 'Otro'
+      };
+
+      // Mapear el formato del frontend al formato del backend (coincide con columnas de DB)
+      const maintenancePayload = {
+        id_placa: formData.vehicleId,
+        tipo_mantenimiento: typeMapping[formData.maintenanceType] || formData.maintenanceType,
+        fecha_realizado: formData.date,
+        descripcion: formData.description,
+        costo: formData.cost ? parseFloat(formData.cost) : null,
+        kilometraje: formData.mileage ? parseInt(formData.mileage) : null,
+        fecha_proxima: formData.nextMaintenanceDate || null
+      };
+
+      const response = await maintenanceService.createMaintenance(maintenancePayload);
+      
+      if (response.success) {
+        success('Mantenimiento registrado exitosamente');
+        
+        // Llamar al callback si existe
+        if (onSubmit) {
+          onSubmit(formData);
+        }
+      } else {
+        error(response.message || 'Error al registrar mantenimiento');
+      }
+    } catch (err) {
+      console.error('Error al crear mantenimiento:', err);
+      const errorMessage = err.response?.data?.message || 'Error al registrar el mantenimiento';
+      error(errorMessage);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -158,14 +211,23 @@ const MaintenanceForm = ({ vehicleId, onSubmit, onCancel }) => {
         <div className="flex gap-4 pt-4">
           <button
             type="submit"
-            className="flex-1 bg-primary hover:bg-primary-light text-white font-semibold py-3 px-6 rounded-lg transition-colors shadow-md hover:shadow-lg"
+            disabled={isSaving}
+            className="flex-1 bg-primary hover:bg-primary-light text-white font-semibold py-3 px-6 rounded-lg transition-colors shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            Registrar Mantenimiento
+            {isSaving ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                Guardando...
+              </>
+            ) : (
+              'Registrar Mantenimiento'
+            )}
           </button>
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 bg-white hover:bg-gray-50 text-primary border-2 border-primary font-semibold py-3 px-6 rounded-lg transition-colors"
+            disabled={isSaving}
+            className="flex-1 bg-white hover:bg-gray-50 text-primary border-2 border-primary font-semibold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancelar
           </button>

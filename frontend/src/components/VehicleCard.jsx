@@ -48,18 +48,18 @@ const VehicleCard = ({ vehicle, driver, onMaintenanceClick, onDetailsClick }) =>
 
       {/* Contenido */}
       <div className="p-4 space-y-4">
-        {/* Conductor Asignado */}
-        {driver && (
-          <div className="bg-blue-50 rounded-lg p-3 border-2 border-blue-200">
-            <div className="flex items-center gap-2">
-              <UserIcon className="w-5 h-5 text-primary" />
-              <div>
-                <p className="text-xs text-secondary font-semibold">Conductor Asignado</p>
-                <p className="text-sm text-primary font-bold">{driver.name}</p>
-              </div>
+        {/* Conductor Asignado - Siempre mostrar */}
+        <div className={`rounded-lg p-3 border-2 ${driver ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-300'}`}>
+          <div className="flex items-center gap-2">
+            <UserIcon className={`w-5 h-5 ${driver ? 'text-primary' : 'text-gray-400'}`} />
+            <div>
+              <p className="text-xs text-secondary font-semibold">Conductor Asignado</p>
+              <p className={`text-sm font-bold ${driver ? 'text-primary' : 'text-gray-500'}`}>
+                {driver ? driver.name : 'Sin asignar'}
+              </p>
             </div>
           </div>
-        )}
+        </div>
 
         {/* Información básica */}
         <div>

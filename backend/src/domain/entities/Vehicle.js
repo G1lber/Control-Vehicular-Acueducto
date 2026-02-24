@@ -107,9 +107,10 @@ export class Vehicle {
       }
     }
 
-    if (!this.id_usuario) {
-      errors.push('El vehículo debe tener un conductor asignado');
-    }
+    // id_usuario es opcional - un vehículo puede no tener conductor asignado
+    // if (!this.id_usuario) {
+    //   errors.push('El vehículo debe tener un conductor asignado');
+    // }
 
     return {
       valid: errors.length === 0,

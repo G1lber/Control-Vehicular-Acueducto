@@ -38,6 +38,10 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, drivers = [] 
   // Inicializar el formulario cuando el vehículo cambie
   useEffect(() => {
     if (vehicle) {
+      console.log('VehicleDetailsModal - Vehículo:', vehicle); // Debug
+      console.log('VehicleDetailsModal - Conductores:', drivers); // Debug
+      console.log('VehicleDetailsModal - driverId del vehículo:', vehicle.driverId); // Debug
+      
       setFormData({
         soatExpiry: vehicle.soatExpiry || '',
         techReviewExpiry: vehicle.techReviewExpiry || '',
@@ -54,7 +58,7 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, drivers = [] 
     }
     setIsEditingDates(false);
     setIsEditingInfo(false);
-  }, [vehicle]);
+  }, [vehicle, drivers]);
 
   if (!vehicle) return null;
 
@@ -159,8 +163,8 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, drivers = [] 
   };
 
   const handleSaveInfo = () => {
-    // Validar campos requeridos
-    if (!formData.plate || !formData.brand || !formData.model || !formData.year || !formData.driverId) {
+    // Validar campos requeridos (conductor es opcional)
+    if (!formData.plate || !formData.brand || !formData.model || !formData.year) {
       error('Por favor completa todos los campos obligatorios');
       return;
     }
@@ -186,12 +190,12 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, drivers = [] 
       plate: formData.plate.toUpperCase(),
       brand: formData.brand,
       model: formData.model,
-      year: formData.year,
+      year: formData.year ? parseInt(formData.year) : null,
       color: formData.color,
       fuelType: formData.fuelType,
-      mileage: formData.mileage,
+      mileage: formData.mileage ? parseInt(formData.mileage) : null,
       lastMaintenance: formData.lastMaintenance,
-      driverId: parseInt(formData.driverId)
+      driverId: formData.driverId || null
     };
 
     // Llamar al callback de actualización
@@ -407,7 +411,7 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, drivers = [] 
               {/* Conductor Asignado */}
               <div>
                 <label className="text-sm text-primary font-semibold block mb-2">
-                  Conductor Asignado *
+                  Conductor Asignado (Opcional)
                 </label>
                 <div className="relative">
                   <UserIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
@@ -464,19 +468,29 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, drivers = [] 
                 </div>
               </div>
             )}
-            {vehicle.driverId && (
-              <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
-                <div className="flex items-center gap-2">
-                  <UserIcon className="w-5 h-5 text-primary" />
-                  <div className="flex-1">
-                    <p className="text-xs text-secondary font-semibold mb-1">Conductor Asignado</p>
-                    <p className="text-lg font-bold text-primary">
-                      {drivers.find(d => d.id === vehicle.driverId)?.name || 'No asignado'}
-                    </p>
-                  </div>
+            {/* Conductor Asignado - Siempre mostrar */}
+            <div className={`border-2 rounded-lg p-4 ${vehicle.driverId ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-300'}`}>
+              <div className="flex items-center gap-2">
+                <UserIcon className={`w-5 h-5 ${vehicle.driverId ? 'text-primary' : 'text-gray-400'}`} />
+                <div className="flex-1">
+                  <p className="text-xs text-secondary font-semibold mb-1">Conductor Asignado</p>
+                  {vehicle.driverId ? (
+                    <>
+                      <p className="text-lg font-bold text-primary">
+                        {drivers.find(d => String(d.id) === String(vehicle.driverId))?.name || `Cargando... (ID: ${vehicle.driverId})`}
+                      </p>
+                      {drivers.find(d => String(d.id) === String(vehicle.driverId))?.cedula && (
+                        <p className="text-sm text-secondary">
+                          CC: {drivers.find(d => String(d.id) === String(vehicle.driverId))?.cedula}
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-lg font-bold text-gray-500">Sin conductor asignado</p>
+                  )}
                 </div>
               </div>
-            )}
+            </div>
           </div>
         )}
 

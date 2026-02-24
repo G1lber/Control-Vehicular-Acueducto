@@ -1,77 +1,20 @@
 // Página VehicleList - Lista de vehículos con grid layout
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import VehicleCard from '../components/VehicleCard';
 import AddVehicleModal from '../components/AddVehicleModal';
 import VehicleDetailsModal from '../components/VehicleDetailsModal';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import vehicleService from '../services/vehicle.service';
+import userService from '../services/user.service';
+import { useAlert } from '../context/AlertContext';
 
 const VehicleList = ({ onNavigate }) => {
-  // Datos de conductores - estos vendrán del backend
-  const [drivers] = useState([
-    {
-      id: 1,
-      name: 'Carlos Andrés López',
-      cedula: '1234567890',
-      phone: '3001234567',
-      area: 'Operaciones',
-      role: 'Conductor'
-    },
-    {
-      id: 3,
-      name: 'José Luis Martínez',
-      cedula: '5555555555',
-      phone: '3205555555',
-      area: 'Operaciones',
-      role: 'Conductor'
-    },
-  ]);
-
-  // Datos de ejemplo - estos vendrán del backend
-  const [vehicles] = useState([
-    {
-      id: 1,
-      plate: 'ABC-123',
-      brand: 'Toyota',
-      model: 'Hilux',
-      year: 2022,
-      color: 'Blanco',
-      fuelType: 'Diesel',
-      soatExpiry: '2026-06-15',
-      techReviewExpiry: '2026-08-20',
-      lastMaintenance: '2026-01-10',
-      mileage: '45000',
-      driverId: 1
-    },
-    {
-      id: 2,
-      plate: 'DEF-456',
-      brand: 'Chevrolet',
-      model: 'D-Max',
-      year: 2021,
-      color: 'Azul',
-      fuelType: 'Diesel',
-      soatExpiry: '2026-03-10',
-      techReviewExpiry: '2026-02-28',
-      lastMaintenance: '2026-01-05',
-      mileage: '68000',
-      driverId: 3
-    },
-    {
-      id: 3,
-      plate: 'GHI-789',
-      brand: 'Nissan',
-      model: 'Frontier',
-      year: 2023,
-      color: 'Gris',
-      fuelType: 'Gasolina',
-      soatExpiry: '2026-1-20',
-      techReviewExpiry: '2027-01-15',
-      lastMaintenance: '2026-02-01',
-      mileage: '32000',
-      driverId: 1
-    },
-  ]);
-
+  const { success, error } = useAlert();
+  
+  // Estados
+  const [drivers, setDrivers] = useState([]);
+  const [vehicles, setVehicles] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [isAddVehicleModalOpen, setIsAddVehicleModalOpen] = useState(false);
@@ -81,6 +24,71 @@ const VehicleList = ({ onNavigate }) => {
   // Estados de paginación
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6; // Fijo en 6 items por página
+
+  // Cargar datos al montar el componente
+  useEffect(() => {
+    loadVehicles();
+    loadDrivers();
+  }, []);
+
+  // Cargar vehículos del backend
+  const loadVehicles = async () => {
+    try {
+      setLoading(true);
+      const response = await vehicleService.getAllVehicles();
+      
+      if (response.success) {
+        // Mapear los datos del backend al formato del frontend
+        const mappedVehicles = response.data.map(v => ({
+          id: v.id_placa,
+          plate: v.id_placa,
+          brand: v.marca || 'N/A',
+          model: v.modelo || 'N/A',
+          year: v.anio || '',
+          color: v.color || 'N/A',
+          fuelType: v.tipo_combustible || 'N/A',
+          soatExpiry: v.soat || null,
+          techReviewExpiry: v.tecno || null,
+          lastMaintenance: v.ultimo_mantenimiento || null,
+          mileage: v.kilometraje_actual || '0',
+          driverId: v.id_usuario || null
+        }));
+        
+        console.log('Vehículos cargados:', mappedVehicles); // Debug
+        setVehicles(mappedVehicles);
+      }
+    } catch (err) {
+      console.error('Error al cargar vehículos:', err);
+      error('Error al cargar los vehículos');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cargar conductores del backend
+  const loadDrivers = async () => {
+    try {
+      const response = await userService.getUsersByRole('conductor'); // Rol como texto
+      
+      if (response.success) {
+        // Mapear los datos del backend al formato del frontend
+        const mappedDrivers = response.data.map(u => ({
+          id: u.cedula,
+          cedula: u.cedula,
+          name: u.name,
+          phone: u.phone || '',
+          area: u.area || '',
+          role: u.role
+        }));
+        
+        console.log('Conductores cargados:', mappedDrivers); // Debug
+        setDrivers(mappedDrivers);
+      }
+    } catch (err) {
+      console.error('Error al cargar conductores:', err);
+      // No mostramos error porque no es crítico
+    }
+  };
 
   // Filtrar vehículos
   const filteredVehicles = vehicles.filter(vehicle => {
@@ -118,9 +126,87 @@ const VehicleList = ({ onNavigate }) => {
     onNavigate('maintenance', vehicle);
   };
 
-  const handleAddVehicle = (vehicleData) => {
-    console.log('Vehículo agregado:', vehicleData);
-    // Aquí se enviará al backend cuando esté disponible
+  const handleAddVehicle = async (vehicleData) => {
+    try {
+      console.log('🆕 Datos recibidos del formulario:', vehicleData);
+      
+      // Validar que la placa exista
+      if (!vehicleData.plate || vehicleData.plate.trim() === '') {
+        error('La placa del vehículo es obligatoria');
+        return;
+      }
+      
+      // Función helper para limpiar valores vacíos
+      const cleanValue = (value) => {
+        if (value === null || value === undefined || value === '') return null;
+        return value;
+      };
+      
+      // Función para convertir fechas a formato YYYY-MM-DD
+      const formatDateForBackend = (dateValue) => {
+        if (!dateValue) return null;
+        
+        // Si ya está en formato YYYY-MM-DD, devolverlo tal cual
+        if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+          return dateValue;
+        }
+        
+        // Si es un objeto Date o una fecha ISO, convertir a YYYY-MM-DD
+        try {
+          const date = new Date(dateValue);
+          if (isNaN(date.getTime())) return null;
+          
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          
+          return `${year}-${month}-${day}`;
+        } catch (e) {
+          return null;
+        }
+      };
+      
+      // Convertir placa a mayúsculas
+      const plateUpperCase = vehicleData.plate.trim().toUpperCase();
+      
+      // Mapear el formato del frontend al formato del backend
+      const vehiclePayload = {
+        placa: plateUpperCase,     // Para el validador
+        id_placa: plateUpperCase,  // Para el use case (backend inconsistencia)
+        marca: cleanValue(vehicleData.brand),
+        modelo: cleanValue(vehicleData.model),
+        anio: vehicleData.year ? parseInt(vehicleData.year) : null,
+        color: cleanValue(vehicleData.color),
+        tipo_combustible: cleanValue(vehicleData.fuelType),
+        soat: formatDateForBackend(vehicleData.soatExpiry),
+        tecno: formatDateForBackend(vehicleData.techReviewExpiry),
+        kilometraje_actual: vehicleData.mileage ? parseInt(vehicleData.mileage) : null,
+        id_usuario: vehicleData.driverId ? String(vehicleData.driverId) : null
+      };
+
+      // Remover campos que sean null (excepto placa e id_placa que son requeridos)
+      Object.keys(vehiclePayload).forEach(key => {
+        if (key !== 'placa' && key !== 'id_placa' && vehiclePayload[key] === null) {
+          delete vehiclePayload[key];
+        }
+      });
+
+      console.log('📤 Payload limpio para crear:', vehiclePayload);
+
+      const response = await vehicleService.createVehicle(vehiclePayload);
+      
+      if (response.success) {
+        success('Vehículo creado exitosamente');
+        await loadVehicles();
+        setIsAddVehicleModalOpen(false);
+      } else {
+        error(response.message || 'Error al crear vehículo');
+      }
+    } catch (err) {
+      console.error('Error al crear vehículo:', err);
+      const errorMessage = err.response?.data?.message || 'Error al crear el vehículo';
+      error(errorMessage);
+    }
   };
 
   const handleDetailsClick = (vehicle) => {
@@ -128,10 +214,75 @@ const VehicleList = ({ onNavigate }) => {
     setIsDetailsModalOpen(true);
   };
 
-  const handleVehicleUpdate = (updatedVehicle) => {
-    console.log('Vehículo actualizado:', updatedVehicle);
-    // Aquí se enviará al backend cuando esté disponible
-    // Por ahora, actualizamos el estado local si fuera necesario
+  const handleVehicleUpdate = async (updatedVehicle) => {
+    try {
+      console.log('🔍 Vehículo recibido para actualizar:', updatedVehicle);
+      
+      // Función helper para limpiar valores vacíos
+      const cleanValue = (value) => {
+        if (value === null || value === undefined || value === '') return null;
+        return value;
+      };
+      
+      // Función para convertir fechas a formato YYYY-MM-DD
+      const formatDateForBackend = (dateValue) => {
+        if (!dateValue) return null;
+        
+        // Si ya está en formato YYYY-MM-DD, devolverlo tal cual
+        if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+          return dateValue;
+        }
+        
+        // Si es un objeto Date o una fecha ISO, convertir a YYYY-MM-DD
+        try {
+          const date = new Date(dateValue);
+          if (isNaN(date.getTime())) return null;
+          
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          
+          return `${year}-${month}-${day}`;
+        } catch (e) {
+          return null;
+        }
+      };
+      
+      // Mapear el formato del frontend al formato del backend
+      const vehiclePayload = {
+        marca: cleanValue(updatedVehicle.brand),
+        modelo: cleanValue(updatedVehicle.model),
+        anio: updatedVehicle.year ? parseInt(updatedVehicle.year) : null,
+        color: cleanValue(updatedVehicle.color),
+        tipo_combustible: cleanValue(updatedVehicle.fuelType),
+        soat: formatDateForBackend(updatedVehicle.soatExpiry),
+        tecno: formatDateForBackend(updatedVehicle.techReviewExpiry),
+        kilometraje_actual: updatedVehicle.mileage ? parseInt(updatedVehicle.mileage) : null,
+        id_usuario: updatedVehicle.driverId ? String(updatedVehicle.driverId) : null
+      };
+
+      // Remover campos que sean null para que el backend no los valide
+      Object.keys(vehiclePayload).forEach(key => {
+        if (vehiclePayload[key] === null) {
+          delete vehiclePayload[key];
+        }
+      });
+
+      console.log('📤 Payload limpio enviado al backend:', vehiclePayload);
+
+      const response = await vehicleService.updateVehicle(updatedVehicle.plate, vehiclePayload);
+      
+      if (response.success) {
+        success('Vehículo actualizado exitosamente');
+        await loadVehicles();
+      } else {
+        error(response.message || 'Error al actualizar vehículo');
+      }
+    } catch (err) {
+      console.error('Error al actualizar vehículo:', err);
+      const errorMessage = err.response?.data?.message || 'Error al actualizar el vehículo';
+      error(errorMessage);
+    }
   };
 
   return (
@@ -191,11 +342,16 @@ const VehicleList = ({ onNavigate }) => {
       </div>
 
       {/* Grid de vehículos */}
-      {filteredVehicles.length > 0 ? (
+      {loading ? (
+        <div className="flex justify-center items-center py-20">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+        </div>
+      ) : filteredVehicles.length > 0 ? (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {currentVehicles.map(vehicle => {
-              const driver = drivers.find(d => d.id === vehicle.driverId);
+              const driver = drivers.find(d => String(d.id) === String(vehicle.driverId));
+              console.log(`Vehículo ${vehicle.plate} - driverId: ${vehicle.driverId}, driver encontrado:`, driver); // Debug
               return (
                 <VehicleCard 
                   key={vehicle.id} 
