@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import Modal from './Modal';
 import { useAlert } from '../context/AlertContext';
+import userService from '../services/user.service';
 import { 
   UserIcon,
   IdentificationIcon,
@@ -16,13 +17,16 @@ import {
   MapPinIcon,
   EyeIcon,
   EyeSlashIcon,
-  LockClosedIcon
+  LockClosedIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 
-const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null }) => {
+const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null, onUpdate }) => {
   const { success, error } = useAlert();
   const [isEditingBasic, setIsEditingBasic] = useState(false);
   const [isEditingSurvey, setIsEditingSurvey] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   // Datos básicos del usuario
   const [basicData, setBasicData] = useState({
@@ -139,6 +143,7 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null }) => {
       setIsEditingSurvey(false);
       setShowPassword(false);
       setShowConfirmPassword(false);
+      setShowDeleteConfirm(false);
     }
   }, [isOpen, user, surveyData]);
 
@@ -171,7 +176,7 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null }) => {
   };
 
   // Guardar datos básicos
-  const handleSaveBasic = () => {
+  const handleSaveBasic = async () => {
     // Validaciones básicas
     if (!basicData.nombre || !basicData.celular || !basicData.area) {
       error('Por favor completa todos los campos obligatorios');
@@ -190,18 +195,59 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null }) => {
       }
     }
 
-    console.log('Guardando datos básicos:', basicData);
-    // Aquí se enviará al backend
-    success('Datos básicos actualizados correctamente');
-    setIsEditingBasic(false);
-    setShowPassword(false);
-    setShowConfirmPassword(false);
-    // Limpiar campos de contraseña después de guardar
-    setBasicData(prev => ({
-      ...prev,
-      password: '',
-      confirmPassword: ''
-    }));
+    try {
+      setIsSaving(true);
+      
+      // Mapear rol a id_rol
+      const roleMap = {
+        'Conductor': 1,
+        'Supervisor': 2,
+        'Administrador': 3
+      };
+
+      // Preparar datos para enviar al backend
+      const updateData = {
+        nombre: basicData.nombre,
+        celular: basicData.celular,
+        area: basicData.area,
+        id_rol: roleMap[basicData.role] || 1
+      };
+
+      // Solo incluir password si se proporcionó uno nuevo
+      if (basicData.password && basicData.password.trim() !== '') {
+        updateData.password = basicData.password;
+      }
+
+      // Llamar al servicio para actualizar
+      const response = await userService.updateUser(basicData.cedula, updateData);
+      
+      if (response.success) {
+        success('Datos básicos actualizados correctamente');
+        setIsEditingBasic(false);
+        setShowPassword(false);
+        setShowConfirmPassword(false);
+        
+        // Limpiar campos de contraseña después de guardar
+        setBasicData(prev => ({
+          ...prev,
+          password: '',
+          confirmPassword: ''
+        }));
+
+        // Llamar callback para recargar datos en la página principal
+        if (onUpdate) {
+          onUpdate();
+        }
+      } else {
+        error(response.message || 'Error al actualizar datos');
+      }
+    } catch (err) {
+      console.error('Error al actualizar usuario:', err);
+      const errorMessage = err.response?.data?.message || 'Error al actualizar el usuario';
+      error(errorMessage);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Guardar datos del cuestionario
@@ -210,6 +256,35 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null }) => {
     // Aquí se enviará al backend
     success('Información del cuestionario actualizada correctamente');
     setIsEditingSurvey(false);
+  };
+
+  // Eliminar usuario
+  const handleDeleteUser = async () => {
+    if (!user) return;
+
+    try {
+      setIsSaving(true);
+      const response = await userService.deleteUser(user.cedula);
+
+      if (response.success) {
+        success('Usuario eliminado correctamente');
+        setShowDeleteConfirm(false);
+        
+        // Cerrar el modal y recargar datos
+        onClose();
+        if (onUpdate) {
+          onUpdate();
+        }
+      } else {
+        error(response.message || 'Error al eliminar usuario');
+      }
+    } catch (err) {
+      console.error('Error al eliminar usuario:', err);
+      const errorMessage = err.response?.data?.message || 'Error al eliminar el usuario';
+      error(errorMessage);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Renderizar campo de vista/edición
@@ -289,10 +364,24 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null }) => {
                 <div className="flex gap-2">
                   <button
                     onClick={handleSaveBasic}
-                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm shadow-md hover:shadow-lg"
+                    disabled={isSaving}
+                    className={`flex items-center gap-2 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm shadow-md hover:shadow-lg ${
+                      isSaving 
+                        ? 'bg-gray-400 cursor-not-allowed' 
+                        : 'bg-green-600 hover:bg-green-700'
+                    }`}
                   >
-                    <CheckIcon className="w-4 h-4" />
-                    Guardar
+                    {isSaving ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        Guardando...
+                      </>
+                    ) : (
+                      <>
+                        <CheckIcon className="w-4 h-4" />
+                        Guardar
+                      </>
+                    )}
                   </button>
                   <button
                     onClick={() => {
@@ -309,7 +398,12 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null }) => {
                         confirmPassword: ''
                       });
                     }}
-                    className="flex items-center gap-2 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm shadow-md hover:shadow-lg"
+                    disabled={isSaving}
+                    className={`flex items-center gap-2 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm shadow-md hover:shadow-lg ${
+                      isSaving 
+                        ? 'bg-gray-300 cursor-not-allowed' 
+                        : 'bg-gray-500 hover:bg-gray-600'
+                    }`}
                   >
                     Cancelar
                   </button>
@@ -681,7 +775,95 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null }) => {
             </div>
           )}
         </div>
+
+        {/* Botón de Eliminar Usuario (Zona Peligrosa) */}
+        <div className="mt-6 pt-6 border-t-2 border-red-200">
+          <div className="bg-red-50 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <ExclamationTriangleIcon className="w-6 h-6 text-red-600" />
+                <div>
+                  <p className="text-red-800 font-bold">Zona Peligrosa</p>
+                  <p className="text-red-600 text-sm">Esta acción no se puede deshacer</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={isEditingBasic || isEditingSurvey}
+                className={`flex items-center gap-2 font-semibold py-2 px-4 rounded-lg transition-colors shadow-md ${
+                  isEditingBasic || isEditingSurvey
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-red-600 hover:bg-red-700 text-white hover:shadow-lg'
+                }`}
+              >
+                <TrashIcon className="w-5 h-5" />
+                Eliminar Usuario
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Modal de Confirmación de Eliminación */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 animate-fade-in">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="bg-red-100 p-3 rounded-full">
+                <ExclamationTriangleIcon className="w-8 h-8 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">¿Eliminar Usuario?</h3>
+                <p className="text-gray-600 text-sm">Esta acción no se puede deshacer</p>
+              </div>
+            </div>
+
+            <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 mb-6">
+              <p className="text-red-800 font-semibold mb-2">Se eliminará:</p>
+              <ul className="text-sm text-red-700 space-y-1">
+                <li>• Nombre: <span className="font-bold">{basicData.nombre}</span></li>
+                <li>• Cédula: <span className="font-bold">{basicData.cedula}</span></li>
+                <li>• Rol: <span className="font-bold">{basicData.role}</span></li>
+              </ul>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isSaving}
+                className={`flex-1 font-semibold py-3 px-4 rounded-lg transition-colors ${
+                  isSaving
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                }`}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDeleteUser}
+                disabled={isSaving}
+                className={`flex-1 font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                  isSaving
+                    ? 'bg-gray-400 text-white cursor-not-allowed'
+                    : 'bg-red-600 hover:bg-red-700 text-white shadow-md hover:shadow-lg'
+                }`}
+              >
+                {isSaving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Eliminando...
+                  </>
+                ) : (
+                  <>
+                    <TrashIcon className="w-5 h-5" />
+                    Sí, Eliminar
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Modal>
   );
 };

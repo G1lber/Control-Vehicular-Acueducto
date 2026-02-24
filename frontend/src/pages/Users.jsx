@@ -1,8 +1,10 @@
 // Página Users - Gestión de usuarios (Conductores y Supervisores)
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import UserCard from '../components/UserCard';
 import AddUserModal from '../components/AddUserModal';
 import UserDetailsModal from '../components/UserDetailsModal';
+import userService from '../services/user.service';
+import { useAlert } from '../context/AlertContext';
 import { 
   MagnifyingGlassIcon, 
   FunnelIcon,
@@ -15,99 +17,13 @@ import {
 } from '@heroicons/react/24/outline';
 
 const Users = () => {
-  // Datos de ejemplo - estos vendrán del backend
-  const [users] = useState([
-    {
-      id: 1,
-      name: 'Carlos Andrés López',
-      cedula: '1234567890',
-      phone: '3001234567',
-      area: 'Operaciones',
-      role: 'Conductor',
-      createdAt: '2026-01-15'
-    },
-    {
-      id: 2,
-      name: 'María Fernanda García',
-      cedula: '9876543210',
-      phone: '3109876543',
-      area: 'Mantenimiento',
-      role: 'Supervisor',
-      createdAt: '2026-01-20'
-    },
-    {
-      id: 3,
-      name: 'José Luis Martínez',
-      cedula: '5555555555',
-      phone: '3205555555',
-      area: 'Operaciones',
-      role: 'Conductor',
-      createdAt: '2026-02-01'
-    },
-    {
-      id: 4,
-      name: 'Ana Patricia Rodríguez',
-      cedula: '7777777777',
-      phone: '3157777777',
-      area: 'Administración',
-      role: 'Supervisor',
-      createdAt: '2026-02-05'
-    },
-  ]);
-
-  // Datos de ejemplo del cuestionario - estos vendrán del backend
-  const [surveyDataExample] = useState({
-    '1234567890': {
-      consentimiento: 'SI',
-      ciudad: 'Popayán',
-      sitio_labor: 'Planta Central',
-      cargo: 'Conductor de camión',
-      edad: '28-37',
-      tipo_contratacion: 'Termino indefinido',
-      genero: 'Masculino',
-      grupo: 'Operativo',
-      licencia: 'SI',
-      vigencia_licencia_dia: '15',
-      vigencia_licencia_mes: '12',
-      vigencia_licencia_anio: '2027',
-      categoria_licencia: 'C1',
-      experiencia: '5-10',
-      accidente_5_anios: 'NO',
-      incidente: 'NO',
-      vias_publicas: 'SI',
-      frecuencia_vehiculo_propio: 'Siempre',
-      tipo_vehiculo_propio: 'Camión',
-      usa_vehiculo_empresa: 'SI',
-      tipo_vehiculo_empresa: 'Camión cisterna',
-      realiza_inspeccion_empresa: 'SI',
-      frecuencia_chequeo_empresa: 'Diario',
-      planificacion: 'SI',
-      antelacion: '1 día',
-      km_mensuales: '800',
-      tiene_comparendos: 'Si',
-      informacion_adicional: 'Conductor responsable con 8 años de experiencia'
-    },
-    '9876543210': null, // Usuario sin cuestionario
-    '5555555555': {
-      consentimiento: 'SI',
-      ciudad: 'Popayán',
-      sitio_labor: 'Área Metropolitana',
-      cargo: 'Técnico',
-      edad: '38-47',
-      tipo_contratacion: 'Contrato de obra o labor',
-      genero: 'Masculino',
-      licencia: 'SI',
-      categoria_licencia: 'B1',
-      experiencia: '10+',
-      accidente_5_anios: 'SI',
-      accidente_laboral: 'NO',
-      cantidad_accidentes: '1',
-      rol_accidente: 'Conductor',
-      incidente: 'SI',
-      vias_publicas: 'SI',
-      tiene_comparendos: 'NO'
-    }
-  });
+  // Estados para datos del backend
+  const [users, setUsers] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [errorState, setErrorState] = useState(null);
+  const [surveyData, setSurveyData] = useState({});
+  const { success, error } = useAlert();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
@@ -118,6 +34,81 @@ const Users = () => {
   // Estados de paginación
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6; // Fijo en 6 items por página
+
+  // ==========================================
+  // CARGAR DATOS DEL BACKEND
+  // ==========================================
+
+  useEffect(() => {
+    // Solo cargar datos si hay token
+    const token = localStorage.getItem('token');
+    if (token) {
+      loadUsers();
+      loadStats();
+    } else {
+      setLoading(false);
+      setErrorState('No hay sesión activa. Por favor inicia sesión.');
+    }
+  }, []);
+
+  // Cargar usuarios desde el backend
+  const loadUsers = async () => {
+    try {
+      setLoading(true);
+      setErrorState(null);
+      const response = await userService.getAllUsers();
+      
+      if (response.success) {
+        // Mapear los datos del backend al formato del frontend
+        const mappedUsers = response.data.map(user => ({
+          id: user.cedula,  // Backend retorna 'cedula'
+          name: user.name,  // Backend ya retorna 'name'
+          cedula: user.cedula,
+          phone: user.phone || 'No registrado',  // Backend retorna 'phone'
+          area: user.area || 'No asignada',
+          role: user.role,  // Backend ya retorna 'role' (nombre del rol)
+          createdAt: user.created_at ? new Date(user.created_at).toISOString().split('T')[0] : 'N/A'
+        }));
+        setUsers(mappedUsers);
+      } else {
+        setErrorState('Error al cargar usuarios');
+        error('Error al cargar usuarios');
+      }
+    } catch (err) {
+      console.error('Error al cargar usuarios:', err);
+      setErrorState('No se pudieron cargar los usuarios');
+      error('No se pudieron cargar los usuarios');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cargar estadísticas desde el backend
+  const loadStats = async () => {
+    try {
+      const response = await userService.getUserStats();
+      if (response.success) {
+        setStats(response.data);
+      }
+    } catch (error) {
+      console.error('Error al cargar estadísticas:', error);
+    }
+  };
+
+  // Cargar cuestionario de un usuario específico
+  const loadUserSurvey = async (cedula) => {
+    try {
+      const survey = await userService.getUserSurvey(cedula);
+      setSurveyData(prev => ({
+        ...prev,
+        [cedula]: survey?.data || null
+      }));
+      return survey?.data || null;
+    } catch (error) {
+      console.error(`Error al cargar cuestionario del usuario ${cedula}:`, error);
+      return null;
+    }
+  };
 
   // Filtrar usuarios
   const filteredUsers = users.filter(user => {
@@ -152,19 +143,54 @@ const Users = () => {
     setCurrentPage(Math.max(1, Math.min(page, totalPages)));
   };
 
-  // Contar usuarios por rol
-  const conductoresCount = users.filter(u => u.role === 'Conductor').length;
-  const supervisoresCount = users.filter(u => u.role === 'Supervisor').length;
+  // Contar usuarios por rol (desde datos locales o stats del backend)
+  const conductoresCount = stats?.Conductor || users.filter(u => u.role === 'Conductor').length;
+  const supervisoresCount = stats?.Supervisor || users.filter(u => u.role === 'Supervisor').length;
 
-  const handleAddUser = (userData) => {
-    console.log('Usuario agregado:', userData);
-    // Aquí se enviará al backend cuando esté disponible
+  // Manejar creación de usuario
+  const handleAddUser = async (userData) => {
+    try {
+      // Mapear el formato del frontend al formato del backend
+      const userPayload = {
+        cedula: userData.cedula,
+        nombre: userData.name,
+        id_rol: userData.role === 'Conductor' ? 1 : (userData.role === 'Supervisor' ? 2 : 3),
+        area: userData.area || null,
+        celular: userData.phone || null
+      };
+
+      // Solo incluir password si existe (Supervisores/Administradores)
+      if (userData.password) {
+        userPayload.password = userData.password;
+      }
+
+      const response = await userService.createUser(userPayload);
+      
+      if (response.success) {
+        success('Usuario creado exitosamente');
+        // Recargar la lista de usuarios
+        await loadUsers();
+        await loadStats();
+        setIsAddUserModalOpen(false);
+      } else {
+        error(response.message || 'Error al crear usuario');
+      }
+    } catch (err) {
+      console.error('Error al crear usuario:', err);
+      const errorMessage = err.response?.data?.message || 'Error al crear usuario';
+      error(errorMessage);
+    }
   };
 
   // Manejar vista de detalles del usuario
-  const handleViewDetails = (user) => {
+  const handleViewDetails = async (user) => {
     setSelectedUser(user);
     setIsDetailsModalOpen(true);
+    
+    // Cargar el cuestionario si no está en caché
+    if (!surveyData[user.cedula]) {
+      await loadUserSurvey(user.cedula);
+    }
   };
 
   return (
@@ -187,6 +213,38 @@ const Users = () => {
         </button>
       </div>
 
+      {/* Loading State */}
+      {loading && (
+        <div className="bg-white rounded-lg shadow-md p-12 text-center mb-8">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary mx-auto mb-4"></div>
+          <p className="text-secondary text-lg font-semibold">Cargando usuarios...</p>
+        </div>
+      )}
+
+      {/* Error State */}
+      {errorState && !loading && (
+        <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6 mb-8">
+          <div className="flex items-center gap-3 mb-3">
+            <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-red-800 font-bold">Error al cargar datos</p>
+          </div>
+          <p className="text-red-600 mb-4">{errorState}</p>
+          <button
+            onClick={() => {
+              loadUsers();
+              loadStats();
+            }}
+            className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+          >
+            Reintentar
+          </button>
+        </div>
+      )}
+
+      {!loading && !errorState && (
+        <>
       {/* Estadísticas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-white border-2 border-primary/20 rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
@@ -367,6 +425,8 @@ const Users = () => {
           )}
         </div>
       )}
+        </>
+      )}
 
       {/* Modal de Agregar Usuario */}
       <AddUserModal
@@ -383,7 +443,12 @@ const Users = () => {
           setSelectedUser(null);
         }}
         user={selectedUser}
-        surveyData={selectedUser ? surveyDataExample[selectedUser.cedula] : null}
+        surveyData={selectedUser ? surveyData[selectedUser.cedula] : null}
+        onUpdate={async () => {
+          // Recargar datos después de actualizar
+          await loadUsers();
+          await loadStats();
+        }}
       />
     </div>
   );

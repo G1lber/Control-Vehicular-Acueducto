@@ -27,9 +27,12 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Manejar sesión expirada
+      // Manejar sesión expirada - limpiar y recargar
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      localStorage.removeItem('user');
+      localStorage.removeItem('access_type');
+      // Recargar la página para que App.jsx detecte que no hay token
+      window.location.reload();
     }
     return Promise.reject(error);
   }

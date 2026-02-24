@@ -171,26 +171,37 @@ class MySQLUserRepository extends UserRepository {
   async create(user) {
     const dbData = user.toDB();
 
-    // Si el usuario tiene password, hashearlo con bcrypt
-    if (dbData.password) {
-      const saltRounds = 10;
-      dbData.password = await bcrypt.hash(dbData.password, saltRounds);
+    // Construir campos y valores dinámicamente
+    const fields = ['id_cedula', 'nombre', 'id_rol'];
+    const values = [dbData.id_cedula, dbData.nombre, dbData.id_rol];
+
+    // Agregar campos opcionales solo si existen
+    if (dbData.area) {
+      fields.push('area');
+      values.push(dbData.area);
     }
 
+    if (dbData.celular) {
+      fields.push('celular');
+      values.push(dbData.celular);
+    }
+
+    // Si el usuario tiene password, hashearlo y agregarlo
+    if (dbData.password) {
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(dbData.password, saltRounds);
+      fields.push('password');
+      values.push(hashedPassword);
+    }
+
+    const placeholders = fields.map(() => '?').join(', ');
     const query = `
-      INSERT INTO usuarios (id_cedula, nombre, id_rol, area, celular, password)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO usuarios (${fields.join(', ')})
+      VALUES (${placeholders})
     `;
 
     try {
-      await this.db.query(query, [
-        dbData.id_cedula,
-        dbData.nombre,
-        dbData.id_rol,
-        dbData.area,
-        dbData.celular,
-        dbData.password
-      ]);
+      await this.db.query(query, values);
 
       // Retornar el usuario creado
       return await this.findByCedula(dbData.id_cedula);

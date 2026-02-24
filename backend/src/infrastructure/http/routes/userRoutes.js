@@ -12,7 +12,7 @@ import {
   handleValidationErrors 
 } from '../../middlewares/validator.js';
 import { loginLimiter, surveyLoginLimiter, writeLimiter } from '../../middlewares/rateLimiter.js';
-import { verifyToken, requireAdmin } from '../../middlewares/auth.middleware.js';
+import { verifyToken, requireAdmin, requireSupervisor } from '../../middlewares/auth.middleware.js';
 
 const createUserRoutes = (userController) => {
   const router = express.Router();
@@ -102,7 +102,7 @@ const createUserRoutes = (userController) => {
    * 
    * Protecciones:
    * - Token JWT requerido
-   * - Rol Administrador (solo admins pueden crear usuarios)
+   * - Rol Supervisor o superior (Supervisores y Administradores pueden crear usuarios)
    * - Rate limiting: 20 operaciones por minuto
    * - Validación de datos obligatorios
    * 
@@ -118,7 +118,7 @@ const createUserRoutes = (userController) => {
    */
   router.post('/', 
     verifyToken,
-    requireAdmin,
+    requireSupervisor,
     writeLimiter,
     validateCreateUser, 
     handleValidationErrors,
@@ -131,7 +131,7 @@ const createUserRoutes = (userController) => {
    * 
    * Protecciones:
    * - Token JWT requerido
-   * - Rol Administrador (solo admins pueden modificar usuarios)
+   * - Rol Supervisor o superior (Supervisores y Administradores pueden modificar usuarios)
    * - Rate limiting: 20 operaciones por minuto
    * 
    * Body puede incluir cualquiera de estos campos:
@@ -145,7 +145,7 @@ const createUserRoutes = (userController) => {
    */
   router.put('/:cedula', 
     verifyToken,
-    requireAdmin,
+    requireSupervisor,
     writeLimiter,
     (req, res) => userController.updateUser(req, res)
   );
@@ -157,14 +157,14 @@ const createUserRoutes = (userController) => {
    * 
    * Protecciones:
    * - Token JWT requerido
-   * - Rol Administrador (solo admins pueden eliminar usuarios)
+   * - Rol Supervisor o superior (Supervisores y Administradores pueden eliminar usuarios)
    * - Rate limiting: 20 operaciones por minuto
    * 
    * NOTA: No se puede eliminar si el usuario tiene vehículos asignados
    */
   router.delete('/:cedula', 
     verifyToken,
-    requireAdmin,
+    requireSupervisor,
     writeLimiter,
     (req, res) => userController.deleteUser(req, res)
   );
