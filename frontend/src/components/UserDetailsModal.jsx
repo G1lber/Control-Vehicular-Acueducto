@@ -278,8 +278,28 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null, onUpdate }
       return;
     }
 
-    // Validar contraseña solo si es Supervisor y se proporcionó una nueva
-    if (basicData.role === 'Supervisor' && basicData.password) {
+    // Detectar si cambió de Conductor a Supervisor
+    const isChangingToSupervisor = user.role === 'Conductor' && basicData.role === 'Supervisor';
+    const isChangingToConductor = user.role === 'Supervisor' && basicData.role === 'Conductor';
+
+    // Si cambia a Supervisor, EXIGIR contraseña
+    if (isChangingToSupervisor) {
+      if (!basicData.password || basicData.password.trim() === '') {
+        error('Debes establecer una contraseña al cambiar de Conductor a Supervisor');
+        return;
+      }
+      if (basicData.password.length < 6) {
+        error('La contraseña debe tener al menos 6 caracteres');
+        return;
+      }
+      if (basicData.password !== basicData.confirmPassword) {
+        error('Las contraseñas no coinciden');
+        return;
+      }
+    }
+
+    // Validar contraseña si es Supervisor y se proporcionó una nueva (sin cambio de rol)
+    if (basicData.role === 'Supervisor' && basicData.password && !isChangingToSupervisor) {
       if (basicData.password.length < 6) {
         error('La contraseña debe tener al menos 6 caracteres');
         return;
@@ -308,8 +328,12 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null, onUpdate }
         id_rol: roleMap[basicData.role] || 1
       };
 
-      // Solo incluir password si se proporcionó uno nuevo
-      if (basicData.password && basicData.password.trim() !== '') {
+      // Si cambia a Conductor desde Supervisor, eliminar contraseña
+      if (isChangingToConductor) {
+        updateData.password = null;
+      } 
+      // Si cambia a Supervisor o proporciona nueva contraseña para Supervisor
+      else if (basicData.password && basicData.password.trim() !== '') {
         updateData.password = basicData.password;
       }
 

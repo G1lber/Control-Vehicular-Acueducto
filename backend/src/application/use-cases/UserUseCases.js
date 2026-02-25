@@ -168,14 +168,33 @@ class UserUseCases {
       if (userData.phone !== undefined || userData.celular !== undefined) {
         updateData.celular = userData.phone || userData.celular;
       }
-      if (userData.password !== undefined && userData.password !== null && userData.password !== '') {
-        updateData.password = userData.password;
+      
+      // Manejo especial de contraseña
+      if (userData.password !== undefined) {
+        // Si password es explícitamente null, eliminar contraseña (para cambio a Conductor)
+        if (userData.password === null) {
+          updateData.password = null;
+        }
+        // Si password tiene valor, actualizarla
+        else if (userData.password !== '') {
+          updateData.password = userData.password;
+        }
       }
 
       // Si se está cambiando el rol, validar que password sea consistente
       const newRole = updateData.id_rol || existingUser.id_rol;
-      if ([2, 3].includes(Number(newRole)) && userData.password === '') {
-        throw new Error('Los Supervisores y Administradores requieren contraseña');
+      
+      // Si cambia a Supervisor/Admin y no tiene contraseña, requerirla
+      if ([2, 3].includes(Number(newRole))) {
+        // Solo validar si se está intentando poner password vacía en Supervisor/Admin
+        if (userData.password === '') {
+          throw new Error('Los Supervisores y Administradores requieren contraseña');
+        }
+      }
+      
+      // Si cambia a Conductor (rol 1) y se envía password: null, permitirlo (eliminar contraseña)
+      if (Number(newRole) === 1 && userData.password === null) {
+        updateData.password = null;
       }
 
       // Actualizar en DB

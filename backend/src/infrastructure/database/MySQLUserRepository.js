@@ -251,12 +251,18 @@ class MySQLUserRepository extends UserRepository {
       values.push(userData.celular);
     }
 
-    // Si viene password, hashearlo
-    if (userData.password !== undefined && userData.password !== null && userData.password !== '') {
-      const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
-      updates.push('password = ?');
-      values.push(hashedPassword);
+    // Manejo de contraseña
+    if (userData.password !== undefined) {
+      if (userData.password === null) {
+        // Eliminar contraseña (para Conductores)
+        updates.push('password = NULL');
+      } else if (userData.password !== '') {
+        // Actualizar con nueva contraseña hasheada
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
+        updates.push('password = ?');
+        values.push(hashedPassword);
+      }
     }
 
     if (updates.length === 0) {
