@@ -4,7 +4,7 @@ import { useAlert } from '../context/AlertContext';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => {
+export const SurveyTalentoHumano = ({ onNavigate, onLogout, currentUser, accessType }) => {
   const { success, error, warning, info } = useAlert();
   const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState({
@@ -253,10 +253,19 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
       
       // Redirigir después de un delay
       setTimeout(() => {
-        info('Redirigiendo...');
-        setTimeout(() => {
-          onNavigate && onNavigate('home');
-        }, 1500);
+        // Si es acceso solo encuesta, cerrar sesión automáticamente
+        if (accessType === 'survey_only') {
+          info('Cerrando sesión...');
+          setTimeout(() => {
+            onLogout && onLogout();
+          }, 1500);
+        } else {
+          // Usuario normal, ir a home
+          info('Redirigiendo...');
+          setTimeout(() => {
+            onNavigate && onNavigate('home');
+          }, 1500);
+        }
       }, 2000);
     } catch (err) {
       console.error('Error al enviar cuestionario:', err);

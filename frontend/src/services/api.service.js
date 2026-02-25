@@ -27,12 +27,13 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Manejar sesión expirada - limpiar y recargar
+      // Manejar sesión expirada - limpiar y disparar evento
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       localStorage.removeItem('access_type');
-      // Recargar la página para que App.jsx detecte que no hay token
-      window.location.reload();
+      
+      // Disparar evento personalizado para que App.jsx lo detecte
+      window.dispatchEvent(new CustomEvent('auth-expired'));
     }
     return Promise.reject(error);
   }

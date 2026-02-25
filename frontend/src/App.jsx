@@ -14,6 +14,7 @@ import { useAlert } from './context/AlertContext'
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
   const [accessType, setAccessType] = useState(null); // 'full' o 'survey_only'
   const [loginMode, setLoginMode] = useState('main'); // 'main' o 'survey'
@@ -43,7 +44,27 @@ function App() {
         localStorage.clear();
       }
     }
+    
+    // Marcar que ya se verificó la autenticación
+    setIsCheckingAuth(false);
   }, []);
+
+  // Escuchar evento de sesión expirada
+  useEffect(() => {
+    const handleAuthExpired = () => {
+      setIsAuthenticated(false);
+      setCurrentUser(null);
+      setAccessType(null);
+      setCurrentPage('home');
+      error('Tu sesión ha expirado. Por favor inicia sesión nuevamente.');
+    };
+
+    window.addEventListener('auth-expired', handleAuthExpired);
+    
+    return () => {
+      window.removeEventListener('auth-expired', handleAuthExpired);
+    };
+  }, [error]);
 
   // Detectar cambio de ruta para mostrar el login correcto
   useEffect(() => {
@@ -97,6 +118,21 @@ function App() {
     setSelectedVehicle(null);
   };
 
+  // Mostrar loader mientras se verifica la autenticación
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <svg className="animate-spin h-12 w-12 text-primary mx-auto mb-4" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+          <p className="text-gray-600 font-semibold">Verificando sesión...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Si no está autenticado, mostrar Login según el modo
   if (!isAuthenticated) {
     return (
@@ -137,7 +173,8 @@ function App() {
           
           <div className="max-w-7xl mx-auto py-6 px-4">
             <SurveyTalentoHumano 
-              onNavigate={handleNavigate} 
+              onNavigate={handleNavigate}
+              onLogout={handleLogout}
               currentUser={currentUser}
               accessType={accessType}
             />
@@ -158,7 +195,8 @@ function App() {
         return <Reports onNavigate={handleNavigate} />;
       case 'surveyTalentoHumano':
         return <SurveyTalentoHumano 
-          onNavigate={handleNavigate} 
+          onNavigate={handleNavigate}
+          onLogout={handleLogout}
           currentUser={currentUser}
           accessType={accessType}
         />;
