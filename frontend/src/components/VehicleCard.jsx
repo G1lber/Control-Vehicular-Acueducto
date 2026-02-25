@@ -113,7 +113,9 @@ const VehicleCard = ({ vehicle, driver, onMaintenanceClick, onDetailsClick }) =>
         {/* Último mantenimiento */}
         <div className="border-t pt-3">
           <p className="text-secondary text-xs">
-            Último mantenimiento: {new Date(vehicle.lastMaintenance).toLocaleDateString('es-CO')}
+            Último mantenimiento: {vehicle.lastMaintenance 
+              ? new Date(vehicle.lastMaintenance).toLocaleDateString('es-CO')
+              : 'Sin registros'}
           </p>
         </div>
 

@@ -49,6 +49,8 @@ const MaintenanceForm = ({ vehicleId, onSubmit, onCancel }) => {
     try {
       setIsSaving(true);
       
+      console.log('🔧 Datos del formulario de mantenimiento:', formData);
+      
       // Mapear el tipo de mantenimiento del frontend al backend
       const typeMapping = {
         'oil_change': 'Cambio de aceite',
@@ -64,18 +66,30 @@ const MaintenanceForm = ({ vehicleId, onSubmit, onCancel }) => {
         'other': 'Otro'
       };
 
-      // Mapear el formato del frontend al formato del backend (coincide con columnas de DB)
+      // Mapear el formato del frontend al formato del backend (camelCase esperado por validator)
       const maintenancePayload = {
-        id_placa: formData.vehicleId,
-        tipo_mantenimiento: typeMapping[formData.maintenanceType] || formData.maintenanceType,
-        fecha_realizado: formData.date,
-        descripcion: formData.description,
-        costo: formData.cost ? parseFloat(formData.cost) : null,
-        kilometraje: formData.mileage ? parseInt(formData.mileage) : null,
-        fecha_proxima: formData.nextMaintenanceDate || null
+        placa: formData.vehicleId,
+        tipo: typeMapping[formData.maintenanceType] || formData.maintenanceType,
+        fechaRealizado: formData.date,
+        descripcion: formData.description
       };
 
+      // Agregar campos opcionales solo si tienen valor
+      if (formData.cost) {
+        maintenancePayload.costo = parseFloat(formData.cost);
+      }
+      if (formData.mileage) {
+        maintenancePayload.kilometraje = parseInt(formData.mileage);
+      }
+      if (formData.nextMaintenanceDate) {
+        maintenancePayload.fechaProxima = formData.nextMaintenanceDate;
+      }
+
+      console.log('📤 Payload de mantenimiento:', maintenancePayload);
+
       const response = await maintenanceService.createMaintenance(maintenancePayload);
+      
+      console.log('✅ Respuesta del servidor:', response);
       
       if (response.success) {
         success('Mantenimiento registrado exitosamente');
@@ -88,7 +102,9 @@ const MaintenanceForm = ({ vehicleId, onSubmit, onCancel }) => {
         error(response.message || 'Error al registrar mantenimiento');
       }
     } catch (err) {
-      console.error('Error al crear mantenimiento:', err);
+      console.error('❌ Error al crear mantenimiento:', err);
+      console.error('📋 Response data:', err.response?.data);
+      console.error('🔴 Mensaje:', err.response?.data?.message);
       const errorMessage = err.response?.data?.message || 'Error al registrar el mantenimiento';
       error(errorMessage);
     } finally {

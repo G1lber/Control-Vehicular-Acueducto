@@ -6,6 +6,7 @@ import VehicleDetailsModal from '../components/VehicleDetailsModal';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import vehicleService from '../services/vehicle.service';
 import userService from '../services/user.service';
+import maintenanceService from '../services/maintenance.service';
 import { useAlert } from '../context/AlertContext';
 
 const VehicleList = ({ onNavigate }) => {
@@ -54,8 +55,28 @@ const VehicleList = ({ onNavigate }) => {
           driverId: v.id_usuario || null
         }));
         
-        console.log('Vehículos cargados:', mappedVehicles); // Debug
-        setVehicles(mappedVehicles);
+        // Cargar el último mantenimiento de cada vehículo
+        const vehiclesWithMaintenance = await Promise.all(
+          mappedVehicles.map(async (vehicle) => {
+            try {
+              const maintenanceResponse = await maintenanceService.getLastMaintenanceByVehicle(vehicle.plate);
+              if (maintenanceResponse.success && maintenanceResponse.data) {
+                // Actualizar con la fecha del último mantenimiento
+                return {
+                  ...vehicle,
+                  lastMaintenance: maintenanceResponse.data.fechaRealizado || maintenanceResponse.data.fecha_realizado
+                };
+              }
+            } catch (err) {
+              // Si no hay mantenimientos o hay error, mantener el vehículo sin cambios
+              console.log(`No hay mantenimientos para ${vehicle.plate}`);
+            }
+            return vehicle;
+          })
+        );
+        
+        console.log('Vehículos con último mantenimiento:', vehiclesWithMaintenance); // Debug
+        setVehicles(vehiclesWithMaintenance);
       }
     } catch (err) {
       console.error('Error al cargar vehículos:', err);
@@ -274,7 +295,53 @@ const VehicleList = ({ onNavigate }) => {
       
       if (response.success) {
         success('Vehículo actualizado exitosamente');
-        await loadVehicles();
+        
+        // Actualizar la lista de vehículos
+        const loadResponse = await vehicleService.getAllVehicles();
+        
+        if (loadResponse.success) {
+          // Mapear los datos del backend al formato del frontend
+          const mappedVehicles = loadResponse.data.map(v => ({
+            id: v.id_placa,
+            plate: v.id_placa,
+            brand: v.marca || 'N/A',
+            model: v.modelo || 'N/A',
+            year: v.anio || '',
+            color: v.color || 'N/A',
+            fuelType: v.tipo_combustible || 'N/A',
+            soatExpiry: v.soat || null,
+            techReviewExpiry: v.tecno || null,
+            lastMaintenance: v.ultimo_mantenimiento || null,
+            mileage: v.kilometraje_actual || '0',
+            driverId: v.id_usuario || null
+          }));
+          
+          // Cargar el último mantenimiento de cada vehículo
+          const vehiclesWithMaintenance = await Promise.all(
+            mappedVehicles.map(async (vehicle) => {
+              try {
+                const maintenanceResponse = await maintenanceService.getLastMaintenanceByVehicle(vehicle.plate);
+                if (maintenanceResponse.success && maintenanceResponse.data) {
+                  return {
+                    ...vehicle,
+                    lastMaintenance: maintenanceResponse.data.fechaRealizado || maintenanceResponse.data.fecha_realizado
+                  };
+                }
+              } catch (err) {
+                console.log(`No hay mantenimientos para ${vehicle.plate}`);
+              }
+              return vehicle;
+            })
+          );
+          
+          setVehicles(vehiclesWithMaintenance);
+          
+          // Actualizar el vehículo seleccionado con los datos más recientes
+          const updatedFromBackend = vehiclesWithMaintenance.find(v => v.plate === updatedVehicle.plate);
+          if (updatedFromBackend) {
+            setSelectedVehicle(updatedFromBackend);
+          }
+        }
       } else {
         error(response.message || 'Error al actualizar vehículo');
       }

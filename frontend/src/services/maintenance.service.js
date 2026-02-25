@@ -136,10 +136,26 @@ const maintenanceService = {
    */
   async createMaintenance(maintenanceData) {
     try {
+      console.log('🔧 [maintenance.service] Creando mantenimiento');
+      console.log('📦 [maintenance.service] Payload:', JSON.stringify(maintenanceData, null, 2));
+      
       const response = await apiService.post('/maintenances', maintenanceData);
+      
+      console.log('✅ [maintenance.service] Mantenimiento creado:', response.data);
       return response.data;
     } catch (error) {
-      console.error('Error al crear mantenimiento:', error);
+      console.error('❌ [maintenance.service] Error al crear mantenimiento:', error);
+      console.error('📋 [maintenance.service] Response data:', error.response?.data);
+      console.error('🔴 [maintenance.service] Mensaje:', error.response?.data?.message);
+      
+      // Mostrar cada error de validación individualmente
+      if (error.response?.data?.errors && Array.isArray(error.response.data.errors)) {
+        console.error('⚠️ [maintenance.service] Detalles completos de errores:');
+        error.response.data.errors.forEach((err, index) => {
+          console.error(`   Error ${index + 1}:`, JSON.stringify(err, null, 2));
+        });
+      }
+      
       throw error;
     }
   },

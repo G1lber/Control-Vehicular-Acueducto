@@ -35,6 +35,24 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, drivers = [] 
     driverId: ''
   });
 
+  // Función helper para convertir fechas al formato YYYY-MM-DD para inputs
+  const formatDateForInput = (dateValue) => {
+    if (!dateValue) return '';
+    
+    try {
+      const date = new Date(dateValue);
+      if (isNaN(date.getTime())) return '';
+      
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      
+      return `${year}-${month}-${day}`;
+    } catch (e) {
+      return '';
+    }
+  };
+
   // Inicializar el formulario cuando el vehículo cambie
   useEffect(() => {
     if (vehicle) {
@@ -43,8 +61,8 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, drivers = [] 
       console.log('VehicleDetailsModal - driverId del vehículo:', vehicle.driverId); // Debug
       
       setFormData({
-        soatExpiry: vehicle.soatExpiry || '',
-        techReviewExpiry: vehicle.techReviewExpiry || '',
+        soatExpiry: formatDateForInput(vehicle.soatExpiry),
+        techReviewExpiry: formatDateForInput(vehicle.techReviewExpiry),
         plate: vehicle.plate || '',
         brand: vehicle.brand || '',
         model: vehicle.model || '',
@@ -153,11 +171,11 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, drivers = [] 
   };
 
   const handleCancelDates = () => {
-    // Restaurar valores originales
+    // Restaurar valores originales con formato correcto para inputs
     setFormData(prev => ({
       ...prev,
-      soatExpiry: vehicle.soatExpiry || '',
-      techReviewExpiry: vehicle.techReviewExpiry || ''
+      soatExpiry: formatDateForInput(vehicle.soatExpiry),
+      techReviewExpiry: formatDateForInput(vehicle.techReviewExpiry)
     }));
     setIsEditingDates(false);
   };
