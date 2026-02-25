@@ -13,17 +13,31 @@ import {
 import maintenanceService from '../services/maintenance.service';
 
 const MaintenanceHistoryModal = ({ isOpen, onClose, maintenances: initialMaintenances, vehicles }) => {
-  const [selectedMonth, setSelectedMonth] = useState('');
-  const [filterMode, setFilterMode] = useState('all'); // 'all' o 'custom'
+  // Obtener mes actual en formato YYYY-MM
+  const getCurrentMonth = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
+  };
+
+  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
+  const [filterMode, setFilterMode] = useState('custom'); // Iniciar con filtro activo
   const [maintenances, setMaintenances] = useState(initialMaintenances || []);
   const [loading, setLoading] = useState(false);
 
   // Cargar mantenimientos cuando se abre el modal
   useEffect(() => {
-    if (isOpen && !initialMaintenances) {
-      loadMaintenances();
-    } else if (initialMaintenances) {
-      setMaintenances(initialMaintenances);
+    if (isOpen) {
+      // Resetear al mes actual cada vez que se abre el modal
+      setSelectedMonth(getCurrentMonth());
+      setFilterMode('custom');
+      
+      if (!initialMaintenances) {
+        loadMaintenances();
+      } else {
+        setMaintenances(initialMaintenances);
+      }
     }
   }, [isOpen, initialMaintenances]);
 
@@ -130,9 +144,18 @@ const MaintenanceHistoryModal = ({ isOpen, onClose, maintenances: initialMainten
     return new Date(b.date) - new Date(a.date);
   });
 
-  // Calcular estadísticas del período seleccionado
-  const totalCost = filteredMaintenances.reduce((sum, m) => sum + (parseFloat(m.cost) || 0), 0);
+  // Calcular estadísticas del período seleccionado (mes)
   const maintenanceCount = filteredMaintenances.length;
+
+  // Calcular costo total del año actual
+  const currentYear = new Date().getFullYear();
+  const totalCostYear = useMemo(() => {
+    const yearMaintenances = maintenances.filter(m => {
+      const date = new Date(m.date);
+      return date.getFullYear() === currentYear;
+    });
+    return yearMaintenances.reduce((sum, m) => sum + (parseFloat(m.cost) || 0), 0);
+  }, [maintenances, currentYear]);
 
   // Formatear el mes para mostrar
   const formatMonthLabel = (monthYear) => {
@@ -223,7 +246,7 @@ const MaintenanceHistoryModal = ({ isOpen, onClose, maintenances: initialMainten
                 <Cog6ToothIcon className="w-8 h-8" />
                 <div>
                   <p className="text-sm opacity-90">
-                    {filterMode === 'all' ? 'Total Mantenimientos' : 'Mantenimientos'}
+                    Mantenimientos del Mes
                   </p>
                   <p className="text-2xl font-bold">{maintenanceCount}</p>
                   {filterMode === 'custom' && selectedMonth && (
@@ -237,10 +260,13 @@ const MaintenanceHistoryModal = ({ isOpen, onClose, maintenances: initialMainten
                 <CurrencyDollarIcon className="w-8 h-8 text-green-600" />
                 <div>
                   <p className="text-sm text-green-600 font-semibold">
-                    {filterMode === 'all' ? 'Costo Total' : 'Costo del Período'}
+                    Costo Total {currentYear}
                   </p>
                   <p className="text-2xl font-bold text-green-700">
-                    ${totalCost.toLocaleString('es-CO')}
+                    ${totalCostYear.toLocaleString('es-CO')}
+                  </p>
+                  <p className="text-xs text-green-600 opacity-75 mt-1">
+                    Año completo
                   </p>
                 </div>
               </div>

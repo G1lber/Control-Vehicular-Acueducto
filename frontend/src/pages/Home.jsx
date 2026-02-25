@@ -5,149 +5,28 @@ import {
   ChevronRightIcon, 
   Cog6ToothIcon, 
   ExclamationTriangleIcon, 
-  PlusIcon, 
   DocumentChartBarIcon,
   UsersIcon,
   ClipboardDocumentCheckIcon
 } from '@heroicons/react/24/outline';
 import AlertsModal from '../components/AlertsModal';
-import AddVehicleModal from '../components/AddVehicleModal';
 import MaintenanceHistoryModal from '../components/MaintenanceHistoryModal';
-// import { exampleService } from '../services/example.service';
+import vehicleService from '../services/vehicle.service';
+import userService from '../services/user.service';
+import maintenanceService from '../services/maintenance.service';
 
 export const Home = ({ onNavigate }) => {
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [isAlertsModalOpen, setIsAlertsModalOpen] = useState(false);
-  const [isAddVehicleModalOpen, setIsAddVehicleModalOpen] = useState(false);
   const [isMaintenanceHistoryOpen, setIsMaintenanceHistoryOpen] = useState(false);
 
-  // Datos de conductores - estos vendrán del backend
-  const [drivers] = useState([
-    {
-      id: 1,
-      name: 'Carlos Andrés López',
-      cedula: '1234567890',
-      phone: '3001234567',
-      area: 'Operaciones',
-      role: 'Conductor'
-    },
-    {
-      id: 3,
-      name: 'José Luis Martínez',
-      cedula: '5555555555',
-      phone: '3205555555',
-      area: 'Operaciones',
-      role: 'Conductor'
-    },
-  ]);
+  // Datos del backend
+  const [drivers, setDrivers] = useState([]);
 
-  // Datos de ejemplo de vehículos - estos vendrán del backend
-  const [vehicles] = useState([
-    {
-      id: 1,
-      plate: 'ABC-123',
-      brand: 'Toyota',
-      model: 'Hilux',
-      year: 2022,
-      color: 'Blanco',
-      fuelType: 'Diesel',
-      soatExpiry: '2026-06-15',
-      techReviewExpiry: '2026-08-20',
-      lastMaintenance: '2026-01-10',
-      mileage: '45000',
-      driverId: 1
-    },
-    {
-      id: 2,
-      plate: 'DEF-456',
-      brand: 'Chevrolet',
-      model: 'D-Max',
-      year: 2021,
-      color: 'Azul',
-      fuelType: 'Diesel',
-      soatExpiry: '2026-03-10',
-      techReviewExpiry: '2026-02-28',
-      lastMaintenance: '2026-01-05',
-      mileage: '68000',
-      driverId: 3
-    },
-    {
-      id: 3,
-      plate: 'GHI-789',
-      brand: 'Nissan',
-      model: 'Frontier',
-      year: 2023,
-      color: 'Gris',
-      fuelType: 'Gasolina',
-      soatExpiry: '2026-01-20',
-      techReviewExpiry: '2027-01-15',
-      lastMaintenance: '2026-02-01',
-      mileage: '32000',
-      driverId: 1
-    },
-  ]);
+  const [vehicles, setVehicles] = useState([]);
 
-  // Datos de ejemplo de mantenimientos - estos vendrán del backend
-  const [maintenances] = useState([
-    {
-      id: 1,
-      vehicleId: 1,
-      maintenanceType: 'oil_change',
-      date: '2026-01-10',
-      cost: '150000',
-      mileage: '45000',
-      nextMaintenanceDate: '2026-07-10',
-      description: 'Cambio de aceite y filtro de aceite. Se utilizó aceite sintético 5W-30.'
-    },
-    {
-      id: 2,
-      vehicleId: 2,
-      maintenanceType: 'tire_change',
-      date: '2026-01-05',
-      cost: '800000',
-      mileage: '60000',
-      description: 'Cambio completo de llantas. Se instalaron llantas nuevas Michelin LTX Force.'
-    },
-    {
-      id: 3,
-      vehicleId: 1,
-      maintenanceType: 'filters',
-      date: '2025-12-15',
-      cost: '120000',
-      mileage: '44500',
-      description: 'Cambio de filtro de aire y filtro de combustible.'
-    },
-    {
-      id: 4,
-      vehicleId: 3,
-      maintenanceType: 'brakes',
-      date: '2026-02-01',
-      cost: '350000',
-      mileage: '35000',
-      nextMaintenanceDate: '2027-02-01',
-      description: 'Cambio de pastillas de freno delanteras y rectificación de discos.'
-    },
-    {
-      id: 5,
-      vehicleId: 2,
-      maintenanceType: 'brake_fluid',
-      date: '2025-11-20',
-      cost: '80000',
-      mileage: '58000',
-      description: 'Cambio de líquido de frenos. Se utilizó líquido DOT 4.'
-    },
-    {
-      id: 6,
-      vehicleId: 1,
-      maintenanceType: 'engine',
-      date: '2025-10-05',
-      cost: '450000',
-      mileage: '42000',
-      nextMaintenanceDate: '2026-10-05',
-      description: 'Mantenimiento general del motor. Limpieza de inyectores, cambio de bujías.'
-    },
-  ]);
+  const [maintenances, setMaintenances] = useState([]);
 
   // Calcular alertas reales
   const calculateAlerts = () => {
@@ -173,29 +52,77 @@ export const Home = ({ onNavigate }) => {
     return alertsCount;
   };
 
-  const handleAddVehicle = (vehicleData) => {
-    console.log('Vehículo agregado:', vehicleData);
-    // Aquí se enviará al backend cuando esté disponible
+  // Calcular mantenimientos del año actual
+  const calculateCurrentYearMaintenances = () => {
+    const currentYear = new Date().getFullYear();
+    return maintenances.filter(m => {
+      const date = new Date(m.date);
+      return date.getFullYear() === currentYear;
+    }).length;
   };
 
-  // Ejemplo de cómo usar los servicios
+  // Cargar datos del backend
   useEffect(() => {
-    // Descomentar cuando el backend esté disponible
-    /*
     const fetchData = async () => {
       setLoading(true);
       try {
-        const result = await exampleService.getAll();
-        setData(result);
+        // Cargar vehículos
+        const vehiclesResponse = await vehicleService.getAllVehicles();
+        if (vehiclesResponse.success) {
+          const mappedVehicles = vehiclesResponse.data.map(v => ({
+            id: v.id_placa,
+            plate: v.id_placa,
+            brand: v.marca || 'N/A',
+            model: v.modelo || 'N/A',
+            year: v.anio || '',
+            color: v.color || 'N/A',
+            fuelType: v.tipo_combustible || 'N/A',
+            soatExpiry: v.soat || null,
+            techReviewExpiry: v.tecno || null,
+            lastMaintenance: v.ultimo_mantenimiento || null,
+            mileage: v.kilometraje_actual || '0',
+            driverId: v.id_usuario || null
+          }));
+          setVehicles(mappedVehicles);
+        }
+
+        // Cargar conductores
+        const driversResponse = await userService.getUsersByRole('conductor');
+        if (driversResponse.success) {
+          const mappedDrivers = driversResponse.data.map(u => ({
+            id: u.cedula,
+            cedula: u.cedula,
+            name: u.name,
+            phone: u.phone || '',
+            area: u.area || '',
+            role: u.role
+          }));
+          setDrivers(mappedDrivers);
+        }
+
+        // Cargar mantenimientos
+        const maintenancesResponse = await maintenanceService.getAllMaintenances();
+        if (maintenancesResponse.success) {
+          const mappedMaintenances = maintenancesResponse.data.map(m => ({
+            id: m.id_mantenimiento,
+            vehicleId: m.id_placa,
+            maintenanceType: m.tipo_mantenimiento,
+            date: m.fecha_realizado || m.fechaRealizado,
+            cost: m.costo?.toString() || '',
+            mileage: m.kilometraje?.toString() || '',
+            nextMaintenanceDate: m.fecha_proxima || m.fechaProxima || null,
+            description: m.descripcion || ''
+          }));
+          setMaintenances(mappedMaintenances);
+        }
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Error al cargar datos:', error);
       } finally {
         setLoading(false);
       }
     };
     
     fetchData();
-    */
   }, []);
 
   return (
@@ -218,7 +145,7 @@ export const Home = ({ onNavigate }) => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-secondary text-sm font-semibold mb-1">Total Vehículos</p>
-              <p className="text-3xl font-bold text-primary">24</p>
+              <p className="text-3xl font-bold text-primary">{vehicles.length}</p>
             </div>
             <div className="bg-primary-light/20 p-3 rounded-full">
               <ChartBarIcon className="w-8 h-8 text-primary" />
@@ -236,8 +163,8 @@ export const Home = ({ onNavigate }) => {
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-secondary text-sm font-semibold mb-1">Mantenimientos</p>
-              <p className="text-3xl font-bold text-primary-light">{maintenances.length}</p>
+              <p className="text-secondary text-sm font-semibold mb-1">Mantenimientos {new Date().getFullYear()}</p>
+              <p className="text-3xl font-bold text-primary-light">{calculateCurrentYearMaintenances()}</p>
             </div>
             <div className="bg-primary-light/20 p-3 rounded-full">
               <Cog6ToothIcon className="w-8 h-8 text-primary-light" />
@@ -291,15 +218,6 @@ export const Home = ({ onNavigate }) => {
             <span className="text-sm opacity-90">Conductores y supervisores</span>
           </button>
 
-          <button
-            onClick={() => setIsAddVehicleModalOpen(true)}
-            className="bg-primary-light hover:bg-primary text-white p-6 rounded-lg shadow-md hover:shadow-xl transition-all transform hover:scale-105 flex flex-col items-center gap-3"
-          >
-            <PlusIcon className="w-12 h-12" />
-            <span className="font-bold text-lg">Nuevo Vehículo</span>
-            <span className="text-sm opacity-90">Registrar vehículo nuevo</span>
-          </button>
-
           {/* <button
             onClick={() => setIsMaintenanceHistoryOpen(true)}
             className="bg-primary-light hover:bg-primary text-white p-6 rounded-lg shadow-md hover:shadow-xl transition-all transform hover:scale-105 flex flex-col items-center gap-3"
@@ -347,14 +265,6 @@ export const Home = ({ onNavigate }) => {
         isOpen={isAlertsModalOpen}
         onClose={() => setIsAlertsModalOpen(false)}
         vehicles={vehicles}
-      />
-
-      {/* Modal de Agregar Vehículo */}
-      <AddVehicleModal
-        isOpen={isAddVehicleModalOpen}
-        onClose={() => setIsAddVehicleModalOpen(false)}
-        onSubmit={handleAddVehicle}
-        drivers={drivers}
       />
 
       {/* Modal de Historial de Mantenimientos */}

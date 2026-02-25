@@ -17,7 +17,6 @@ const VehicleList = ({ onNavigate }) => {
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
   const [isAddVehicleModalOpen, setIsAddVehicleModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
@@ -115,7 +114,6 @@ const VehicleList = ({ onNavigate }) => {
                          vehicle.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          vehicle.model.toLowerCase().includes(searchTerm.toLowerCase());
     
-    // Aquí puedes agregar más filtros según el estado (SOAT vencido, etc.)
     return matchesSearch;
   });
 
@@ -125,14 +123,9 @@ const VehicleList = ({ onNavigate }) => {
   const endIndex = startIndex + itemsPerPage;
   const currentVehicles = filteredVehicles.slice(startIndex, endIndex);
 
-  // Resetear a página 1 cuando cambia la búsqueda o filtro
+  // Resetear a página 1 cuando cambia la búsqueda
   const handleSearchChange = (value) => {
     setSearchTerm(value);
-    setCurrentPage(1);
-  };
-
-  const handleFilterChange = (value) => {
-    setFilterStatus(value);
     setCurrentPage(1);
   };
 
@@ -337,34 +330,15 @@ const VehicleList = ({ onNavigate }) => {
         </button>
       </div>
 
-      {/* Barra de búsqueda y filtros */}
+      {/* Barra de búsqueda */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Búsqueda */}
-          <div className="md:col-span-2">
-            <input
-              type="text"
-              placeholder="Buscar por placa, marca o modelo..."
-              value={searchTerm}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary-light focus:outline-none transition-colors"
-            />
-          </div>
-
-          {/* Filtro por estado */}
-          <div>
-            <select
-              value={filterStatus}
-              onChange={(e) => handleFilterChange(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary-light focus:outline-none transition-colors"
-            >
-              <option value="all">Todos los estados</option>
-              <option value="active">Activos</option>
-              <option value="expiring">Por vencer</option>
-              <option value="expired">Vencidos</option>
-            </select>
-          </div>
-        </div>
+        <input
+          type="text"
+          placeholder="Buscar por placa, marca o modelo..."
+          value={searchTerm}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary-light focus:outline-none transition-colors"
+        />
 
         {/* Información de resultados */}
         {filteredVehicles.length > 0 && (
