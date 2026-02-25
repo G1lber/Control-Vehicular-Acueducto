@@ -55,27 +55,25 @@ const VehicleList = ({ onNavigate }) => {
           driverId: v.id_usuario || null
         }));
         
-        // Cargar el último mantenimiento de cada vehículo
+        // Cargar el último mantenimiento de cada vehículo en paralelo
         const vehiclesWithMaintenance = await Promise.all(
           mappedVehicles.map(async (vehicle) => {
             try {
               const maintenanceResponse = await maintenanceService.getLastMaintenanceByVehicle(vehicle.plate);
               if (maintenanceResponse.success && maintenanceResponse.data) {
-                // Actualizar con la fecha del último mantenimiento
                 return {
                   ...vehicle,
                   lastMaintenance: maintenanceResponse.data.fechaRealizado || maintenanceResponse.data.fecha_realizado
                 };
               }
             } catch (err) {
-              // Si no hay mantenimientos o hay error, mantener el vehículo sin cambios
               console.log(`No hay mantenimientos para ${vehicle.plate}`);
             }
             return vehicle;
           })
         );
         
-        console.log('Vehículos con último mantenimiento:', vehiclesWithMaintenance); // Debug
+        console.log('Vehículos con último mantenimiento:', vehiclesWithMaintenance);
         setVehicles(vehiclesWithMaintenance);
       }
     } catch (err) {
@@ -296,52 +294,20 @@ const VehicleList = ({ onNavigate }) => {
       if (response.success) {
         success('Vehículo actualizado exitosamente');
         
-        // Actualizar la lista de vehículos
-        const loadResponse = await vehicleService.getAllVehicles();
+        // Recargar todos los vehículos usando la función optimizada
+        await loadVehicles();
         
-        if (loadResponse.success) {
-          // Mapear los datos del backend al formato del frontend
-          const mappedVehicles = loadResponse.data.map(v => ({
-            id: v.id_placa,
-            plate: v.id_placa,
-            brand: v.marca || 'N/A',
-            model: v.modelo || 'N/A',
-            year: v.anio || '',
-            color: v.color || 'N/A',
-            fuelType: v.tipo_combustible || 'N/A',
-            soatExpiry: v.soat || null,
-            techReviewExpiry: v.tecno || null,
-            lastMaintenance: v.ultimo_mantenimiento || null,
-            mileage: v.kilometraje_actual || '0',
-            driverId: v.id_usuario || null
-          }));
-          
-          // Cargar el último mantenimiento de cada vehículo
-          const vehiclesWithMaintenance = await Promise.all(
-            mappedVehicles.map(async (vehicle) => {
-              try {
-                const maintenanceResponse = await maintenanceService.getLastMaintenanceByVehicle(vehicle.plate);
-                if (maintenanceResponse.success && maintenanceResponse.data) {
-                  return {
-                    ...vehicle,
-                    lastMaintenance: maintenanceResponse.data.fechaRealizado || maintenanceResponse.data.fecha_realizado
-                  };
-                }
-              } catch (err) {
-                console.log(`No hay mantenimientos para ${vehicle.plate}`);
-              }
-              return vehicle;
-            })
-          );
-          
-          setVehicles(vehiclesWithMaintenance);
-          
-          // Actualizar el vehículo seleccionado con los datos más recientes
-          const updatedFromBackend = vehiclesWithMaintenance.find(v => v.plate === updatedVehicle.plate);
-          if (updatedFromBackend) {
-            setSelectedVehicle(updatedFromBackend);
-          }
-        }
+        // Buscar el vehículo actualizado en la lista recién cargada
+        // Esperamos un pequeño momento para que se complete la primera carga
+        setTimeout(() => {
+          setVehicles(prevVehicles => {
+            const updatedFromBackend = prevVehicles.find(v => v.plate === updatedVehicle.plate);
+            if (updatedFromBackend) {
+              setSelectedVehicle(updatedFromBackend);
+            }
+            return prevVehicles;
+          });
+        }, 100);
       } else {
         error(response.message || 'Error al actualizar vehículo');
       }

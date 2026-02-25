@@ -8,11 +8,11 @@ import rateLimit from 'express-rate-limit';
 // ==================== LIMITADOR GENERAL ====================
 /**
  * Límite general para todas las rutas de la API
- * 100 peticiones por IP cada 15 minutos
+ * 10000 peticiones por IP cada 15 minutos (sistema interno)
  */
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // Máximo 100 peticiones
+  max: 10000, // Máximo 10000 peticiones (amplio para uso interno)
   message: {
     success: false,
     message: 'Demasiadas peticiones desde esta IP',
@@ -89,12 +89,12 @@ const surveyLoginLimiter = rateLimit({
 // ==================== LIMITADOR PARA CREAR/EDITAR/ELIMINAR ====================
 /**
  * Límite para operaciones de escritura (POST, PUT, DELETE)
- * 20 peticiones por IP cada minuto
- * Previene spam de creación/edición masiva
+ * 1000 peticiones por IP cada minuto (sistema interno)
+ * Para uso interno sin restricciones excesivas
  */
 const writeLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minuto
-  max: 20, // Máximo 20 operaciones
+  max: 1000, // Máximo 1000 operaciones (amplio para uso interno)
   message: {
     success: false,
     message: 'Demasiadas operaciones de escritura',
