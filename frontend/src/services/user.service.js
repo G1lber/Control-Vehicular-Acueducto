@@ -152,14 +152,22 @@ const userService = {
    */
   getUserSurvey: async (cedula) => {
     try {
+      console.log(`🌐 [user.service] Solicitando GET /api/survey/user/${cedula}`);
       const response = await apiService.get(`/survey/user/${cedula}`);
-      return response.data;
+      console.log(`📡 [user.service] Respuesta completa:`, response);
+      console.log(`📋 [user.service] response.data:`, response.data);
+      console.log(`📄 [user.service] response.data.data:`, response.data.data);
+      
+      const surveyData = response.data.data;
+      console.log(`✅ [user.service] Retornando:`, surveyData ? 'Datos del cuestionario' : 'NULL');
+      return surveyData; // Extraer solo el cuestionario
     } catch (error) {
       // Si no existe cuestionario, retornar null en lugar de error
       if (error.response?.status === 404) {
+        console.log(`⚠️ [user.service] 404 - Usuario ${cedula} no tiene cuestionario`);
         return null;
       }
-      console.error(`Error al obtener cuestionario del usuario ${cedula}:`, error);
+      console.error(`❌ [user.service] Error al obtener cuestionario del usuario ${cedula}:`, error);
       throw error;
     }
   },

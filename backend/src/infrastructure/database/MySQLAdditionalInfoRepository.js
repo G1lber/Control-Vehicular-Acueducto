@@ -63,6 +63,9 @@ class MySQLAdditionalInfoRepository extends AdditionalInfoRepository {
    */
   async findByUserId(idUsuario) {
     try {
+      console.log(`[MySQLAdditionalInfoRepository] 🔍 Buscando cuestionario para idUsuario:`, idUsuario);
+      console.log(`[MySQLAdditionalInfoRepository] Tipo de idUsuario:`, typeof idUsuario);
+      
       const [rows] = await pool.query(
         `SELECT ia.*, u.nombre as nombre_usuario
          FROM informacion_adicional ia
@@ -73,13 +76,24 @@ class MySQLAdditionalInfoRepository extends AdditionalInfoRepository {
         [idUsuario]
       );
 
+      console.log(`[MySQLAdditionalInfoRepository] 📊 Filas encontradas:`, rows.length);
+      if (rows.length > 0) {
+        console.log(`[MySQLAdditionalInfoRepository] ✅ Registro encontrado:`, {
+          id_adicional: rows[0].id_adicional,
+          id_usuario: rows[0].id_usuario,
+          ciudad: rows[0].ciudad
+        });
+      } else {
+        console.log(`[MySQLAdditionalInfoRepository] ❌ No se encontró registro`);
+      }
+
       if (rows.length === 0) {
         return null;
       }
 
       return new AdditionalInfo(rows[0]);
     } catch (error) {
-      console.error('Error al obtener información adicional por usuario:', error);
+      console.error('[MySQLAdditionalInfoRepository] ❌ Error al obtener información adicional por usuario:', error);
       throw new Error('Error al obtener información adicional del usuario');
     }
   }

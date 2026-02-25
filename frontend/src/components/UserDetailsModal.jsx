@@ -42,8 +42,8 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null, onUpdate }
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Datos del cuestionario
-  const [formData, setFormData] = useState({
+  // Datos del cuestionario - Estado inicial
+  const initialFormData = {
     // CONSENTIMIENTO Y DATOS BÁSICOS
     consentimiento: '',
     ciudad: '',
@@ -113,7 +113,9 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null, onUpdate }
     
     // INFORMACIÓN ADICIONAL
     informacion_adicional: ''
-  });
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
 
   // Cargar datos cuando se abre el modal
   useEffect(() => {
@@ -131,9 +133,12 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null, onUpdate }
       // Si hay datos del cuestionario, cargarlos
       if (surveyData) {
         setFormData({
-          ...formData,
+          ...initialFormData,
           ...surveyData
         });
+      } else {
+        // Si no hay cuestionario, resetear a valores iniciales
+        setFormData(initialFormData);
       }
     }
     

@@ -101,9 +101,9 @@ const Users = () => {
       const survey = await userService.getUserSurvey(cedula);
       setSurveyData(prev => ({
         ...prev,
-        [cedula]: survey?.data || null
+        [cedula]: survey || null
       }));
-      return survey?.data || null;
+      return survey || null;
     } catch (error) {
       console.error(`Error al cargar cuestionario del usuario ${cedula}:`, error);
       return null;
@@ -185,12 +185,22 @@ const Users = () => {
   // Manejar vista de detalles del usuario
   const handleViewDetails = async (user) => {
     setSelectedUser(user);
-    setIsDetailsModalOpen(true);
     
-    // Cargar el cuestionario si no está en caché
+    // Cargar el cuestionario si no está en caché ANTES de abrir el modal
     if (!surveyData[user.cedula]) {
-      await loadUserSurvey(user.cedula);
+      const loadedSurvey = await loadUserSurvey(user.cedula);
+      // Actualizar surveyData inmediatamente con el resultado
+      setSurveyData(prev => ({
+        ...prev,
+        [user.cedula]: loadedSurvey
+      }));
     }
+    
+    // Pequeño delay para asegurar que el estado se haya actualizado
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Abrir el modal después de cargar los datos
+    setIsDetailsModalOpen(true);
   };
 
   return (

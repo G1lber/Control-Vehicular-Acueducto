@@ -194,13 +194,13 @@ class AdditionalInfoController {
   };
 
   /**
-   * GET /api/survey/user/:idUsuario
+   * GET /api/survey/user/:cedula
    * Obtener cuestionario de un usuario específico
    */
   getSurveyByUserId = async (req, res) => {
     try {
-      const { idUsuario } = req.params;
-      const survey = await this.additionalInfoUseCases.getSurveyByUserId(idUsuario);
+      const { cedula } = req.params;  // Cambio: de idUsuario a cedula
+      const survey = await this.additionalInfoUseCases.getSurveyByUserId(cedula);
 
       if (!survey) {
         return res.status(404).json({
