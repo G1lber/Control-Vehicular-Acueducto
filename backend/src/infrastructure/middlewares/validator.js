@@ -94,8 +94,11 @@ const validateSurvey = [
     .trim(),
   
   body('edad')
-    .optional()
-    .isInt({ min: 18, max: 120 }).withMessage('La edad debe estar entre 18 y 120 años'),
+    .optional({ values: 'null' })
+    .custom((value) => {
+      if (!value) return true;  // Permitir null, undefined o vacío
+      return ['Menor de 18', '18-27', '28-37', '38-47', '48 o mas'].includes(value);
+    }).withMessage('Opción de edad inválida'),
   
   body('tipoContratacion')
     .optional()
@@ -113,9 +116,34 @@ const validateSurvey = [
     .optional()
     .matches(/^\d{4}-\d{2}-\d{2}$/).withMessage('Formato de fecha inválido (YYYY-MM-DD)'),
   
+  body('categoriaLicencia')
+    .optional()
+    .isString().withMessage('La categoría de licencia debe ser texto'),
+  
+  body('experiencia')
+    .optional({ values: 'null' })
+    .custom((value) => {
+      if (!value) return true;  // Permitir null, undefined o vacío
+      return ['1-4', '5-10', 'Mas de 10'].includes(value);
+    }).withMessage('Opción de experiencia inválida'),
+  
   body('accidente5Anios')
     .optional()
     .isIn(['SI', 'NO']).withMessage('El campo accidente 5 años debe ser SI o NO'),
+  
+  body('cantidadAccidentes')
+    .optional({ values: 'null' })
+    .custom((value) => {
+      if (!value) return true;  // Permitir null, undefined o vacío
+      return ['1', '1-5', 'Mas de 5', 'Ninguno'].includes(value);
+    }).withMessage('Opción de cantidad de accidentes inválida'),
+  
+  body('cantidadAccidentesLaborales')
+    .optional({ values: 'null' })
+    .custom((value) => {
+      if (!value) return true;  // Permitir null, undefined o vacío
+      return ['1', '1-5', 'Mas de 5', 'Ninguno'].includes(value);
+    }).withMessage('Opción de cantidad de accidentes laborales inválida'),
   
   body('medioDesplazamiento')
     .optional()

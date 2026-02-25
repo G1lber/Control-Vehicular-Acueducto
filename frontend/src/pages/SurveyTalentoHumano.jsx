@@ -96,7 +96,7 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
                   ciudad: survey.ciudad || '',
                   sitio_labor: survey.sitioLabor || '',
                   cargo: survey.cargo || '',
-                  edad: survey.edad?.toString() || '',
+                  edad: survey.edad || '',  // Ya viene como string desde backend (ej: "18-27")
                   tipo_contratacion: survey.tipoContratacion || '',
                   genero: survey.genero || '',
                   grupo: survey.grupo || '',
@@ -107,16 +107,16 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
                   vigencia_licencia_mes: survey.vigenciaLicencia ? (new Date(survey.vigenciaLicencia).getMonth() + 1).toString() : '',
                   vigencia_licencia_anio: survey.vigenciaLicencia ? new Date(survey.vigenciaLicencia).getFullYear().toString() : '',
                   categoria_licencia: survey.categoriaLicencia || '',
-                  experiencia: survey.experiencia?.toString() || '',
+                  experiencia: survey.experiencia || '',  // Ya viene como string desde backend (ej: "1-4")
                   accidente_5_anios: survey.accidente5Anios || '',
                   accidente_laboral: survey.accidenteLaboral || '',
-                  cantidad_accidentes: survey.cantidadAccidentes?.toString() || '',
+                  cantidad_accidentes: survey.cantidadAccidentes || '',  // Ya viene como string desde backend (ej: "1-5")
                   vias_publicas: survey.viasPublicas || '',
                   medio_desplazamiento: survey.medioDesplazamiento || [],
                   frecuencia_vehiculo_propio: survey.frecuenciaVehiculoPropio || '',
                   usa_vehiculo_empresa: survey.usaVehiculoEmpresa || '',
                   planificacion: survey.planificacion || '',
-                  km_mensuales: survey.kmMensuales?.toString() || '',
+                  km_mensuales: survey.kmMensuales?.toString() || '',  // Este SÍ es número, se convierte a string para el input
                   tiene_comparendos: survey.tieneComparendos || '',
                   riesgos: survey.riesgos || [],
                   causas: survey.causas || [],
@@ -196,7 +196,7 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
         ciudad: formData.ciudad,
         sitioLabor: formData.sitio_labor,
         cargo: formData.cargo,
-        edad: formData.edad ? parseInt(formData.edad) : null,
+        edad: formData.edad || null,  // String con rango (ej: "18-27", "28-37")
         tipoContratacion: formData.tipo_contratacion,
         genero: formData.genero,
         grupo: formData.grupo,
@@ -207,21 +207,24 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
           ? `${formData.vigencia_licencia_anio}-${formData.vigencia_licencia_mes.padStart(2, '0')}-${formData.vigencia_licencia_dia.padStart(2, '0')}`
           : null,
         categoriaLicencia: formData.categoria_licencia,
-        experiencia: formData.experiencia ? parseInt(formData.experiencia) : null,
+        experiencia: formData.experiencia || null,  // String con rango (ej: "1-4", "5-10")
         accidente5Anios: formData.accidente_5_anios,
         accidenteLaboral: formData.accidente_laboral,
-        cantidadAccidentes: formData.cantidad_accidentes ? parseInt(formData.cantidad_accidentes) : null,
+        cantidadAccidentes: formData.cantidad_accidentes || null,  // String con rango (ej: "1", "1-5")
         viasPublicas: formData.vias_publicas,
         frecuenciaVehiculoPropio: formData.frecuencia_vehiculo_propio,
         usaVehiculoEmpresa: formData.usa_vehiculo_empresa,
         planificacion: formData.planificacion,
-        kmMensuales: formData.km_mensuales ? parseInt(formData.km_mensuales) : null,
+        kmMensuales: formData.km_mensuales ? parseInt(formData.km_mensuales) : null,  // Este SÍ es número
         tieneComparendos: formData.tiene_comparendos,
         medioDesplazamiento: formData.medio_desplazamiento || [],
         riesgos: formData.riesgos || [],
         causas: formData.causas || [],
         causasComparendo: formData.causas_comparendo || []
       };
+
+      // Debug: Mostrar datos que se van a enviar
+      console.log('📤 Datos a enviar al backend:', surveyData);
 
       // Enviar al backend
       const token = localStorage.getItem('token');
@@ -237,6 +240,12 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
       const result = await response.json();
 
       if (!response.ok) {
+        // Mostrar errores detallados de validación
+        if (result.errors && result.errors.length > 0) {
+          console.error('❌ Errores de validación:', result.errors);
+          const errorMessages = result.errors.map(e => `${e.campo}: ${e.mensaje}`).join('\n');
+          error(`Errores de validación:\n${errorMessages}`);
+        }
         throw new Error(result.message || 'Error al enviar el cuestionario');
       }
 
@@ -251,7 +260,9 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
       }, 2000);
     } catch (err) {
       console.error('Error al enviar cuestionario:', err);
-      error(err.message || 'Error al enviar el cuestionario. Por favor intenta nuevamente.');
+      if (!err.message.includes('Errores de validación:')) {
+        error(err.message || 'Error al enviar el cuestionario. Por favor intenta nuevamente.');
+      }
     }
   };
 
@@ -469,7 +480,9 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
               </div>
 
               <div>
-                <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">Tipo de contratación</label>
+                <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">
+                  Tipo de contratación <span className="text-red-500">*</span>
+                </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {[
                     { value: 'Termino fijo', label: 'A. Contrato a término fijo' },
@@ -486,6 +499,7 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
                         value={tipo.value}
                         checked={formData.tipo_contratacion === tipo.value}
                         onChange={handleInputChange}
+                        required
                         className="w-4 h-4 text-primary focus:ring-primary flex-shrink-0"
                       />
                       <span className="text-gray-700 text-sm md:text-base">{tipo.label}</span>
@@ -495,7 +509,9 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
               </div>
 
               <div>
-                <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">Género</label>
+                <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">
+                  Género <span className="text-red-500">*</span>
+                </label>
                 <div className="flex flex-wrap gap-4 md:gap-6">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -504,6 +520,7 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
                       value="Femenino"
                       checked={formData.genero === 'Femenino'}
                       onChange={handleInputChange}
+                      required
                       className="w-4 h-4 text-primary focus:ring-primary flex-shrink-0"
                     />
                     <span className="text-gray-700 text-sm md:text-base">A. Femenino</span>
@@ -515,6 +532,7 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
                       value="Masculino"
                       checked={formData.genero === 'Masculino'}
                       onChange={handleInputChange}
+                      required
                       className="w-4 h-4 text-primary focus:ring-primary flex-shrink-0"
                     />
                     <span className="text-gray-700 text-sm md:text-base">B. Masculino</span>
@@ -523,7 +541,9 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
               </div>
 
               <div>
-                <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">Grupo de trabajo al que pertenece</label>
+                <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">
+                  Grupo de trabajo al que pertenece <span className="text-red-500">*</span>
+                </label>
                 <div className="space-y-2">
                   {[
                     { value: 'Administrativo', label: 'A. Administrativo' },
@@ -539,6 +559,7 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
                         value={grupo.value}
                         checked={formData.grupo === grupo.value}
                         onChange={handleInputChange}
+                        required
                         className="w-4 h-4 text-primary focus:ring-primary flex-shrink-0"
                       />
                       <span className="text-gray-700 text-sm md:text-base">{grupo.label}</span>
@@ -560,7 +581,9 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
               </div>
 
               <div>
-                <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">Medio de transporte que usa para el desplazamiento</label>
+                <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">
+                  Medio de transporte que usa para el desplazamiento <span className="text-red-500">*</span>
+                </label>
                 <div className="space-y-2">
                   {[
                     { value: 'Transporte empresa', label: 'A. Transporte que proporciona la empresa' },
@@ -575,6 +598,7 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
                         value={medio.value}
                         checked={formData.medio_transporte_desplazamiento === medio.value}
                         onChange={handleInputChange}
+                        required
                         className="w-4 h-4 text-primary focus:ring-primary flex-shrink-0"
                       />
                       <span className="text-gray-700 text-sm md:text-base">{medio.label}</span>
@@ -584,7 +608,9 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
               </div>
 
               <div>
-                <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">¿Qué clase de vehículo usa para su desplazamiento?</label>
+                <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">
+                  ¿Qué clase de vehículo usa para su desplazamiento? <span className="text-red-500">*</span>
+                </label>
                 <div className="space-y-2">
                   {[
                     { value: 'Carro', label: 'A. Carro' },
@@ -600,6 +626,7 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
                         value={clase.value}
                         checked={formData.clase_vehiculo === clase.value}
                         onChange={handleInputChange}
+                        required
                         className="w-4 h-4 text-primary focus:ring-primary flex-shrink-0"
                       />
                       <span className="text-gray-700 text-sm md:text-base">{clase.label}</span>
@@ -633,7 +660,9 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
             
             <div className="space-y-3 md:space-y-4">
               <div>
-                <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">¿Posee licencia de conducción?</label>
+                <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">
+                  ¿Posee licencia de conducción? <span className="text-red-500">*</span>
+                </label>
                 <div className="flex flex-wrap gap-4 md:gap-6">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -642,6 +671,7 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
                       value="SI"
                       checked={formData.licencia === 'SI'}
                       onChange={handleInputChange}
+                      required
                       className="w-4 h-4 text-primary focus:ring-primary flex-shrink-0"
                     />
                     <span className="text-gray-700 text-sm md:text-base">SI</span>
@@ -653,6 +683,7 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
                       value="NO"
                       checked={formData.licencia === 'NO'}
                       onChange={handleInputChange}
+                      required
                       className="w-4 h-4 text-primary focus:ring-primary flex-shrink-0"
                     />
                     <span className="text-gray-700 text-sm md:text-base">NO</span>
@@ -936,7 +967,7 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
             <div className="space-y-3 md:space-y-4">
               <div>
                 <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">
-                  ¿Para el cumplimiento de sus funciones debe salir a vías públicas en horarios laborales?
+                  ¿Para el cumplimiento de sus funciones debe salir a vías públicas en horarios laborales? <span className="text-red-500">*</span>
                 </label>
                 <div className="flex flex-wrap gap-4 md:gap-6">
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -946,6 +977,7 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
                       value="SI"
                       checked={formData.vias_publicas === 'SI'}
                       onChange={handleInputChange}
+                      required
                       className="w-4 h-4 text-primary focus:ring-primary"
                     />
                     <span className="text-gray-700">SI</span>
@@ -957,6 +989,7 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
                       value="NO"
                       checked={formData.vias_publicas === 'NO'}
                       onChange={handleInputChange}
+                      required
                       className="w-4 h-4 text-primary focus:ring-primary"
                     />
                     <span className="text-gray-700">NO</span>
@@ -1292,7 +1325,9 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
             <h3 className="text-lg md:text-xl font-bold text-primary mb-3 md:mb-4">PLANIFICACIÓN</h3>
             <div className="space-y-3 md:space-y-4">
               <div>
-                <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">Mis desplazamientos en misiones son, en general, planificados por</label>
+                <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">
+                  Mis desplazamientos en misiones son, en general, planificados por <span className="text-red-500">*</span>
+                </label>
                 <div className="space-y-2">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -1301,6 +1336,7 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
                       value="Yo"
                       checked={formData.planificacion === 'Yo'}
                       onChange={handleInputChange}
+                      required
                       className="w-4 h-4 text-primary focus:ring-primary"
                     />
                     <span className="text-gray-700">A. Yo los planifico</span>
@@ -1312,6 +1348,7 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
                       value="Empresa"
                       checked={formData.planificacion === 'Empresa'}
                       onChange={handleInputChange}
+                      required
                       className="w-4 h-4 text-primary focus:ring-primary"
                     />
                     <span className="text-gray-700">B. La empresa los planifica</span>
@@ -1320,7 +1357,9 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
               </div>
 
               <div>
-                <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">Con cuánto tiempo de antelación se suelen prever las labores y recorridos</label>
+                <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">
+                  Con cuánto tiempo de antelación se suelen prever las labores y recorridos <span className="text-red-500">*</span>
+                </label>
                 <div className="space-y-2">
                   {[
                     { value: '1 dia', label: 'A. 1 día antes' },
@@ -1335,6 +1374,7 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
                         value={ant.value}
                         checked={formData.antelacion === ant.value}
                         onChange={handleInputChange}
+                        required
                         className="w-4 h-4 text-primary focus:ring-primary"
                       />
                       <span className="text-gray-700">{ant.label}</span>
@@ -1344,7 +1384,9 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
               </div>
 
               <div>
-                <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">Número de kilómetros mensuales recorridos en la labor misional</label>
+                <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">
+                  Número de kilómetros mensuales recorridos en la labor misional <span className="text-red-500">*</span>
+                </label>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
@@ -1353,6 +1395,7 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
                     onChange={handleInputChange}
                     min="0"
                     placeholder="0"
+                    required
                     className="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                   <span className="text-gray-700 font-semibold text-sm md:text-base whitespace-nowrap">KM</span>
@@ -1453,7 +1496,9 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
             <h3 className="text-lg md:text-xl font-bold text-primary mb-3 md:mb-4">COMPARENDOS</h3>
             <div className="space-y-3 md:space-y-4">
               <div>
-                <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">A la fecha tiene comparendos</label>
+                <label className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">
+                  A la fecha tiene comparendos <span className="text-red-500">*</span>
+                </label>
                 <div className="flex flex-wrap gap-4 md:gap-6">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -1462,6 +1507,7 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
                       value="SI"
                       checked={formData.tiene_comparendos === 'SI'}
                       onChange={handleInputChange}
+                      required
                       className="w-4 h-4 text-primary focus:ring-primary flex-shrink-0"
                     />
                     <span className="text-gray-700 text-sm md:text-base">SI</span>
@@ -1473,6 +1519,7 @@ export const SurveyTalentoHumano = ({ onNavigate, currentUser, accessType }) => 
                       value="NO"
                       checked={formData.tiene_comparendos === 'NO'}
                       onChange={handleInputChange}
+                      required
                       className="w-4 h-4 text-primary focus:ring-primary flex-shrink-0"
                     />
                     <span className="text-gray-700 text-sm md:text-base">NO</span>

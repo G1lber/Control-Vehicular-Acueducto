@@ -27,6 +27,23 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null, onUpdate }
   const [isEditingSurvey, setIsEditingSurvey] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Opciones de la encuesta (deben coincidir exactamente con SurveyTalentoHumano.jsx)
+  const surveyOptions = {
+    edad: ['Menor de 18', '18-27', '28-37', '38-47', '48 o mas'],
+    tipo_contratacion: ['Termino fijo', 'Termino indefinido', 'Obra o labor', 'Prestacion servicio', 'Honorarios', 'Aprendizaje'],
+    grupo: ['Administrativo', 'Comercial', 'Tecnico', 'Operativo', 'Otro'],
+    medio_transporte_desplazamiento: ['Transporte empresa', 'Transporte publico', 'A pie', 'Vehiculo propio'],
+    clase_vehiculo: ['Carro', 'Moto', 'Bicicleta', 'Patines', 'Otro'],
+    categoria_licencia: ['A1', 'A2', 'B1', 'B2', 'B3', 'C1', 'C2', 'C3'],
+    experiencia: ['1-4', '5-10', 'Mas de 10'],
+    cantidad_accidentes: ['1', '1-5', 'Mas de 5', 'Ninguno'],
+    rol_accidente: ['Peaton', 'Conductor vehiculo', 'Conductor moto', 'Pasajero'],
+    frecuencia_vehiculo_propio: ['Diario', 'Semanal', 'Bimestral', 'Trimestral', 'Semestral', 'No uso'],
+    tipo_vehiculo_propio: ['Moto', 'Carro', 'Bicicleta', 'No uso', 'Otro'],
+    tipo_vehiculo_empresa: ['Moto', 'Carro', 'Bicicleta', 'Otro'],
+    frecuencia_chequeo: ['Diario', 'Semanal', 'Mensual', 'Anual', 'No realiza']
+  };
   
   // Datos básicos del usuario
   const [basicData, setBasicData] = useState({
@@ -132,9 +149,82 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null, onUpdate }
 
       // Si hay datos del cuestionario, cargarlos
       if (surveyData) {
+        // Convertir datos del backend (camelCase) al formato del modal (snake_case)
+        const mappedSurveyData = {
+          // CONSENTIMIENTO Y DATOS BÁSICOS
+          consentimiento: surveyData.consentimiento || '',
+          ciudad: surveyData.ciudad || '',
+          sitio_labor: surveyData.sitioLabor || '',
+          cargo: surveyData.cargo || '',
+          
+          // DATOS PERSONALES
+          edad: surveyData.edad || '',  // Ya viene como string del backend (ej: "18-27")
+          tipo_contratacion: surveyData.tipoContratacion || '',
+          genero: surveyData.genero || '',
+          grupo: surveyData.grupo || '',
+          grupo_otro: surveyData.grupoOtro || '',
+          
+          // TRANSPORTE Y MOVILIDAD
+          medio_desplazamiento: surveyData.medioDesplazamiento || [],
+          medio_transporte_desplazamiento: surveyData.medioTransporteDesplazamiento || '',
+          clase_vehiculo: surveyData.claseVehiculo || '',
+          clase_vehiculo_otro: surveyData.claseVehiculoOtro || '',
+          
+          // LICENCIA DE CONDUCCIÓN
+          licencia: surveyData.licencia || '',
+          vigencia_licencia_dia: surveyData.vigenciaLicencia ? new Date(surveyData.vigenciaLicencia).getDate().toString() : '',
+          vigencia_licencia_mes: surveyData.vigenciaLicencia ? (new Date(surveyData.vigenciaLicencia).getMonth() + 1).toString() : '',
+          vigencia_licencia_anio: surveyData.vigenciaLicencia ? new Date(surveyData.vigenciaLicencia).getFullYear().toString() : '',
+          categoria_licencia: surveyData.categoriaLicencia || '',
+          experiencia: surveyData.experiencia || '',  // Ya viene como string del backend (ej: "1-4")
+          
+          // ACCIDENTES E INCIDENTES
+          accidente_5_anios: surveyData.accidente5Anios || '',
+          accidente_laboral: surveyData.accidenteLaboral || '',
+          cantidad_accidentes: surveyData.cantidadAccidentes || '',  // Ya viene como string (ej: "1-5")
+          cantidad_accidentes_laborales: surveyData.cantidadAccidentesLaborales || '',  // Ya viene como string (ej: "1-5")
+          rol_accidente: surveyData.rolAccidente || '',
+          incidente: surveyData.incidente || '',
+          
+          // DESPLAZAMIENTOS LABORALES - VEHÍCULO PROPIO
+          vias_publicas: surveyData.viasPublicas || '',
+          frecuencia_vehiculo_propio: surveyData.frecuenciaVehiculoPropio || '',
+          tipo_vehiculo_propio: surveyData.tipoVehiculoPropio || '',
+          tipo_vehiculo_propio_otro: surveyData.tipoVehiculoPropioOtro || '',
+          empresa_paga_rodamiento: surveyData.empresaPagaRodamiento || '',
+          realiza_inspeccion_propio: surveyData.realizaInspeccionPropio || '',
+          frecuencia_chequeo_propio: surveyData.frecuenciaChequeoPropio || '',
+          
+          // DESPLAZAMIENTOS LABORALES - VEHÍCULO EMPRESA
+          usa_vehiculo_empresa: surveyData.usaVehiculoEmpresa || '',
+          tipo_vehiculo_empresa: surveyData.tipoVehiculoEmpresa || '',
+          tipo_vehiculo_empresa_otro: surveyData.tipoVehiculoEmpresaOtro || '',
+          realiza_inspeccion_empresa: surveyData.realizaInspeccionEmpresa || '',
+          frecuencia_chequeo_empresa: surveyData.frecuenciaChequeoEmpresa || '',
+          
+          // PLANIFICACIÓN
+          planificacion: surveyData.planificacion || '',
+          antelacion: surveyData.antelacion || '',
+          km_mensuales: surveyData.kmMensuales || '',  // Campo numérico
+          
+          // FACTORES DE RIESGO
+          riesgos: surveyData.riesgos || [],
+          riesgo_otro: surveyData.riesgoOtro || '',
+          causas: surveyData.causas || [],
+          causa_otra: surveyData.causaOtra || '',
+          
+          // COMPARENDOS
+          tiene_comparendos: surveyData.tieneComparendos || '',
+          causas_comparendo: surveyData.causasComparendo || [],
+          causa_comparendo_otra: surveyData.causaComparendoOtra || '',
+          
+          // INFORMACIÓN ADICIONAL
+          informacion_adicional: surveyData.informacionAdicional || ''
+        };
+
         setFormData({
           ...initialFormData,
-          ...surveyData
+          ...mappedSurveyData
         });
       } else {
         // Si no hay cuestionario, resetear a valores iniciales
@@ -564,15 +654,27 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null, onUpdate }
                   </div>
                   <div>
                     <label className="text-sm text-secondary font-semibold mb-1 block">Edad</label>
-                    {renderField('Edad', formData.edad, 'edad', isEditingSurvey, handleSurveyChange)}
+                    {renderField('Edad', formData.edad, 'edad', isEditingSurvey, handleSurveyChange, 'select', surveyOptions.edad)}
                   </div>
                   <div>
                     <label className="text-sm text-secondary font-semibold mb-1 block">Tipo de Contratación</label>
-                    {renderField('Tipo de Contratación', formData.tipo_contratacion, 'tipo_contratacion', isEditingSurvey, handleSurveyChange)}
+                    {renderField('Tipo de Contratación', formData.tipo_contratacion, 'tipo_contratacion', isEditingSurvey, handleSurveyChange, 'select', surveyOptions.tipo_contratacion)}
                   </div>
                   <div>
                     <label className="text-sm text-secondary font-semibold mb-1 block">Género</label>
                     {renderField('Género', formData.genero, 'genero', isEditingSurvey, handleSurveyChange, 'select', ['Femenino', 'Masculino'])}
+                  </div>
+                  <div>
+                    <label className="text-sm text-secondary font-semibold mb-1 block">Grupo de trabajo</label>
+                    {renderField('Grupo', formData.grupo, 'grupo', isEditingSurvey, handleSurveyChange, 'select', surveyOptions.grupo)}
+                  </div>
+                  <div>
+                    <label className="text-sm text-secondary font-semibold mb-1 block">Medio de transporte</label>
+                    {renderField('Medio transporte', formData.medio_transporte_desplazamiento, 'medio_transporte_desplazamiento', isEditingSurvey, handleSurveyChange, 'select', surveyOptions.medio_transporte_desplazamiento)}
+                  </div>
+                  <div>
+                    <label className="text-sm text-secondary font-semibold mb-1 block">Clase de vehículo</label>
+                    {renderField('Clase vehículo', formData.clase_vehiculo, 'clase_vehiculo', isEditingSurvey, handleSurveyChange, 'select', surveyOptions.clase_vehiculo)}
                   </div>
                 </div>
               </div>
@@ -593,11 +695,11 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null, onUpdate }
                     <>
                       <div>
                         <label className="text-sm text-secondary font-semibold mb-1 block">Categoría</label>
-                        {renderField('Categoría', formData.categoria_licencia, 'categoria_licencia', isEditingSurvey, handleSurveyChange)}
+                        {renderField('Categoría', formData.categoria_licencia, 'categoria_licencia', isEditingSurvey, handleSurveyChange, 'select', surveyOptions.categoria_licencia)}
                       </div>
                       <div>
                         <label className="text-sm text-secondary font-semibold mb-1 block">Experiencia</label>
-                        {renderField('Experiencia', formData.experiencia, 'experiencia', isEditingSurvey, handleSurveyChange)}
+                        {renderField('Experiencia', formData.experiencia, 'experiencia', isEditingSurvey, handleSurveyChange, 'select', surveyOptions.experiencia)}
                       </div>
                       <div>
                         <label className="text-sm text-secondary font-semibold mb-1 block">Vigencia de Licencia</label>
@@ -667,11 +769,15 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null, onUpdate }
                       </div>
                       <div>
                         <label className="text-sm text-secondary font-semibold mb-1 block">Cantidad de accidentes</label>
-                        {renderField('Cantidad', formData.cantidad_accidentes, 'cantidad_accidentes', isEditingSurvey, handleSurveyChange)}
+                        {renderField('Cantidad', formData.cantidad_accidentes, 'cantidad_accidentes', isEditingSurvey, handleSurveyChange, 'select', surveyOptions.cantidad_accidentes)}
+                      </div>
+                      <div>
+                        <label className="text-sm text-secondary font-semibold mb-1 block">Cantidad accidentes laborales</label>
+                        {renderField('Cantidad laboral', formData.cantidad_accidentes_laborales, 'cantidad_accidentes_laborales', isEditingSurvey, handleSurveyChange, 'select', surveyOptions.cantidad_accidentes)}
                       </div>
                       <div>
                         <label className="text-sm text-secondary font-semibold mb-1 block">Rol en accidente</label>
-                        {renderField('Rol', formData.rol_accidente, 'rol_accidente', isEditingSurvey, handleSurveyChange)}
+                        {renderField('Rol', formData.rol_accidente, 'rol_accidente', isEditingSurvey, handleSurveyChange, 'select', surveyOptions.rol_accidente)}
                       </div>
                     </>
                   )}
@@ -699,11 +805,23 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null, onUpdate }
                     <>
                       <div>
                         <label className="text-sm text-secondary font-semibold mb-1 block">Frecuencia vehículo propio</label>
-                        {renderField('Frecuencia', formData.frecuencia_vehiculo_propio, 'frecuencia_vehiculo_propio', isEditingSurvey, handleSurveyChange)}
+                        {renderField('Frecuencia', formData.frecuencia_vehiculo_propio, 'frecuencia_vehiculo_propio', isEditingSurvey, handleSurveyChange, 'select', surveyOptions.frecuencia_vehiculo_propio)}
                       </div>
                       <div>
                         <label className="text-sm text-secondary font-semibold mb-1 block">Tipo de vehículo propio</label>
-                        {renderField('Tipo', formData.tipo_vehiculo_propio, 'tipo_vehiculo_propio', isEditingSurvey, handleSurveyChange)}
+                        {renderField('Tipo', formData.tipo_vehiculo_propio, 'tipo_vehiculo_propio', isEditingSurvey, handleSurveyChange, 'select', surveyOptions.tipo_vehiculo_propio)}
+                      </div>
+                      <div>
+                        <label className="text-sm text-secondary font-semibold mb-1 block">Tipo de vehículo empresa</label>
+                        {renderField('Tipo empresa', formData.tipo_vehiculo_empresa, 'tipo_vehiculo_empresa', isEditingSurvey, handleSurveyChange, 'select', surveyOptions.tipo_vehiculo_empresa)}
+                      </div>
+                      <div>
+                        <label className="text-sm text-secondary font-semibold mb-1 block">Frecuencia chequeo propio</label>
+                        {renderField('Frecuencia chequeo', formData.frecuencia_chequeo_propio, 'frecuencia_chequeo_propio', isEditingSurvey, handleSurveyChange, 'select', surveyOptions.frecuencia_chequeo)}
+                      </div>
+                      <div>
+                        <label className="text-sm text-secondary font-semibold mb-1 block">Frecuencia chequeo empresa</label>
+                        {renderField('Frecuencia chequeo empresa', formData.frecuencia_chequeo_empresa, 'frecuencia_chequeo_empresa', isEditingSurvey, handleSurveyChange, 'select', surveyOptions.frecuencia_chequeo)}
                       </div>
                       <div>
                         <label className="text-sm text-secondary font-semibold mb-1 block">¿Usa vehículo de la empresa?</label>
