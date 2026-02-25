@@ -169,6 +169,21 @@ const createUserRoutes = (userController) => {
     (req, res) => userController.deleteUser(req, res)
   );
 
+  /**
+   * GET /api/users/:cedula/pdf
+   * Genera y descarga la hoja de vida del usuario en PDF
+   * Ejemplo: GET /api/users/1001234567/pdf
+   * 
+   * Protecciones:
+   * - Token JWT requerido
+   * 
+   * Respuesta: Archivo PDF para descarga
+   */
+  router.get('/:cedula/pdf',
+    verifyToken,
+    (req, res) => userController.generateUserPDF(req, res)
+  );
+
   // ======================
   // AUTENTICACIÓN (futuro)
   // ======================

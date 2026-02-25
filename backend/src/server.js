@@ -81,8 +81,6 @@ const vehicleRouter = createVehicleRouter(vehicleController);
 // Seguir el mismo patrón de inyección de dependencias
 const userRepository = new MySQLUserRepository();
 const userUseCases = new UserUseCases(userRepository);
-const userController = new UserController(userUseCases);
-const userRouter = createUserRoutes(userController);
 
 // === MAINTENANCES API ===
 // Patrón de inyección de dependencias para mantenimientos
@@ -97,6 +95,10 @@ const surveyRepository = new MySQLAdditionalInfoRepository();
 const surveyUseCases = new AdditionalInfoUseCases(surveyRepository);
 const surveyController = new AdditionalInfoController(surveyUseCases);
 const surveyRouter = createSurveyRoutes(surveyController);
+
+// Crear userController después de surveyUseCases para inyectar dependencias
+const userController = new UserController(userUseCases, surveyUseCases);
+const userRouter = createUserRoutes(userController);
 
 // =====================================================
 // RUTAS DE LA API

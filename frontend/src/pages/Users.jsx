@@ -203,6 +203,46 @@ const Users = () => {
     setIsDetailsModalOpen(true);
   };
 
+  // Descargar PDF del usuario desde el backend
+  const handleDownloadPDF = async (user) => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL;
+      const token = localStorage.getItem('token');
+      
+      // Llamar al backend para generar el PDF
+      const response = await fetch(`${API_URL}/users/${user.cedula}/pdf`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al generar el PDF');
+      }
+
+      // Obtener el blob del PDF
+      const blob = await response.blob();
+      
+      // Crear URL temporal para descargar
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `HojaDeVida_${user.cedula}_${user.name.replace(/\s+/g, '_')}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Limpiar
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      console.log('PDF descargado correctamente');
+    } catch (error) {
+      console.error('Error al descargar PDF:', error);
+      alert('Error al descargar el PDF. Por favor intenta nuevamente.');
+    }
+  };
+
   return (
     <div className="py-8">
       {/* Header */}
@@ -339,6 +379,7 @@ const Users = () => {
                 key={user.id} 
                 user={user}
                 onViewDetails={handleViewDetails}
+                onDownloadPDF={handleDownloadPDF}
               />
             ))}
           </div>

@@ -10,7 +10,7 @@ import {
   ArrowDownTrayIcon
 } from '@heroicons/react/24/outline';
 
-const UserCard = ({ user, onViewDetails }) => {
+const UserCard = ({ user, onViewDetails, onDownloadPDF }) => {
   // Función para obtener el color del rol
   const getRoleColor = (role) => {
     switch (role) {
@@ -101,8 +101,9 @@ const UserCard = ({ user, onViewDetails }) => {
             Ver Detalles
           </button>
           <button 
-            onClick={() => console.log('Descargar hoja de vida:', user.cedula)}
+            onClick={() => onDownloadPDF && onDownloadPDF(user)}
             className="flex-1 bg-white hover:bg-gray-50 text-primary border-2 border-primary font-semibold py-2 px-3 rounded transition-colors text-sm flex items-center justify-center gap-2"
+            title="Descargar hoja de vida en PDF"
           >
             <ArrowDownTrayIcon className="w-4 h-4" />
             Descargar
