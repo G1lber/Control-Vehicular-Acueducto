@@ -458,6 +458,10 @@ const Users = () => {
           // Recargar datos después de actualizar
           await loadUsers();
           await loadStats();
+          // Recargar encuesta del usuario específico
+          if (selectedUser) {
+            await loadUserSurvey(selectedUser.cedula);
+          }
         }}
       />
     </div>

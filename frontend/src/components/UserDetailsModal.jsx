@@ -333,6 +333,9 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null, onUpdate }
         if (onUpdate) {
           onUpdate();
         }
+        
+        // Cerrar modal después de guardar
+        onClose();
       } else {
         error(response.message || 'Error al actualizar datos');
       }
@@ -346,11 +349,156 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null, onUpdate }
   };
 
   // Guardar datos del cuestionario
-  const handleSaveSurvey = () => {
-    console.log('Guardando datos del cuestionario:', formData);
-    // Aquí se enviará al backend
-    success('Información del cuestionario actualizada correctamente');
-    setIsEditingSurvey(false);
+  const handleSaveSurvey = async () => {
+    try {
+      setIsSaving(true);
+      console.log('Guardando datos del cuestionario:', formData);
+      
+      // Mapear datos de snake_case (frontend) a camelCase (backend)
+      const surveyData = {
+        idUsuario: user.cedula,
+        consentimiento: formData.consentimiento,
+        ciudad: formData.ciudad,
+        sitioLabor: formData.sitio_labor,
+        cargo: formData.cargo,
+        edad: formData.edad || null,
+        tipoContratacion: formData.tipo_contratacion,
+        genero: formData.genero,
+        grupo: formData.grupo,
+        medioTransporteDesplazamiento: formData.medio_transporte_desplazamiento,
+        claseVehiculo: formData.clase_vehiculo,
+        licencia: formData.licencia,
+        vigenciaLicencia: formData.vigencia_licencia_anio && formData.vigencia_licencia_mes && formData.vigencia_licencia_dia
+          ? `${formData.vigencia_licencia_anio}-${formData.vigencia_licencia_mes.padStart(2, '0')}-${formData.vigencia_licencia_dia.padStart(2, '0')}`
+          : null,
+        categoriaLicencia: formData.categoria_licencia,
+        experiencia: formData.experiencia || null,
+        accidente5Anios: formData.accidente_5_anios,
+        accidenteLaboral: formData.accidente_laboral,
+        cantidadAccidentes: formData.cantidad_accidentes || null,
+        cantidadAccidentesLaborales: formData.cantidad_accidentes_laborales || null,
+        rolAccidente: formData.rol_accidente,
+        incidente: formData.incidente,
+        viasPublicas: formData.vias_publicas,
+        frecuenciaVehiculoPropio: formData.frecuencia_vehiculo_propio,
+        usaVehiculoEmpresa: formData.usa_vehiculo_empresa,
+        planificacion: formData.planificacion,
+        antelacion: formData.antelacion,
+        kmMensuales: formData.km_mensuales ? parseInt(formData.km_mensuales) : null,
+        tieneComparendos: formData.tiene_comparendos,
+        medioDesplazamiento: formData.medio_desplazamiento || [],
+        riesgos: formData.riesgos || [],
+        causas: formData.causas || [],
+        causasComparendo: formData.causas_comparendo || [],
+        causaComparendoOtra: formData.causa_comparendo_otra || null
+      };
+
+      console.log('📤 Datos mapeados a enviar al backend:', surveyData);
+
+      // Enviar al backend
+      const API_URL = import.meta.env.VITE_API_URL;
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/survey`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(surveyData)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        // Mostrar errores detallados de validación
+        if (result.errors && result.errors.length > 0) {
+          console.error('❌ Errores de validación:', result.errors);
+          const errorMessages = result.errors.map(e => `${e.campo}: ${e.mensaje}`).join('\n');
+          error(`Errores de validación:\n${errorMessages}`);
+        }
+        throw new Error(result.message || 'Error al actualizar el cuestionario');
+      }
+
+      success('Información del cuestionario actualizada correctamente');
+      setIsEditingSurvey(false);
+      
+      // Recargar los datos de la encuesta para mostrar los cambios guardados
+      try {
+        const surveyResponse = await fetch(`${API_URL}/survey/user/${user.cedula}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (surveyResponse.ok) {
+          const surveyResult = await surveyResponse.json();
+          const updatedSurveyData = surveyResult.data;
+          
+          // Actualizar formData con los datos frescos del backend
+          const mappedSurveyData = {
+            consentimiento: updatedSurveyData.consentimiento || '',
+            ciudad: updatedSurveyData.ciudad || '',
+            sitio_labor: updatedSurveyData.sitioLabor || '',
+            cargo: updatedSurveyData.cargo || '',
+            edad: updatedSurveyData.edad || '',
+            tipo_contratacion: updatedSurveyData.tipoContratacion || '',
+            genero: updatedSurveyData.genero || '',
+            grupo: updatedSurveyData.grupo || '',
+            medio_desplazamiento: updatedSurveyData.medioDesplazamiento || [],
+            medio_transporte_desplazamiento: updatedSurveyData.medioTransporteDesplazamiento || '',
+            clase_vehiculo: updatedSurveyData.claseVehiculo || '',
+            licencia: updatedSurveyData.licencia || '',
+            vigencia_licencia_dia: updatedSurveyData.vigenciaLicencia ? new Date(updatedSurveyData.vigenciaLicencia).getDate().toString() : '',
+            vigencia_licencia_mes: updatedSurveyData.vigenciaLicencia ? (new Date(updatedSurveyData.vigenciaLicencia).getMonth() + 1).toString() : '',
+            vigencia_licencia_anio: updatedSurveyData.vigenciaLicencia ? new Date(updatedSurveyData.vigenciaLicencia).getFullYear().toString() : '',
+            categoria_licencia: updatedSurveyData.categoriaLicencia || '',
+            experiencia: updatedSurveyData.experiencia || '',
+            accidente_5_anios: updatedSurveyData.accidente5Anios || '',
+            accidente_laboral: updatedSurveyData.accidenteLaboral || '',
+            cantidad_accidentes: updatedSurveyData.cantidadAccidentes || '',
+            cantidad_accidentes_laborales: updatedSurveyData.cantidadAccidentesLaborales || '',
+            rol_accidente: updatedSurveyData.rolAccidente || '',
+            incidente: updatedSurveyData.incidente || '',
+            vias_publicas: updatedSurveyData.viasPublicas || '',
+            frecuencia_vehiculo_propio: updatedSurveyData.frecuenciaVehiculoPropio || '',
+            usa_vehiculo_empresa: updatedSurveyData.usaVehiculoEmpresa || '',
+            planificacion: updatedSurveyData.planificacion || '',
+            antelacion: updatedSurveyData.antelacion || '',
+            km_mensuales: updatedSurveyData.kmMensuales || '',
+            riesgos: updatedSurveyData.riesgos || [],
+            causas: updatedSurveyData.causas || [],
+            tiene_comparendos: updatedSurveyData.tieneComparendos || '',
+            causas_comparendo: updatedSurveyData.causasComparendo || [],
+            causa_comparendo_otra: updatedSurveyData.causaComparendoOtra || ''
+          };
+          
+          setFormData(prev => ({
+            ...prev,
+            ...mappedSurveyData
+          }));
+          
+          console.log('✅ Datos del cuestionario recargados desde el backend');
+        }
+      } catch (reloadErr) {
+        console.error('Error al recargar datos de la encuesta:', reloadErr);
+        // No mostrar error al usuario, los datos se verán al reabrir el modal
+      }
+      
+      // Actualizar la lista de usuarios si existe el callback
+      if (onUpdate) {
+        onUpdate();
+      }
+      
+      // Cerrar modal después de guardar
+      onClose();
+    } catch (err) {
+      console.error('Error al guardar cuestionario:', err);
+      if (!err.message.includes('Errores de validación:')) {
+        error(err.message || 'Error al actualizar el cuestionario. Por favor intenta nuevamente.');
+      }
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Eliminar usuario
@@ -866,6 +1014,76 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null, onUpdate }
                     {renderField('Comparendos', formData.tiene_comparendos, 'tiene_comparendos', isEditingSurvey, handleSurveyChange, 'select', ['SI', 'NO'])}
                   </div>
                 </div>
+
+                {/* Causas de comparendo - Solo si tiene_comparendos === 'SI' */}
+                {formData.tiene_comparendos === 'SI' && (
+                  <div className="mt-4">
+                    <label className="text-sm text-secondary font-semibold mb-2 block">
+                      Causas del comparendo
+                    </label>
+                    {isEditingSurvey ? (
+                      <div className="space-y-2 bg-white p-4 rounded-lg">
+                        {[
+                          { value: 'Sin licencia', label: 'Por conducir sin portar licencia' },
+                          { value: 'Estacionamiento', label: 'Por estacionar en sitios no permitidos' },
+                          { value: 'Cinturon', label: 'Por no utilizar el cinturón de seguridad' },
+                          { value: 'Velocidad', label: 'Por velocidad superior a la máxima' },
+                          { value: 'SOAT', label: 'Por no portar el SOAT' },
+                          { value: 'Tecnomecanica', label: 'Por no realizar la revisión técnico-mecánica' },
+                          { value: 'Celular', label: 'Por usar celular al volante' },
+                          { value: 'Contravia', label: 'Por transitar en contra vía' },
+                          { value: 'Semaforo', label: 'Por no detenerse en luz roja' },
+                          { value: 'Embriaguez', label: 'Conducir en estado de embriaguez' },
+                          { value: 'Otra', label: 'Otra' }
+                        ].map((causa) => (
+                          <label key={causa.value} className="flex items-start gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                            <input
+                              type="checkbox"
+                              name="causas_comparendo"
+                              value={causa.value}
+                              checked={(formData.causas_comparendo || []).includes(causa.value)}
+                              onChange={handleSurveyChange}
+                              className="w-4 h-4 text-primary focus:ring-primary rounded mt-1 flex-shrink-0"
+                            />
+                            <span className="text-sm text-gray-700">{causa.label}</span>
+                          </label>
+                        ))}
+
+                        {/* Campo de texto para "Otra" */}
+                        {(formData.causas_comparendo || []).includes('Otra') && (
+                          <div className="mt-3">
+                            <label className="text-sm text-secondary font-semibold mb-1 block">Especifique otra causa:</label>
+                            <input
+                              type="text"
+                              name="causa_comparendo_otra"
+                              value={formData.causa_comparendo_otra || ''}
+                              onChange={handleSurveyChange}
+                              className="w-full px-3 py-2 border-2 border-primary/30 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary-light focus:outline-none"
+                              placeholder="Especifique la causa..."
+                            />
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="bg-white p-3 rounded-lg">
+                        {formData.causas_comparendo && formData.causas_comparendo.length > 0 ? (
+                          <ul className="list-disc list-inside space-y-1">
+                            {formData.causas_comparendo.map((causa, idx) => (
+                              <li key={idx} className="text-primary font-semibold">
+                                {causa}
+                                {causa === 'Otra' && formData.causa_comparendo_otra && (
+                                  <span className="text-gray-600 ml-2">({formData.causa_comparendo_otra})</span>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-gray-500 italic">No especificado</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Información Adicional */}
