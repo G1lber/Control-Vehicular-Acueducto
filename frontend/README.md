@@ -35,8 +35,9 @@ Documentación técnica del frontend desarrollado con React y Vite.
 - **Home** - Dashboard con estadísticas y accesos rápidos
 - **VehicleList** - Gestión de vehículos con paginación
 - **Users** - Gestión de usuarios con paginación
-- **Reports** - Generación de 6 tipos de reportes
-- **Login** - Autenticación
+- **Reports** - Generación de 5 tipos de reportes con Excel
+- **Login** - Autenticación dual (Admin + Conductor)
+- **LoginSurvey** - Login específico para cuestionario
 - **SurveyTalentoHumano** - Cuestionario PESV (54 campos)
 
 ### Contextos y Servicios
@@ -665,20 +666,45 @@ Para conectar con el backend real:
 
 ### Reports (Reportes)
 - **Ruta**: `/reports`
-- **Descripción**: Generación de reportes del sistema
+- **Descripción**: Generación de reportes del sistema con exportación a Excel
 - **Características**:
-  - Selector de rango de fechas
-  - 6 tipos de reportes disponibles
-  - Estadísticas de resumen
-  - Exportación de datos
+  - **5 tipos de reportes disponibles**:
+    1. **Vehículos** - Información completa de la flota
+    2. **Usuarios** - Conductores y supervisores
+    3. **Mantenimientos** - Historial de mantenimientos
+    4. **Vehículos + Mantenimientos** - Reporte combinado con estadísticas
+    5. **Conductores + Vehículos** - Reporte combinado de asignaciones
+  - **Selector de campos personalizable** - Elige qué columnas incluir
+  - **Filtros avanzados**:
+    - Rango de fechas
+    - Tipo de mantenimiento
+    - Rol de usuario
+  - **Exportación a Excel (ExcelJS)**:
+    - Headers en español profesionales
+    - Formato automático de columnas
+    - Estilos aplicados (colores, bordes,negrita)
+  - **Vista previa de campos** - Antes de generar el reporte
+  - **Tipos de mantenimiento en español** - Sin códigos técnicos
+  - **Integración completa con backend** - Descarga directa del archivo
 
 ### Login
 - **Ruta**: `/login` (cuando no está autenticado)
-- **Descripción**: Página de inicio de sesión
+- **Descripción**: Página de inicio de sesión para administradores y supervisores
 - **Características**:
-  - Formulario con email y contraseña
+  - Formulario con cédula y contraseña
   - Mostrar/ocultar contraseña
+  - Validación de credenciales
   - Integración con logo del acueducto
+  - Redirección automática según rol
+
+### LoginSurvey
+- **Ruta**: `/login-survey`
+- **Descripción**: Página de inicio de sesión específica para conductores (cuestionario)
+- **Características**:
+  - Login solo con cédula (sin contraseña)
+  - Acceso directo al cuestionario PESV
+  - Validación de que el usuario sea conductor
+  - Flujo simplificado para encuestas
 
 ## 📝 Desarrollo
 
