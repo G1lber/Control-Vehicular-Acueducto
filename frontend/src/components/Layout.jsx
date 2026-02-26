@@ -1,7 +1,7 @@
 // Componente de ejemplo - Layout Principal con Tailwind CSS
 import { 
   HomeIcon, 
-  BuildingOffice2Icon, 
+  TruckIcon, 
   DocumentChartBarIcon, 
   ArrowRightOnRectangleIcon,
   UsersIcon
@@ -46,7 +46,7 @@ export const Layout = ({ children, onLogout, onNavigate, currentPage }) => {
                     : 'text-primary hover:text-white hover:bg-primary-light'
                 }`}
               >
-                <BuildingOffice2Icon className="w-5 h-5" />
+                <TruckIcon className="w-5 h-5" />
                 Vehículos
               </button>
               <button

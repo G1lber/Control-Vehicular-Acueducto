@@ -1,6 +1,6 @@
 // Página de Login con diseño responsivo
 import { useState } from 'react';
-import { IdentificationIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { IdentificationIcon, LockClosedIcon, EyeIcon, EyeSlashIcon, ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline';
 import logo from '../assets/logo_acueducto_individual.png';
 import { useAlert } from '../context/AlertContext';
 
@@ -66,31 +66,31 @@ const Login = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
       <div className="w-full max-w-md">
         {/* Card del Login */}
         <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
           {/* Header con logo */}
-          <div className="bg-primary py-8 px-6 text-center">
-            <div className="flex justify-center mb-4">
-              <div className="bg-white rounded-full p-4 shadow-lg w-28 h-28 flex items-center justify-center">
-                <img src={logo} alt="Logo Acueducto" className="w-20 h-20 object-contain" /> 
+          <div className="bg-primary py-6 px-6 text-center">
+            <div className="flex justify-center mb-3">
+              <div className="bg-white rounded-full p-3 shadow-lg w-20 h-20 flex items-center justify-center">
+                <img src={logo} alt="Logo Acueducto" className="w-14 h-14 object-contain" /> 
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-white mb-1">
+            <h1 className="text-xl font-bold text-white mb-1">
               Control Vehicular
             </h1>
-            <p className="text-white/90 text-sm">
+            <p className="text-white/90 text-xs">
               Acueducto y Alcantarillado de Popayán
             </p>
           </div>
 
           {/* Formulario */}
-          <div className="p-8">
-            <h2 className="text-2xl font-bold text-primary mb-2 text-center">
+          <div className="p-6">
+            <h2 className="text-xl font-bold text-primary mb-1 text-center">
               Iniciar Sesión
             </h2>
-            <p className="text-secondary text-sm text-center mb-6">
+            <p className="text-secondary text-xs text-center mb-5">
               Supervisores y Administradores
             </p>
 
@@ -171,32 +171,24 @@ const Login = ({ onLogin }) => {
             </form>
 
             {/* Footer del formulario */}
-            <div className="mt-6 space-y-3">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white text-secondary">o</span>
-                </div>
-              </div>
-
-              <p className="text-secondary text-sm text-center">
-                ¿Eres conductor? {' '}
-                <button 
-                  onClick={() => window.location.href = '/survey-login'}
-                  className="text-primary hover:text-primary-light font-semibold transition-colors"
-                >
-                  Accede al cuestionario aquí
-                </button>
+            <div className="mt-5 pt-5 border-t border-gray-200">
+              <p className="text-secondary text-xs text-center mb-2">
+                ¿Eres conductor?
               </p>
+              <button 
+                onClick={() => window.location.href = '/survey-login'}
+                className="w-full py-2.5 px-4 border-2 border-blue-500 text-blue-600 hover:bg-blue-50 font-semibold rounded-lg transition-all text-sm flex items-center justify-center gap-2"
+              >
+                <ClipboardDocumentCheckIcon className="w-5 h-5" />
+                Acceder al Cuestionario PESV
+              </button>
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-6">
-          <p className="text-secondary text-sm">
+        <div className="text-center mt-4">
+          <p className="text-secondary text-xs">
             © 2026 Acueducto y Alcantarillado de Popayán
           </p>
         </div>

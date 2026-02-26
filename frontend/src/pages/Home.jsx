@@ -1,7 +1,7 @@
 // Página de ejemplo - Home con Tailwind CSS
 import { useState, useEffect } from 'react';
 import { 
-  ChartBarIcon, 
+  TruckIcon, 
   ChevronRightIcon, 
   Cog6ToothIcon, 
   ExclamationTriangleIcon, 
@@ -148,7 +148,7 @@ export const Home = ({ onNavigate }) => {
               <p className="text-3xl font-bold text-primary">{vehicles.length}</p>
             </div>
             <div className="bg-primary-light/20 p-3 rounded-full">
-              <ChartBarIcon className="w-8 h-8 text-primary" />
+              <TruckIcon className="w-8 h-8 text-primary" />
             </div>
           </div>
           <p className="text-primary-light text-sm font-semibold mt-3 flex items-center gap-1">
@@ -204,7 +204,7 @@ export const Home = ({ onNavigate }) => {
             onClick={() => onNavigate && onNavigate('vehicles')}
             className="bg-primary hover:bg-primary-light text-white p-6 rounded-lg shadow-md hover:shadow-xl transition-all transform hover:scale-105 flex flex-col items-center gap-3"
           >
-            <ChartBarIcon className="w-12 h-12" />
+            <TruckIcon className="w-12 h-12" />
             <span className="font-bold text-lg">Ver Vehículos</span>
             <span className="text-sm opacity-90">Gestionar flota vehicular</span>
           </button>
