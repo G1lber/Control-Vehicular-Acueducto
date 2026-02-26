@@ -89,13 +89,16 @@ class ReportController {
       res.end();
 
     } catch (error) {
-      console.error('Error en generateReport:', error);
+      console.error('❌ Error en generateReport:', error);
+      console.error('Stack trace:', error.stack);
+      console.error('Error message:', error.message);
       
       if (!res.headersSent) {
         return res.status(500).json({
           success: false,
           message: 'Error al generar el reporte',
-          error: error.message
+          error: error.message,
+          details: error.stack
         });
       }
     }

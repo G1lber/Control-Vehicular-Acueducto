@@ -135,7 +135,7 @@ class ReportUseCases {
 
       return {
         type: 'vehicles_maintenance',
-        title: 'Reporte Combinado: Vehículos y Mantenimientos',
+        title: 'Reporte Combinado - Vehículos y Mantenimientos',
         data,
         filters,
         selectedFields,
@@ -176,7 +176,7 @@ class ReportUseCases {
 
       return {
         type: 'drivers_vehicles',
-        title: 'Reporte Combinado: Conductores y Vehículos',
+        title: 'Reporte Combinado - Conductores y Vehículos',
         data,
         filters,
         selectedFields,

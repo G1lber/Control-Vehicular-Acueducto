@@ -143,7 +143,7 @@ class MySQLReportRepository {
       const fieldMapping = {
         id: 'm.id_mantenimiento',
         placa: 'm.id_placa',
-        vehiculo: 'CONCAT(v.marca, " ", v.modelo)',
+        vehiculo: 'CONCAT(v.marca, " ", v.modelo) as vehiculo',
         tipo: 'm.tipo_mantenimiento',
         fechaRealizado: 'm.fecha_realizado',
         fechaProxima: 'm.fecha_proxima',
@@ -205,54 +205,55 @@ class MySQLReportRepository {
   async getVehiclesWithMaintenanceReport(filters = {}, selectedFields = []) {
     try {
       const { startDate, endDate } = filters;
-      
-      const fieldMapping = {
-        placa: 'v.id_placa',
-        vehiculo: 'CONCAT(v.marca, " ", v.modelo, " ", v.anio)',
-        marca: 'v.marca',
-        modelo: 'v.modelo',
-        anio: 'v.anio',
-        kilometraje: 'v.kilometraje_actual',
-        conductor: 'u.nombre',
-        area: 'u.area',
-        totalMantenimientos: 'COUNT(DISTINCT m.id_mantenimiento)',
-        costoTotal: 'SUM(m.costo)',
-        ultimoMantenimiento: 'MAX(m.fecha_realizado)',
-        proximoMantenimiento: 'MIN(m.fecha_proxima)'
-      };
-
-      const fields = selectedFields.length > 0 
-        ? selectedFields.map(f => fieldMapping[f] || f).join(', ')
-        : Object.values(fieldMapping).join(', ');
 
       let query = `
-        SELECT ${fields}
+        SELECT 
+          v.id_placa as placa,
+          CONCAT(v.marca, ' ', v.modelo, ' ', v.anio) as vehiculo,
+          v.marca,
+          v.modelo,
+          v.anio,
+          v.kilometraje_actual as kilometraje,
+          IFNULL(u.nombre, 'Sin asignar') as conductor,
+          IFNULL(u.area, 'Sin área') as area,
+          COUNT(m.id_mantenimiento) as totalMantenimientos,
+          IFNULL(SUM(m.costo), 0) as costoTotal,
+          MAX(m.fecha_realizado) as ultimoMantenimiento,
+          MIN(m.fecha_proxima) as proximoMantenimiento
         FROM vehiculos v
         LEFT JOIN usuarios u ON v.id_usuario = u.id_cedula
         LEFT JOIN mantenimientos m ON v.id_placa = m.id_placa
-        WHERE 1=1
       `;
 
       const params = [];
+      const conditions = [];
 
       if (startDate) {
-        query += ' AND (m.fecha_realizado >= ? OR m.fecha_realizado IS NULL)';
+        conditions.push('(m.fecha_realizado >= ? OR m.fecha_realizado IS NULL)');
         params.push(startDate);
       }
 
       if (endDate) {
-        query += ' AND (m.fecha_realizado <= ? OR m.fecha_realizado IS NULL)';
+        conditions.push('(m.fecha_realizado <= ? OR m.fecha_realizado IS NULL)');
         params.push(endDate);
       }
 
-      query += ' GROUP BY v.id_placa, u.nombre, u.area';
+      if (conditions.length > 0) {
+        query += ' WHERE ' + conditions.join(' AND ');
+      }
+
+      query += ' GROUP BY v.id_placa, v.marca, v.modelo, v.anio, v.kilometraje_actual, u.nombre, u.area';
       query += ' ORDER BY v.id_placa';
+
+      console.log('Query Vehículos+Mantenimientos:', query);
+      console.log('Params:', params);
 
       const [rows] = await pool.query(query, params);
       return rows;
     } catch (error) {
       console.error('Error en getVehiclesWithMaintenanceReport:', error);
-      throw new Error('Error al obtener reporte combinado');
+      console.error('Stack:', error.stack);
+      throw error;
     }
   }
 
@@ -262,56 +263,58 @@ class MySQLReportRepository {
   async getDriversWithVehiclesReport(filters = {}, selectedFields = []) {
     try {
       const { startDate, endDate } = filters;
-      
-      const fieldMapping = {
-        cedula: 'u.id_cedula',
-        nombre: 'u.nombre',
-        area: 'u.area',
-        celular: 'u.celular',
-        vehiculosAsignados: 'COUNT(DISTINCT v.id_placa)',
-        placas: 'GROUP_CONCAT(DISTINCT v.id_placa)',
-        licencia: 'ia.licencia',
-        categoriaLicencia: 'ia.categoria_licencia',
-        vigenciaLicencia: 'ia.vigencia_licencia',
-        accidentes: 'ia.accidente_5_anios',
-        comparendos: 'ia.tiene_comparendos',
-        cargo: 'ia.cargo',
-        ciudad: 'ia.ciudad'
-      };
-
-      const fields = selectedFields.length > 0 
-        ? selectedFields.map(f => fieldMapping[f] || f).join(', ')
-        : Object.values(fieldMapping).join(', ');
 
       let query = `
-        SELECT ${fields}
+        SELECT 
+          u.id_cedula as cedula,
+          u.nombre,
+          u.area,
+          u.celular,
+          COUNT(v.id_placa) as vehiculosAsignados,
+          GROUP_CONCAT(v.id_placa SEPARATOR ', ') as placas,
+          ia.licencia,
+          ia.categoria_licencia as categoriaLicencia,
+          ia.vigencia_licencia as vigenciaLicencia,
+          ia.accidente_5_anios as accidentes,
+          ia.tiene_comparendos as comparendos,
+          ia.cargo,
+          ia.ciudad
         FROM usuarios u
+        INNER JOIN roles r ON u.id_rol = r.id_rol
         LEFT JOIN vehiculos v ON u.id_cedula = v.id_usuario
         LEFT JOIN informacion_adicional ia ON u.id_cedula = ia.id_usuario
-        INNER JOIN roles r ON u.id_rol = r.id_rol
         WHERE r.nombre_rol = 'Conductor'
       `;
 
       const params = [];
+      const additionalConditions = [];
 
       if (startDate) {
-        query += ' AND (ia.fecha_registro >= ? OR ia.fecha_registro IS NULL)';
+        additionalConditions.push('(ia.fecha_registro >= ? OR ia.fecha_registro IS NULL)');
         params.push(startDate);
       }
 
       if (endDate) {
-        query += ' AND (ia.fecha_registro <= ? OR ia.fecha_registro IS NULL)';
+        additionalConditions.push('(ia.fecha_registro <= ? OR ia.fecha_registro IS NULL)');
         params.push(endDate);
       }
 
-      query += ' GROUP BY u.id_cedula';
+      if (additionalConditions.length > 0) {
+        query += ' AND ' + additionalConditions.join(' AND ');
+      }
+
+      query += ' GROUP BY u.id_cedula, u.nombre, u.area, u.celular, ia.licencia, ia.categoria_licencia, ia.vigencia_licencia, ia.accidente_5_anios, ia.tiene_comparendos, ia.cargo, ia.ciudad';
       query += ' ORDER BY u.nombre';
+
+      console.log('Query Conductores+Vehículos:', query);
+      console.log('Params:', params);
 
       const [rows] = await pool.query(query, params);
       return rows;
     } catch (error) {
       console.error('Error en getDriversWithVehiclesReport:', error);
-      throw new Error('Error al obtener reporte de conductores');
+      console.error('Stack:', error.stack);
+      throw error;
     }
   }
 
