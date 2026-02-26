@@ -6,6 +6,7 @@ import {
   ArrowRightOnRectangleIcon,
   UsersIcon
 } from '@heroicons/react/24/outline';
+import logo from '../assets/logo_acueducto_individual.png';
 
 export const Layout = ({ children, onLogout, onNavigate, currentPage }) => {
   return (
@@ -16,7 +17,7 @@ export const Layout = ({ children, onLogout, onNavigate, currentPage }) => {
             {/* Logo y Título juntos */}
             <div className="flex items-center gap-4">
               <img 
-                src="/src/assets/logo_acueducto_individual.png" 
+                src={logo} 
                 alt="Logo Acueducto" 
                 className="h-12 w-12 object-contain"
               />
