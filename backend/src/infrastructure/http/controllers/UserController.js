@@ -573,7 +573,7 @@ class UserController {
           if (surveyData.grupo) {
             const grupoTexto = surveyData.grupo === 'Otro' && surveyData.grupoOtro 
               ? `${surveyData.grupo} (${surveyData.grupoOtro})` : surveyData.grupo;
-            addField('Grupo poblacional:', grupoTexto, { indent: 10 });
+            addField('Grupo de trabajo:', grupoTexto, { indent: 10 });
           }
         }
 
