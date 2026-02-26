@@ -291,7 +291,22 @@ class ReportUseCases {
    */
   async getMaintenanceTypes() {
     try {
-      return await this.reportRepository.getMaintenanceTypes();
+      // Retornar los tipos fijos que coinciden con el formulario de registro
+      const maintenanceTypes = [
+        'Cambio de aceite',
+        'Cambio de llantas',
+        'Líquido de frenos',
+        'Kit de arrastre',
+        'Cambio de filtros',
+        'Cambio de batería',
+        'Mantenimiento de frenos',
+        'Mantenimiento de suspensión',
+        'Mantenimiento de motor',
+        'Mantenimiento de transmisión',
+        'Otro'
+      ];
+      
+      return maintenanceTypes;
     } catch (error) {
       console.error('Error en getMaintenanceTypes:', error);
       throw error;
