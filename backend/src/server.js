@@ -29,6 +29,11 @@ import AdditionalInfoUseCases from './application/use-cases/AdditionalInfoUseCas
 import AdditionalInfoController from './infrastructure/http/controllers/AdditionalInfoController.js';
 import { createSurveyRoutes } from './infrastructure/http/routes/surveyRoutes.js';
 
+import MySQLReportRepository from './infrastructure/database/MySQLReportRepository.js';
+import ReportUseCases from './application/use-cases/ReportUseCases.js';
+import ReportController from './infrastructure/http/controllers/ReportController.js';
+import { createReportRoutes } from './infrastructure/http/routes/reportRoutes.js';
+
 // Importar middlewares
 import logger from './infrastructure/middlewares/logger.js';
 import errorHandler from './infrastructure/middlewares/errorHandler.js';
@@ -96,6 +101,13 @@ const surveyUseCases = new AdditionalInfoUseCases(surveyRepository);
 const surveyController = new AdditionalInfoController(surveyUseCases);
 const surveyRouter = createSurveyRoutes(surveyController);
 
+// === REPORTS API ===
+// Patrón de inyección de dependencias para reportes
+const reportRepository = new MySQLReportRepository();
+const reportUseCases = new ReportUseCases(reportRepository);
+const reportController = new ReportController(reportUseCases);
+const reportRouter = createReportRoutes(reportController);
+
 // Crear userController después de surveyUseCases para inyectar dependencias
 const userController = new UserController(userUseCases, surveyUseCases);
 const userRouter = createUserRoutes(userController);
@@ -107,6 +119,7 @@ app.use('/api/vehicles', vehicleRouter);
 app.use('/api/users', userRouter);
 app.use('/api/maintenances', maintenanceRouter);
 app.use('/api/survey', surveyRouter);
+app.use('/api/reports', reportRouter);
 
 // Ruta de prueba de salud
 app.get('/api/health', (req, res) => {
@@ -195,6 +208,11 @@ const startServer = async () => {
       console.log(`   POST   http://localhost:${PORT}/api/survey`);
       console.log(`   PUT    http://localhost:${PORT}/api/survey/:id`);
       console.log(`   DELETE http://localhost:${PORT}/api/survey/:id`);
+      console.log('\n📊 Reportes:');
+      console.log(`   GET    http://localhost:${PORT}/api/reports/generate`);
+      console.log(`   GET    http://localhost:${PORT}/api/reports/fields/:reportType`);
+      console.log(`   GET    http://localhost:${PORT}/api/reports/maintenance-types`);
+      console.log(`   GET    http://localhost:${PORT}/api/reports/stats`);
       console.log('\n' + '='.repeat(50) + '\n');
     });
 
