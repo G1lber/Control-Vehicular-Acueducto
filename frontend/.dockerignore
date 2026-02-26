@@ -1,0 +1,34 @@
+# Dependencias (se instalan en el contenedor)
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Archivos de build
+dist
+build
+.vite
+
+# Variables de entorno
+.env
+.env.local
+.env.production
+
+# Archivos temporales
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Archivos de desarrollo
+.vscode
+.idea
+*.swp
+*.swo
+
+# Archivos de sistema
+.git
+.gitignore
+README.md
+
+# Archivos de caché de Vite
+.cache

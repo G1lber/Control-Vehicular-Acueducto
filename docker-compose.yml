@@ -1,0 +1,106 @@
+# ==================================
+# Docker Compose - Orquestador de servicios
+# Control Vehicular Acueducto
+# ==================================
+
+version: '3.8'
+
+services:
+  # ==================================
+  # Servicio 1: Base de datos MySQL
+  # ==================================
+  db:
+    image: mysql:8.0
+    container_name: acueducto-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: control_vehicular
+      MYSQL_USER: acueducto
+      MYSQL_PASSWORD: acueducto123
+    ports:
+      - "3307:3306"  # Puerto 3307 en tu PC → 3306 en el contenedor (para no chocar con MySQL local)
+    volumes:
+      # Monta el archivo db.sql para inicializar la base de datos
+      - ./db.sql:/docker-entrypoint-initdb.d/init.sql
+      # Persiste los datos de MySQL en un volumen
+      - mysql-data:/var/lib/mysql
+    networks:
+      - acueducto-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================================
+  # Servicio 2: Backend Node.js + Express
+  # ==================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: acueducto-backend
+    restart: unless-stopped
+    environment:
+      # Variables de entorno para conectar a MySQL
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: acueducto
+      DB_PASSWORD: acueducto123
+      DB_NAME: control_vehicular
+      PORT: 3000
+      JWT_SECRET: my_super_secret_jwt_key_2026
+      NODE_ENV: development
+    ports:
+      - "3000:3000"  # Puerto 3000 en tu PC → 3000 en el contenedor
+    volumes:
+      # Monta el código del backend para hot-reload
+      - ./backend:/app
+      # Evita montar node_modules (usa el del contenedor)
+      - /app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - acueducto-network
+    command: npm run dev
+
+  # ==================================
+  # Servicio 3: Frontend React + Vite
+  # ==================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: acueducto-frontend
+    restart: unless-stopped
+    environment:
+      # URL del backend para peticiones API
+      VITE_API_URL: http://localhost:3000
+    ports:
+      - "5173:5173"  # Puerto 5173 en tu PC → 5173 en el contenedor
+    volumes:
+      # Monta el código del frontend para hot-reload
+      - ./frontend:/app
+      # Evita montar node_modules (usa el del contenedor)
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - acueducto-network
+    command: npm run dev -- --host 0.0.0.0
+
+# ==================================
+# Volúmenes persistentes
+# ==================================
+volumes:
+  mysql-data:
+    driver: local
+
+# ==================================
+# Red privada para los contenedores
+# ==================================
+networks:
+  acueducto-network:
+    driver: bridge

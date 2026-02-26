@@ -63,8 +63,43 @@ Ver schema completo en [`db.sql`](db.sql)
 
 ## 🚀 Inicio Rápido
 
-### Prerrequisitos
+### Opción 1: Producción con Docker en VPS 🐳 (Recomendado)
 
+**Prerrequisitos:**
+-   VPS con Ubuntu 24.04 LTS
+-   Docker instalado en el servidor
+
+**Deploy en VPS:**
+```bash
+git clone https://github.com/TU_USUARIO/Control-Vehicular-Acueducto.git
+cd Control-Vehicular-Acueducto
+cp .env.production.example .env.production
+# Editar .env.production con tus valores
+docker compose -f docker-compose.production.yml up -d --build
+```
+
+Ver guía completa: [DEPLOYMENT.md](DEPLOYMENT.md)
+
+### Opción 2: Desarrollo Local con Docker 🐳
+
+**Prerrequisitos:**
+-   Docker Desktop instalado
+
+**Levantar todo el proyecto:**
+```bash
+docker-compose up
+```
+
+Accede a:
+- Frontend: http://localhost:5173
+- Backend: http://localhost:3000
+- MySQL: localhost:3307
+
+Ver guía completa: [DOCKER.md](DOCKER.md)
+
+### Opción 3: Instalación Manual
+
+**Prerrequisitos:**
 -   Node.js 18+
 -   MySQL 8
 -   npm o yarn
@@ -219,6 +254,21 @@ Control-Vehicular-Acueducto/│├── frontend/│   ├── src/│   │ 
 -   Estadísticas de costos
 -   Proyección de próximos mantenimientos
 
+## � Infraestructura
+
+### Desarrollo Local
+-   Docker Compose con hot-reload
+-   MySQL 8 en contenedor
+-   Vite dev server
+
+### Producción (VPS Hostinger)
+-   Ubuntu 24.04 LTS
+-   2 CPU cores, 8 GB RAM, 100 GB NVMe
+-   Docker + Docker Compose
+-   Nginx reverse proxy + SSL
+-   MySQL 8 optimizado
+-   Build estático de React
+
 ## 📝 Próximos Pasos
 
 -   ✅ ~~Implementar backend con Express.js~~
@@ -228,6 +278,9 @@ Control-Vehicular-Acueducto/│├── frontend/│   ├── src/│   │ 
 -   ✅ ~~Sistema de roles y permisos~~
 -   ✅ ~~Generación de PDF para hoja de vida~~
 -   ✅ ~~Exportación de reportes a Excel/PDF~~
+-   ✅ ~~Dockerizar aplicación para producción~~
+-   [ ] Deployment en VPS (en proceso)
+-   [ ] Configurar dominio y SSL/HTTPS
 -   [ ] Notificaciones por email para alertas
 -   [ ] Dashboard avanzado con gráficas (Chart.js)
 -   [ ] Respaldo automático de base de datos

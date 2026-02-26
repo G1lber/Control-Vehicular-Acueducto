@@ -38,3 +38,19 @@ logs/
 .env
 .env.local
 .env.production
+.env.docker.local
+
+# Builds
+frontend/dist/
+frontend/build/
+backend/dist/
+
+# Docker volumes (data persistence)
+mysql-data/
+mysql-data-prod/
+
+# Backups
+*.backup
+*.bak
+backup*.sql
+*.sql.gz

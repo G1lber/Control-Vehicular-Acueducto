@@ -1,0 +1,31 @@
+# ==================================
+# Configuración MySQL - Producción
+# Optimizado para VPS (2 CPU, 8GB RAM)
+# ==================================
+
+[mysqld]
+# Charset
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+
+# InnoDB settings (optimizado para 8GB RAM)
+innodb_buffer_pool_size = 2G
+innodb_log_file_size = 256M
+innodb_flush_log_at_trx_commit = 2
+innodb_flush_method = O_DIRECT
+
+# Conexiones
+max_connections = 100
+max_allowed_packet = 64M
+
+# Query cache (deshabilitado en MySQL 8)
+# query_cache_type = 0
+# query_cache_size = 0
+
+# Logs
+slow_query_log = 1
+slow_query_log_file = /var/log/mysql/slow.log
+long_query_time = 2
+
+# Seguridad
+local_infile = 0

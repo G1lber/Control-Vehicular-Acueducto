@@ -1,0 +1,117 @@
+# ==================================
+# Docker Compose - PRODUCCIÓN
+# Control Vehicular Acueducto
+# VPS Ubuntu 24.04 LTS
+# ==================================
+
+version: '3.8'
+
+services:
+  # ==================================
+  # MySQL 8.0 - Base de datos
+  # ==================================
+  db:
+    image: mysql:8.0
+    container_name: acueducto-db-prod
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      # Inicializar base de datos (solo primera vez)
+      - ./db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      # Persistir datos
+      - mysql-data-prod:/var/lib/mysql
+      # Configuración personalizada de MySQL
+      - ./mysql-config.cnf:/etc/mysql/conf.d/custom.cnf:ro
+    networks:
+      - acueducto-network-prod
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    # No exponemos puerto - solo accesible desde red interna
+    # Si necesitas acceso externo para mantenimiento, descomenta:
+    # ports:
+    #   - "3306:3306"
+
+  # ==================================
+  # Backend - Node.js + Express
+  # ==================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: acueducto-backend:latest
+    container_name: acueducto-backend-prod
+    restart: always
+    environment:
+      # Base de datos
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      DB_NAME: ${MYSQL_DATABASE}
+      # Servidor
+      PORT: 3000
+      NODE_ENV: production
+      # JWT
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - acueducto-network-prod
+    # No exponemos puerto - Nginx hace proxy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+  # ==================================
+  # Frontend - React + Nginx
+  # ==================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: acueducto-frontend:latest
+    container_name: acueducto-frontend-prod
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+    networks:
+      - acueducto-network-prod
+    volumes:
+      # Certificados SSL (Let's Encrypt)
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      # Configuración SSL de Nginx (se creará después)
+      - ./nginx-ssl.conf:/etc/nginx/conf.d/ssl.conf:ro
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+# ==================================
+# Volúmenes persistentes
+# ==================================
+volumes:
+  mysql-data-prod:
+    driver: local
+
+# ==================================
+# Red privada
+# ==================================
+networks:
+  acueducto-network-prod:
+    driver: bridge
