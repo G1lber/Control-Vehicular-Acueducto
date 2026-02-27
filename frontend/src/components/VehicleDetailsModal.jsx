@@ -14,10 +14,12 @@ import {
   ExclamationTriangleIcon,
   XCircleIcon,
   CheckCircleIcon,
-  UserIcon
+  UserIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
+import vehicleService from '../services/vehicle.service';
 
-const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, drivers = [] }) => {
+const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, onDelete, drivers = [] }) => {
   const { success, error } = useAlert();
   const [isEditingDates, setIsEditingDates] = useState(false);
   const [isEditingInfo, setIsEditingInfo] = useState(false);
@@ -240,6 +242,37 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, drivers = [] 
       driverId: vehicle.driverId || ''
     }));
     setIsEditingInfo(false);
+  };
+
+  const handleDelete = async () => {
+    // Confirmar eliminación
+    const confirmed = window.confirm(
+      `¿Estás seguro de que deseas eliminar el vehículo ${vehicle.plate}?\n\n` +
+      `Marca: ${vehicle.brand} ${vehicle.model}\n\n` +
+      `Esta acción no se puede deshacer.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      // Llamar al servicio para eliminar
+      const response = await vehicleService.deleteVehicle(vehicle.plate);
+      
+      if (response.success) {
+        success('Vehículo eliminado correctamente');
+        
+        // Cerrar el modal
+        onClose();
+        
+        // Notificar al componente padre para que actualice la lista
+        if (onDelete) {
+          onDelete(vehicle.plate);
+        }
+      }
+    } catch (err) {
+      console.error('Error al eliminar vehículo:', err);
+      error(err.response?.data?.message || 'Error al eliminar el vehículo');
+    }
   };
 
   return (
@@ -624,6 +657,31 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, drivers = [] 
             </div>
           </div>
         </div>
+
+        {/* Botón de eliminar vehículo */}
+        {!isEditingInfo && !isEditingDates && (
+          <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <div className="bg-red-100 p-2 rounded-lg">
+                <TrashIcon className="w-6 h-6 text-red-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-red-800 mb-1">Zona de Peligro</h3>
+                <p className="text-sm text-red-700 mb-3">
+                  Una vez eliminado el vehículo, no podrás recuperar su información. 
+                  Esta acción también eliminará todos los mantenimientos asociados.
+                </p>
+                <button
+                  onClick={handleDelete}
+                  className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-all transform hover:scale-105 shadow-md hover:shadow-lg"
+                >
+                  <TrashIcon className="w-5 h-5" />
+                  Eliminar Vehículo
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Información adicional */}
         {(isEditingDates || isEditingInfo) && (

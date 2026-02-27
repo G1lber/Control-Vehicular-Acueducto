@@ -311,6 +311,20 @@ const VehicleList = ({ onNavigate }) => {
     }
   };
 
+  // Manejar eliminación de vehículo
+  const handleVehicleDelete = async (placa) => {
+    try {
+      // El servicio ya maneja la eliminación, aquí solo actualizamos la lista
+      await loadVehicles();
+      
+      // Cerrar el modal si estaba abierto
+      setIsDetailsModalOpen(false);
+      setSelectedVehicle(null);
+    } catch (err) {
+      console.error('Error al eliminar vehículo:', err);
+    }
+  };
+
   return (
     <div className="py-8">
       {/* Header */}
@@ -465,6 +479,7 @@ const VehicleList = ({ onNavigate }) => {
         onClose={() => setIsDetailsModalOpen(false)}
         vehicle={selectedVehicle}
         onUpdate={handleVehicleUpdate}
+        onDelete={handleVehicleDelete}
         drivers={drivers}
       />
     </div>
