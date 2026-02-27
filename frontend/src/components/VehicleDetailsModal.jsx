@@ -23,6 +23,8 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, onDelete, dri
   const { success, error } = useAlert();
   const [isEditingDates, setIsEditingDates] = useState(false);
   const [isEditingInfo, setIsEditingInfo] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
     soatExpiry: '',
     techReviewExpiry: '',
@@ -244,34 +246,37 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, onDelete, dri
     setIsEditingInfo(false);
   };
 
-  const handleDelete = async () => {
-    // Confirmar eliminación
-    const confirmed = window.confirm(
-      `¿Estás seguro de que deseas eliminar el vehículo ${vehicle.plate}?\n\n` +
-      `Marca: ${vehicle.brand} ${vehicle.model}\n\n` +
-      `Esta acción no se puede deshacer.`
-    );
+  // Mostrar modal de confirmación de eliminación
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true);
+  };
 
-    if (!confirmed) return;
+  // Eliminar vehículo (confirmado)
+  const handleConfirmDelete = async () => {
+    if (!vehicle) return;
 
     try {
-      // Llamar al servicio para eliminar
+      setIsSaving(true);
       const response = await vehicleService.deleteVehicle(vehicle.plate);
       
       if (response.success) {
         success('Vehículo eliminado correctamente');
+        setShowDeleteConfirm(false);
         
-        // Cerrar el modal
+        // Cerrar el modal y recargar datos
         onClose();
-        
-        // Notificar al componente padre para que actualice la lista
         if (onDelete) {
           onDelete(vehicle.plate);
         }
+      } else {
+        error(response.message || 'Error al eliminar vehículo');
       }
     } catch (err) {
       console.error('Error al eliminar vehículo:', err);
-      error(err.response?.data?.message || 'Error al eliminar el vehículo');
+      const errorMessage = err.response?.data?.message || 'Error al eliminar el vehículo';
+      error(errorMessage);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -672,8 +677,13 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, onDelete, dri
                   Esta acción también eliminará todos los mantenimientos asociados.
                 </p>
                 <button
-                  onClick={handleDelete}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-all transform hover:scale-105 shadow-md hover:shadow-lg"
+                  onClick={handleDeleteClick}
+                  disabled={isEditingInfo || isEditingDates}
+                  className={`flex items-center gap-2 px-4 py-2 font-semibold rounded-lg transition-all shadow-md ${
+                    isEditingInfo || isEditingDates
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-red-600 hover:bg-red-700 text-white transform hover:scale-105 hover:shadow-lg'
+                  }`}
                 >
                   <TrashIcon className="w-5 h-5" />
                   Eliminar Vehículo
@@ -696,6 +706,68 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, onDelete, dri
           </div>
         )}
       </div>
+
+      {/* Modal de Confirmación de Eliminación */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 animate-fade-in">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="bg-red-100 p-3 rounded-full">
+                <ExclamationTriangleIcon className="w-8 h-8 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">¿Eliminar Vehículo?</h3>
+                <p className="text-gray-600 text-sm">Esta acción no se puede deshacer</p>
+              </div>
+            </div>
+
+            <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 mb-6">
+              <p className="text-red-800 font-semibold mb-2">Se eliminará:</p>
+              <ul className="text-sm text-red-700 space-y-1">
+                <li>• Placa: <span className="font-bold">{vehicle.plate}</span></li>
+                <li>• Marca: <span className="font-bold">{vehicle.brand} {vehicle.model}</span></li>
+                <li>• Año: <span className="font-bold">{vehicle.year}</span></li>
+                <li className="text-red-800 font-bold mt-2">• Todos los mantenimientos asociados</li>
+              </ul>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isSaving}
+                className={`flex-1 font-semibold py-3 px-4 rounded-lg transition-colors ${
+                  isSaving
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                }`}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={isSaving}
+                className={`flex-1 font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                  isSaving
+                    ? 'bg-gray-400 text-white cursor-not-allowed'
+                    : 'bg-red-600 hover:bg-red-700 text-white shadow-md hover:shadow-lg'
+                }`}
+              >
+                {isSaving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Eliminando...
+                  </>
+                ) : (
+                  <>
+                    <TrashIcon className="w-5 h-5" />
+                    Sí, Eliminar
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Modal>
   );
 };
