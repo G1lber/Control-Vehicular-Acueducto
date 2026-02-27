@@ -2,6 +2,8 @@
 
 Sistema de control interno de vehículos para el Acueducto y Alcantarillado de la ciudad de Popayán.
 
+🌐 **Aplicación en Producción:** [https://acucontrol.ddns.net](https://acucontrol.ddns.net)
+
 ## 🌟 Descripción
 
 Plataforma web completa para la gestión y control de la flota vehicular, incluyendo:
@@ -279,8 +281,8 @@ Control-Vehicular-Acueducto/│├── frontend/│   ├── src/│   │ 
 -   ✅ ~~Generación de PDF para hoja de vida~~
 -   ✅ ~~Exportación de reportes a Excel/PDF~~
 -   ✅ ~~Dockerizar aplicación para producción~~
--   [ ] Deployment en VPS (en proceso)
--   [ ] Configurar dominio y SSL/HTTPS
+-   ✅ ~~Deployment en VPS~~ - [acucontrol.ddns.net](https://acucontrol.ddns.net)
+-   ✅ ~~Configurar dominio y SSL/HTTPS~~
 -   [ ] Notificaciones por email para alertas
 -   [ ] Dashboard avanzado con gráficas (Chart.js)
 -   [ ] Respaldo automático de base de datos
