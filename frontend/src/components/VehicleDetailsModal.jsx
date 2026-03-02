@@ -425,7 +425,7 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, onDelete, dri
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border-2 border-primary-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
-                  <option value="">Selecciona un tipo</option>
+                  <option value="">Seleccione un tipo</option>
                   <option value="Gasolina">Gasolina</option>
                   <option value="Diesel">Diesel</option>
                   <option value="Gas Natural">Gas Natural</option>

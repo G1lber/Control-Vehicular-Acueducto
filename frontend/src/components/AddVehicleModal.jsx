@@ -23,7 +23,7 @@ const AddVehicleModal = ({ isOpen, onClose, onSubmit, drivers = [] }) => {
     techReviewExpiry: '',
     lastMaintenance: '',
     color: '',
-    fuelType: 'gasoline',
+    fuelType: '',
     mileage: '',
     driverId: ''
   });
@@ -120,7 +120,7 @@ const AddVehicleModal = ({ isOpen, onClose, onSubmit, drivers = [] }) => {
       techReviewExpiry: '',
       lastMaintenance: '',
       color: '',
-      fuelType: 'gasoline',
+      fuelType: '',
       mileage: '',
       driverId: ''
     });
@@ -266,11 +266,12 @@ const AddVehicleModal = ({ isOpen, onClose, onSubmit, drivers = [] }) => {
               onChange={handleChange}
               className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary-light focus:outline-none transition-colors"
             >
-              <option value="gasoline">Gasolina</option>
-              <option value="diesel">Diésel</option>
-              <option value="electric">Eléctrico</option>
-              <option value="hybrid">Híbrido</option>
-              <option value="gas">Gas</option>
+              <option value="">Seleccione un tipo</option>
+              <option value="Gasolina">Gasolina</option>
+              <option value="Diesel">Diesel</option>
+              <option value="Gas Natural">Gas Natural</option>
+              <option value="Eléctrico">Eléctrico</option>
+              <option value="Híbrido">Híbrido</option>
             </select>
           </div>
 
