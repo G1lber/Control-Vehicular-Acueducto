@@ -46,7 +46,7 @@ const VehicleList = ({ onNavigate }) => {
           model: v.modelo || 'N/A',
           year: v.anio || '',
           color: v.color || 'N/A',
-          fuelType: v.tipo_combustible || 'N/A',
+          fuelType: v.tipo_combustible || '',
           soatExpiry: v.soat || null,
           techReviewExpiry: v.tecno || null,
           lastMaintenance: v.ultimo_mantenimiento || null,
