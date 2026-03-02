@@ -432,6 +432,134 @@ class UserController {
   }
 
   /**
+   * GET /api/users/charts/data
+   * Obtiene datos para gráficas estadísticas de conductores
+   */
+  async getChartsData(req, res) {
+    try {
+      console.log('📊 Iniciando getChartsData...');
+      
+      // Obtener todos los usuarios con rol Conductor
+      const conductores = await this.userUseCases.getUsersByRole('Conductor');
+      console.log(`👥 Total conductores encontrados: ${conductores.length}`);
+      console.log('🔍 Primer conductor (estructura):', JSON.stringify(conductores[0], null, 2));
+      
+      // Estadísticas de género
+      const genderStats = {
+        Masculino: 0,
+        Femenino: 0,
+        Otro: 0
+      };
+
+      // Estadísticas de edad
+      const ageStats = {
+        'Menor de 18': 0,
+        '18-27': 0,
+        '28-37': 0,
+        '38-47': 0,
+        '48 o mas': 0
+      };
+
+      // Estadísticas de accidentes
+      const accidentStats = {
+        'Sí': 0,
+        'No': 0,
+        'Sin información': 0
+      };
+
+      // Procesar cada conductor
+      for (const conductor of conductores) {
+        // Usar id_cedula o cedula según lo que esté disponible
+        const cedulaConductor = conductor.cedula || conductor.id_cedula;
+        console.log(`🔍 Procesando conductor: ${cedulaConductor} (cedula: ${conductor.cedula}, id_cedula: ${conductor.id_cedula})`);
+        
+        // Obtener datos del cuestionario si existen
+        let surveyData = null;
+        if (this.surveyUseCases) {
+          try {
+            surveyData = await this.surveyUseCases.getSurveyByUserId(cedulaConductor);
+            console.log(`📋 Cuestionario encontrado para ${cedulaConductor}:`, {
+              genero: surveyData?.genero,
+              edad: surveyData?.edad,
+              accidente5Anios: surveyData?.accidente5Anios
+            });
+          } catch (err) {
+            console.log(`⚠️ No hay cuestionario para ${cedulaConductor}:`, err.message);
+          }
+        }
+
+        if (surveyData) {
+          // Contar género
+          if (surveyData.genero) {
+            if (genderStats.hasOwnProperty(surveyData.genero)) {
+              genderStats[surveyData.genero]++;
+              console.log(`✅ Género ${surveyData.genero} contabilizado`);
+            } else {
+              genderStats.Otro++;
+              console.log(`✅ Género ${surveyData.genero} contabilizado como Otro`);
+            }
+          }
+
+          // Contar edad
+          if (surveyData.edad) {
+            if (ageStats.hasOwnProperty(surveyData.edad)) {
+              ageStats[surveyData.edad]++;
+              console.log(`✅ Edad ${surveyData.edad} contabilizada`);
+            } else {
+              console.log(`⚠️ Edad "${surveyData.edad}" no coincide con categorías esperadas`);
+            }
+          }
+
+          // Contar accidentes (usa accidente5Anios en camelCase porque toJSON() lo convierte)
+          if (surveyData.accidente5Anios !== undefined && surveyData.accidente5Anios !== null) {
+            const accidenteStr = String(surveyData.accidente5Anios).trim().toUpperCase();
+            console.log(`🔍 Valor raw accidente5Anios: "${surveyData.accidente5Anios}" → normalizado: "${accidenteStr}"`);
+            
+            if (accidenteStr === 'SI' || accidenteStr === 'SÍ' || accidenteStr === 'SÍ') {
+              accidentStats['Sí']++;
+              console.log(`✅ Accidente: Sí`);
+            } else if (accidenteStr === 'NO') {
+              accidentStats['No']++;
+              console.log(`✅ Accidente: No`);
+            } else {
+              accidentStats['Sin información']++;
+              console.log(`⚠️ Accidente valor inesperado: "${surveyData.accidente5Anios}" (normalizado: "${accidenteStr}")`);
+            }
+          } else {
+            accidentStats['Sin información']++;
+            console.log(`⚠️ Campo accidente5Anios es null o undefined`);
+          }
+        } else {
+          // Conductor sin cuestionario completado
+          accidentStats['Sin información']++;
+          console.log(`⚠️ Conductor sin cuestionario`);
+        }
+      }
+
+      const responseData = {
+        gender: genderStats,
+        age: ageStats,
+        accidents: accidentStats,
+        totalDrivers: conductores.length
+      };
+
+      console.log('✅ Datos finales a enviar:', responseData);
+
+      return res.status(200).json({
+        success: true,
+        data: responseData
+      });
+    } catch (error) {
+      console.error('❌ Error en getChartsData:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error al obtener datos para gráficas',
+        error: error.message
+      });
+    }
+  }
+
+  /**
    * GET /api/users/:cedula/pdf
    * Genera y descarga la hoja de vida del usuario en PDF
    */

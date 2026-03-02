@@ -78,11 +78,15 @@ class MySQLAdditionalInfoRepository extends AdditionalInfoRepository {
 
       console.log(`[MySQLAdditionalInfoRepository] 📊 Filas encontradas:`, rows.length);
       if (rows.length > 0) {
-        console.log(`[MySQLAdditionalInfoRepository] ✅ Registro encontrado:`, {
+        console.log(`[MySQLAdditionalInfoRepository] ✅ Registro encontrado (campos relevantes):`, {
           id_adicional: rows[0].id_adicional,
           id_usuario: rows[0].id_usuario,
-          ciudad: rows[0].ciudad
+          ciudad: rows[0].ciudad,
+          genero: rows[0].genero,
+          edad: rows[0].edad,
+          accidente_5_anios: rows[0].accidente_5_anios
         });
+        console.log(`[MySQLAdditionalInfoRepository] 🔍 CAMPO CRÍTICO accidente_5_anios RAW:`, rows[0].accidente_5_anios, `(tipo: ${typeof rows[0].accidente_5_anios})`);
       } else {
         console.log(`[MySQLAdditionalInfoRepository] ❌ No se encontró registro`);
       }
@@ -91,7 +95,9 @@ class MySQLAdditionalInfoRepository extends AdditionalInfoRepository {
         return null;
       }
 
-      return new AdditionalInfo(rows[0]);
+      const additionalInfo = new AdditionalInfo(rows[0]);
+      console.log(`[MySQLAdditionalInfoRepository] 📦 Objeto AdditionalInfo creado - accidente_5_anios:`, additionalInfo.accidente_5_anios);
+      return additionalInfo;
     } catch (error) {
       console.error('[MySQLAdditionalInfoRepository] ❌ Error al obtener información adicional por usuario:', error);
       throw new Error('Error al obtener información adicional del usuario');

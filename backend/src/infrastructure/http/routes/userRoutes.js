@@ -35,6 +35,18 @@ const createUserRoutes = (userController) => {
   );
 
   /**
+   * GET /api/users/charts/data
+   * Obtiene datos agregados para gráficas estadísticas
+   * (género, edad, accidentes de conductores)
+   * 
+   * Protección: Token JWT requerido
+   */
+  router.get('/charts/data', 
+    verifyToken,
+    (req, res) => userController.getChartsData(req, res)
+  );
+
+  /**
    * GET /api/users/exists/:cedula
    * Verifica si existe un usuario con una cédula
    * 

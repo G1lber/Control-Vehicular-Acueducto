@@ -184,6 +184,20 @@ const userService = {
       console.error('Error al obtener estadísticas del cuestionario:', error);
       throw error;
     }
+  },
+
+  /**
+   * Obtener datos para gráficas estadísticas
+   * @returns {Promise} Datos agregados para gráficas (género, edad, accidentes)
+   */
+  getChartsData: async () => {
+    try {
+      const response = await apiService.get('/users/charts/data');
+      return response.data;
+    } catch (error) {
+      console.error('Error al obtener datos para gráficas:', error);
+      throw error;
+    }
   }
 };
 

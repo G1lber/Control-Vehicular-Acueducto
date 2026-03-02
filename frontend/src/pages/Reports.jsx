@@ -14,10 +14,13 @@ import {
   UserGroupIcon,
   CheckIcon,
   XMarkIcon,
-  Cog6ToothIcon
+  Cog6ToothIcon,
+  ChevronDownIcon,
+  ChevronUpIcon
 } from '@heroicons/react/24/outline';
 import { useAlert } from '../context/AlertContext';
 import reportService from '../services/report.service';
+import ChartsSection from '../components/ChartsSection';
 
 const Reports = ({ onNavigate }) => {
   const { success, error, info } = useAlert();
@@ -38,6 +41,7 @@ const Reports = ({ onNavigate }) => {
   const [stats, setStats] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showFieldSelector, setShowFieldSelector] = useState(false);
+  const [showCharts, setShowCharts] = useState(false);
 
   const reportTypes = [
     { 
@@ -451,6 +455,31 @@ const Reports = ({ onNavigate }) => {
           </div>
         </div>
       </div>
+
+      {/* Botón desplegable para gráficas */}
+      <div className="mt-8">
+        <button
+          onClick={() => setShowCharts(!showCharts)}
+          className="w-full bg-gradient-to-r from-primary to-primary-light hover:from-primary-light hover:to-primary text-white font-bold py-4 px-6 rounded-lg shadow-lg flex items-center justify-between transition-all transform hover:scale-[1.02]"
+        >
+          <div className="flex items-center gap-3">
+            <ChartBarIcon className="w-6 h-6" />
+            <span className="text-lg">Gráficas Estadísticas de Conductores</span>
+          </div>
+          {showCharts ? (
+            <ChevronUpIcon className="w-6 h-6" />
+          ) : (
+            <ChevronDownIcon className="w-6 h-6" />
+          )}
+        </button>
+      </div>
+
+      {/* Gráficas Estadísticas (Desplegable) */}
+      {showCharts && (
+        <div className="mt-4 animate-fade-in">
+          <ChartsSection />
+        </div>
+      )}
     </div>
   );
 };
