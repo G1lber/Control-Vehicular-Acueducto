@@ -186,13 +186,12 @@ class MySQLUserRepository extends UserRepository {
       values.push(dbData.celular);
     }
 
-    // Si el usuario tiene password, hashearlo y agregarlo
-    if (dbData.password) {
-      const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(dbData.password, saltRounds);
-      fields.push('password');
-      values.push(hashedPassword);
-    }
+    // Generar password: usar la proporcionada o generar automáticamente con la cédula
+    const passwordToHash = dbData.password || String(dbData.id_cedula);
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(passwordToHash, saltRounds);
+    fields.push('password');
+    values.push(hashedPassword);
 
     const placeholders = fields.map(() => '?').join(', ');
     const query = `
