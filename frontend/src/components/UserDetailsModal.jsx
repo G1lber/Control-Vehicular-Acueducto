@@ -21,12 +21,41 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 
-const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null, onUpdate }) => {
+const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null, currentUser, onUpdate }) => {
   const { success, error } = useAlert();
   const [isEditingBasic, setIsEditingBasic] = useState(false);
   const [isEditingSurvey, setIsEditingSurvey] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Función para verificar si el usuario actual puede eliminar al usuario seleccionado
+  const canDeleteUser = () => {
+    if (!currentUser || !user) return false;
+    
+    // Administrador puede eliminar a todos
+    if (currentUser.role === 'Administrador') return true;
+    
+    // Supervisor solo puede eliminar a Conductores
+    if (currentUser.role === 'Supervisor' && user.role === 'Conductor') return true;
+    
+    // Conductores no pueden eliminar a nadie
+    return false;
+  };
+
+  // Mensaje de por qué no puede eliminar
+  const getDeleteDisabledMessage = () => {
+    if (!currentUser || !user) return '';
+    
+    if (currentUser.role === 'Supervisor' && user.role !== 'Conductor') {
+      return 'Solo puedes eliminar conductores';
+    }
+    
+    if (currentUser.role === 'Conductor') {
+      return 'No tienes permisos para eliminar usuarios';
+    }
+    
+    return '';
+  };
 
   // Opciones de la encuesta (deben coincidir exactamente con SurveyTalentoHumano.jsx)
   const surveyOptions = {
@@ -1160,31 +1189,48 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null, onUpdate }
         </div>
 
         {/* Botón de Eliminar Usuario (Zona Peligrosa) */}
-        <div className="mt-6 pt-6 border-t-2 border-red-200">
-          <div className="bg-red-50 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <ExclamationTriangleIcon className="w-6 h-6 text-red-600" />
-                <div>
-                  <p className="text-red-800 font-bold">Zona Peligrosa</p>
-                  <p className="text-red-600 text-sm">Esta acción no se puede deshacer</p>
+        {canDeleteUser() && (
+          <div className="mt-6 pt-6 border-t-2 border-red-200">
+            <div className="bg-red-50 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <ExclamationTriangleIcon className="w-6 h-6 text-red-600" />
+                  <div>
+                    <p className="text-red-800 font-bold">Zona Peligrosa</p>
+                    <p className="text-red-600 text-sm">Esta acción no se puede deshacer</p>
+                  </div>
                 </div>
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  disabled={isEditingBasic || isEditingSurvey}
+                  className={`flex items-center gap-2 font-semibold py-2 px-4 rounded-lg transition-colors shadow-md ${
+                    isEditingBasic || isEditingSurvey
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-red-600 hover:bg-red-700 text-white hover:shadow-lg'
+                  }`}
+                >
+                  <TrashIcon className="w-5 h-5" />
+                  Eliminar Usuario
+                </button>
               </div>
-              <button
-                onClick={() => setShowDeleteConfirm(true)}
-                disabled={isEditingBasic || isEditingSurvey}
-                className={`flex items-center gap-2 font-semibold py-2 px-4 rounded-lg transition-colors shadow-md ${
-                  isEditingBasic || isEditingSurvey
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-red-600 hover:bg-red-700 text-white hover:shadow-lg'
-                }`}
-              >
-                <TrashIcon className="w-5 h-5" />
-                Eliminar Usuario
-              </button>
             </div>
           </div>
-        </div>
+        )}
+        
+        {/* Mensaje de permisos insuficientes - Solo informativo */}
+        {!canDeleteUser() && getDeleteDisabledMessage() && (
+          <div className="mt-6 pt-6 border-t-2 border-gray-200">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="flex items-center gap-3">
+                <ExclamationTriangleIcon className="w-6 h-6 text-gray-400" />
+                <div>
+                  <p className="text-gray-600 font-semibold">Permisos insuficientes</p>
+                  <p className="text-gray-500 text-sm">{getDeleteDisabledMessage()}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modal de Confirmación de Eliminación */}

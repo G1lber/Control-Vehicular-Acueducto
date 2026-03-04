@@ -16,7 +16,7 @@ import {
   ChevronRightIcon
 } from '@heroicons/react/24/outline';
 
-const Users = () => {
+const Users = ({ currentUser }) => {
   // Estados para datos del backend
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState(null);
@@ -495,6 +495,7 @@ const Users = () => {
         }}
         user={selectedUser}
         surveyData={selectedUser ? surveyData[selectedUser.cedula] : null}
+        currentUser={currentUser}
         onUpdate={async () => {
           // Recargar datos después de actualizar
           await loadUsers();

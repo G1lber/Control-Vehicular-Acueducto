@@ -190,7 +190,7 @@ function App() {
       case 'vehicles':
         return <VehicleList onNavigate={handleNavigate} />;
       case 'users':
-        return <Users onNavigate={handleNavigate} />;
+        return <Users onNavigate={handleNavigate} currentUser={currentUser} />;
       case 'reports':
         return <Reports onNavigate={handleNavigate} />;
       case 'surveyTalentoHumano':

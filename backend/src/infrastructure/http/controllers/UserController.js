@@ -248,6 +248,27 @@ class UserController {
   async deleteUser(req, res) {
     try {
       const { cedula } = req.params;
+      const currentUser = req.user; // Usuario autenticado desde el token
+
+      // Primero obtener el usuario a eliminar para verificar su rol
+      const targetUser = await this.userUseCases.getUserByCedula(cedula);
+
+      if (!targetUser) {
+        return res.status(404).json({
+          success: false,
+          message: 'Usuario no encontrado'
+        });
+      }
+
+      // Validar permisos basados en roles
+      // Administrador (id_rol = 3) puede eliminar a todos
+      // Supervisor (id_rol = 2) solo puede eliminar Conductores (id_rol = 1)
+      if (currentUser.id_rol === 2 && targetUser.id_rol !== 1) {
+        return res.status(403).json({
+          success: false,
+          message: 'Los supervisores solo pueden eliminar conductores'
+        });
+      }
 
       const deleted = await this.userUseCases.deleteUser(cedula);
 
