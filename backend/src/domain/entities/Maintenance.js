@@ -35,11 +35,11 @@ class Maintenance {
   validate() {
     const errors = [];
 
-    // Validar placa (formato XXX-123 o similar)
+    // Validar placa (formato ABC-123 para carros o ZUJ-43D para motos)
     if (!this.id_placa) {
       errors.push('La placa es obligatoria');
-    } else if (!/^[A-Z0-9]{3}-[A-Z0-9]{3}$/.test(this.id_placa)) {
-      errors.push('La placa debe tener el formato XXX-XXX (ej: ABC-123)');
+    } else if (!/^[A-Z]{3}-[A-Z0-9]{2,3}$/.test(this.id_placa)) {
+      errors.push('La placa debe tener el formato ABC-123 o ZUJ-43D');
     }
 
     // Validar tipo de mantenimiento

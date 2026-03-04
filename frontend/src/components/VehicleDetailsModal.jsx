@@ -191,10 +191,10 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, onDelete, dri
       return;
     }
 
-    // Validar formato de placa (ABC-123)
-    const plateRegex = /^[A-Z]{3}-\d{3}$/;
+    // Validar formato de placa (carros y motos: ABC-123, ZUJ-43D, LLL-35)
+    const plateRegex = /^[A-Z]{3}-[A-Z0-9]{2,3}$/;
     if (!plateRegex.test(formData.plate.toUpperCase())) {
-      error('La placa debe tener el formato ABC-123');
+      error('La placa debe tener el formato ABC-123 o ZUJ-43D');
       return;
     }
 
@@ -347,7 +347,7 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, onDelete, dri
                     handleInputChange({ target: { name: 'plate', value } });
                   }}
                   className="w-full px-4 py-2 border-2 border-primary-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent uppercase"
-                  placeholder="ABC-123"
+                  placeholder="ABC-123 o ZUJ-43D"
                   maxLength="7"
                 />
               </div>
