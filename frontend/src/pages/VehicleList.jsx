@@ -110,7 +110,11 @@ const VehicleList = ({ onNavigate }) => {
 
   // Filtrar vehículos
   const filteredVehicles = vehicles.filter(vehicle => {
-    const matchesSearch = vehicle.plate.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    // Normalizar placas removiendo guiones para búsqueda flexible (ABC123 o ABC-123)
+    const normalizedPlate = vehicle.plate.toLowerCase().replace(/-/g, '');
+    const normalizedSearch = searchTerm.toLowerCase().replace(/-/g, '');
+    
+    const matchesSearch = normalizedPlate.includes(normalizedSearch) ||
                          vehicle.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          vehicle.model.toLowerCase().includes(searchTerm.toLowerCase());
     
