@@ -169,25 +169,27 @@ class ReportUseCases {
 
       const data = await this.reportRepository.getDriversWithVehiclesReport(filters, selectedFields);
 
-      // Estadísticas
-      const totalVehicles = data.reduce((sum, item) => sum + (parseInt(item.vehiculosAsignados) || 0), 0);
-      const driversWithLicense = data.filter(d => d.licencia === 'SI').length;
-      const driversWithAccidents = data.filter(d => d.accidentes === 'SI').length;
+      // Estadísticas (nota: cada fila es un conductor-vehículo, no agrupado)
+      const uniqueDrivers = new Set(data.map(d => d.cedula));
+      const uniqueVehicles = new Set(data.filter(d => d.placa).map(d => d.placa));
+      const driversWithLicense = new Set(data.filter(d => d.licencia === 'SI').map(d => d.cedula));
+      const driversWithAccidents = new Set(data.filter(d => d.accidentes === 'SI' || d.accidentes === 'SÍ').map(d => d.cedula));
 
       return {
         type: 'drivers_vehicles',
-        title: 'Reporte Combinado - Conductores y Vehículos',
+        title: 'Reporte Combinado - Conductores y Vehículos (Detallado)',
         data,
         filters,
         selectedFields,
         generatedAt: new Date().toISOString(),
         totalRecords: data.length,
         statistics: {
-          totalDrivers: data.length,
-          totalVehicles,
-          driversWithLicense,
-          driversWithAccidents,
-          percentageWithLicense: data.length > 0 ? (driversWithLicense / data.length * 100).toFixed(2) : 0
+          totalDrivers: uniqueDrivers.size,
+          totalVehicles: uniqueVehicles.size,
+          driversWithLicense: driversWithLicense.size,
+          driversWithAccidents: driversWithAccidents.size,
+          percentageWithLicense: uniqueDrivers.size > 0 ? (driversWithLicense.size / uniqueDrivers.size * 100).toFixed(2) : 0,
+          totalRows: data.length
         }
       };
     } catch (error) {
@@ -267,19 +269,34 @@ class ReportUseCases {
         { key: 'proximoMantenimiento', label: 'Próximo Mantenimiento', type: 'date' }
       ],
       drivers_vehicles: [
-        { key: 'cedula', label: 'Cédula', type: 'string' },
-        { key: 'nombre', label: 'Nombre', type: 'string' },
+        // Información del Conductor
+        { key: 'cedula', label: 'Cédula Conductor', type: 'string' },
+        { key: 'nombreConductor', label: 'Nombre Conductor', type: 'string' },
         { key: 'area', label: 'Área', type: 'string' },
         { key: 'celular', label: 'Celular', type: 'string' },
-        { key: 'vehiculosAsignados', label: 'Vehículos Asignados', type: 'number' },
-        { key: 'placas', label: 'Placas', type: 'string' },
-        { key: 'licencia', label: 'Licencia', type: 'string' },
+        { key: 'cargo', label: 'Cargo', type: 'string' },
+        { key: 'ciudad', label: 'Ciudad', type: 'string' },
+        { key: 'sitioLabor', label: 'Sitio Labor', type: 'string' },
+        { key: 'edad', label: 'Edad', type: 'string' },
+        { key: 'genero', label: 'Género', type: 'string' },
+        { key: 'tipoContratacion', label: 'Tipo Contratación', type: 'string' },
+        // Información de Licencia y Seguridad
+        { key: 'licencia', label: 'Licencia de Conducción', type: 'string' },
         { key: 'categoriaLicencia', label: 'Categoría Licencia', type: 'string' },
         { key: 'vigenciaLicencia', label: 'Vigencia Licencia', type: 'date' },
-        { key: 'accidentes', label: 'Accidentes', type: 'string' },
+        { key: 'accidentes', label: 'Accidentes (5 años)', type: 'string' },
         { key: 'comparendos', label: 'Comparendos', type: 'string' },
-        { key: 'cargo', label: 'Cargo', type: 'string' },
-        { key: 'ciudad', label: 'Ciudad', type: 'string' }
+        // Información del Vehículo Asignado
+        { key: 'placa', label: 'Placa Vehículo', type: 'string' },
+        { key: 'marca', label: 'Marca Vehículo', type: 'string' },
+        { key: 'modelo', label: 'Modelo Vehículo', type: 'string' },
+        { key: 'anio', label: 'Año Vehículo', type: 'number' },
+        { key: 'color', label: 'Color Vehículo', type: 'string' },
+        { key: 'combustible', label: 'Tipo Combustible', type: 'string' },
+        { key: 'kilometraje', label: 'Kilometraje Actual', type: 'number' },
+        { key: 'ultimoMantenimiento', label: 'Último Mantenimiento', type: 'date' },
+        { key: 'soat', label: 'Fecha Vencimiento SOAT', type: 'date' },
+        { key: 'tecno', label: 'Fecha Vencimiento Tecno', type: 'date' }
       ]
     };
 

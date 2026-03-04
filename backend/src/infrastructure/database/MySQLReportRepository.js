@@ -259,6 +259,7 @@ class MySQLReportRepository {
 
   /**
    * Reporte de conductores con sus vehículos y datos de seguridad vial
+   * Cada fila representa un conductor-vehículo (sin agrupar) para tener información completa
    */
   async getDriversWithVehiclesReport(filters = {}, selectedFields = []) {
     try {
@@ -267,18 +268,30 @@ class MySQLReportRepository {
       let query = `
         SELECT 
           u.id_cedula as cedula,
-          u.nombre,
+          u.nombre as nombreConductor,
           u.area,
           u.celular,
-          COUNT(v.id_placa) as vehiculosAsignados,
-          GROUP_CONCAT(v.id_placa SEPARATOR ', ') as placas,
+          v.id_placa as placa,
+          v.marca,
+          v.modelo,
+          v.anio,
+          v.color,
+          v.tipo_combustible as combustible,
+          v.kilometraje_actual as kilometraje,
+          v.ultimo_mantenimiento as ultimoMantenimiento,
+          v.soat,
+          v.tecno,
           ia.licencia,
           ia.categoria_licencia as categoriaLicencia,
           ia.vigencia_licencia as vigenciaLicencia,
           ia.accidente_5_anios as accidentes,
           ia.tiene_comparendos as comparendos,
           ia.cargo,
-          ia.ciudad
+          ia.ciudad,
+          ia.sitio_labor as sitioLabor,
+          ia.edad,
+          ia.genero,
+          ia.tipo_contratacion as tipoContratacion
         FROM usuarios u
         INNER JOIN roles r ON u.id_rol = r.id_rol
         LEFT JOIN vehiculos v ON u.id_cedula = v.id_usuario
@@ -303,8 +316,7 @@ class MySQLReportRepository {
         query += ' AND ' + additionalConditions.join(' AND ');
       }
 
-      query += ' GROUP BY u.id_cedula, u.nombre, u.area, u.celular, ia.licencia, ia.categoria_licencia, ia.vigencia_licencia, ia.accidente_5_anios, ia.tiene_comparendos, ia.cargo, ia.ciudad';
-      query += ' ORDER BY u.nombre';
+      query += ' ORDER BY u.nombre, v.id_placa';
 
       console.log('Query Conductores+Vehículos:', query);
       console.log('Params:', params);
