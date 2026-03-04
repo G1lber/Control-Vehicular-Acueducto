@@ -51,8 +51,8 @@ const AddVehicleModal = ({ isOpen, onClose, onSubmit, drivers = [] }) => {
 
     if (!formData.plate.trim()) {
       newErrors.plate = 'La placa es requerida';
-    } else if (!/^[A-Z]{3}-[A-Z0-9]{2,3}$/.test(formData.plate.toUpperCase())) {
-      newErrors.plate = 'Formato de placa inválido (Ej: ABC-123 o ZUJ-43D)';
+    } else if (!/^[A-Z0-9-]{5,10}$/.test(formData.plate.toUpperCase())) {
+      newErrors.plate = 'La placa debe tener entre 5 y 10 caracteres alfanuméricos';
     }
 
     if (!formData.brand.trim()) {
@@ -155,7 +155,7 @@ const AddVehicleModal = ({ isOpen, onClose, onSubmit, drivers = [] }) => {
               name="plate"
               value={formData.plate}
               onChange={handleChange}
-              placeholder="ABC-123 o ZUJ-43D"
+              placeholder="ABC-123, ZUJ43D, MQ163A"
               maxLength="7"
               className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none transition-colors uppercase ${
                 errors.plate 
