@@ -418,8 +418,10 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null, currentUse
         tipoContratacion: formData.tipo_contratacion,
         genero: formData.genero,
         grupo: formData.grupo,
+        grupoOtro: formData.grupo_otro || null,
         medioTransporteDesplazamiento: formData.medio_transporte_desplazamiento,
         claseVehiculo: formData.clase_vehiculo,
+        claseVehiculoOtro: formData.clase_vehiculo_otro || null,
         licencia: formData.licencia,
         vigenciaLicencia: formData.vigencia_licencia_anio && formData.vigencia_licencia_mes && formData.vigencia_licencia_dia
           ? `${formData.vigencia_licencia_anio}-${formData.vigencia_licencia_mes.padStart(2, '0')}-${formData.vigencia_licencia_dia.padStart(2, '0')}`
@@ -450,7 +452,9 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null, currentUse
         tieneComparendos: formData.tiene_comparendos,
         medioDesplazamiento: formData.medio_desplazamiento || [],
         riesgos: formData.riesgos || [],
+        riesgoOtro: formData.riesgo_otro || null,
         causas: formData.causas || [],
+        causaOtra: formData.causa_otra || null,
         causasComparendo: formData.causas_comparendo || [],
         causaComparendoOtra: formData.causa_comparendo_otra || null
       };
@@ -887,6 +891,12 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null, currentUse
                     <label className="text-sm text-secondary font-semibold mb-1 block">Grupo de trabajo</label>
                     {renderField('Grupo', formData.grupo, 'grupo', isEditingSurvey, handleSurveyChange, 'select', surveyOptions.grupo)}
                   </div>
+                  {formData.grupo === 'Otro' && (
+                    <div>
+                      <label className="text-sm text-secondary font-semibold mb-1 block">¿Cuál grupo?</label>
+                      {renderField('Especifique grupo', formData.grupo_otro, 'grupo_otro', isEditingSurvey, handleSurveyChange)}
+                    </div>
+                  )}
                   <div>
                     <label className="text-sm text-secondary font-semibold mb-1 block">Medio de transporte</label>
                     {renderField('Medio transporte', formData.medio_transporte_desplazamiento, 'medio_transporte_desplazamiento', isEditingSurvey, handleSurveyChange, 'select', surveyOptions.medio_transporte_desplazamiento)}
@@ -895,6 +905,12 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null, currentUse
                     <label className="text-sm text-secondary font-semibold mb-1 block">Clase de vehículo</label>
                     {renderField('Clase vehículo', formData.clase_vehiculo, 'clase_vehiculo', isEditingSurvey, handleSurveyChange, 'select', surveyOptions.clase_vehiculo)}
                   </div>
+                  {formData.clase_vehiculo === 'Otro' && (
+                    <div>
+                      <label className="text-sm text-secondary font-semibold mb-1 block">¿Cuál clase de vehículo?</label>
+                      {renderField('Especifique clase de vehículo', formData.clase_vehiculo_otro, 'clase_vehiculo_otro', isEditingSurvey, handleSurveyChange)}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1030,10 +1046,22 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null, currentUse
                         <label className="text-sm text-secondary font-semibold mb-1 block">Tipo de vehículo propio</label>
                         {renderField('Tipo', formData.tipo_vehiculo_propio, 'tipo_vehiculo_propio', isEditingSurvey, handleSurveyChange, 'select', surveyOptions.tipo_vehiculo_propio)}
                       </div>
+                      {formData.tipo_vehiculo_propio === 'Otro' && (
+                        <div>
+                          <label className="text-sm text-secondary font-semibold mb-1 block">¿Cuál vehículo propio?</label>
+                          {renderField('Especifique vehículo propio', formData.tipo_vehiculo_propio_otro, 'tipo_vehiculo_propio_otro', isEditingSurvey, handleSurveyChange)}
+                        </div>
+                      )}
                       <div>
                         <label className="text-sm text-secondary font-semibold mb-1 block">Tipo de vehículo empresa</label>
                         {renderField('Tipo empresa', formData.tipo_vehiculo_empresa, 'tipo_vehiculo_empresa', isEditingSurvey, handleSurveyChange, 'select', surveyOptions.tipo_vehiculo_empresa)}
                       </div>
+                      {formData.tipo_vehiculo_empresa === 'Otro' && (
+                        <div>
+                          <label className="text-sm text-secondary font-semibold mb-1 block">¿Cuál vehículo empresa?</label>
+                          {renderField('Especifique vehículo empresa', formData.tipo_vehiculo_empresa_otro, 'tipo_vehiculo_empresa_otro', isEditingSurvey, handleSurveyChange)}
+                        </div>
+                      )}
                       <div>
                         <label className="text-sm text-secondary font-semibold mb-1 block">Frecuencia chequeo propio</label>
                         {renderField('Frecuencia chequeo', formData.frecuencia_chequeo_propio, 'frecuencia_chequeo_propio', isEditingSurvey, handleSurveyChange, 'select', surveyOptions.frecuencia_chequeo)}
