@@ -100,8 +100,10 @@ export const SurveyTalentoHumano = ({ onNavigate, onLogout, currentUser, accessT
                   tipo_contratacion: survey.tipoContratacion || '',
                   genero: survey.genero || '',
                   grupo: survey.grupo || '',
+                  grupo_otro: survey.grupoOtro || '',
                   medio_transporte_desplazamiento: survey.medioTransporteDesplazamiento || '',
                   clase_vehiculo: survey.claseVehiculo || '',
+                  clase_vehiculo_otro: survey.claseVehiculoOtro || '',
                   licencia: survey.licencia || '',
                   vigencia_licencia_dia: survey.vigenciaLicencia ? new Date(survey.vigenciaLicencia).getDate().toString() : '',
                   vigencia_licencia_mes: survey.vigenciaLicencia ? (new Date(survey.vigenciaLicencia).getMonth() + 1).toString() : '',
@@ -111,16 +113,32 @@ export const SurveyTalentoHumano = ({ onNavigate, onLogout, currentUser, accessT
                   accidente_5_anios: survey.accidente5Anios || '',
                   accidente_laboral: survey.accidenteLaboral || '',
                   cantidad_accidentes: survey.cantidadAccidentes || '',  // Ya viene como string desde backend (ej: "1-5")
+                  cantidad_accidentes_laborales: survey.cantidadAccidentesLaborales || '',  // AGREGADO
+                  rol_accidente: survey.rolAccidente || '',  // AGREGADO
+                  incidente: survey.incidente || '',  // AGREGADO
                   vias_publicas: survey.viasPublicas || '',
                   medio_desplazamiento: survey.medioDesplazamiento || [],
                   frecuencia_vehiculo_propio: survey.frecuenciaVehiculoPropio || '',
+                  tipo_vehiculo_propio: survey.tipoVehiculoPropio || '',  // AGREGADO
+                  tipo_vehiculo_propio_otro: survey.tipoVehiculoPropioOtro || '',  // AGREGADO
+                  empresa_paga_rodamiento: survey.empresaPagaRodamiento || '',  // AGREGADO
+                  realiza_inspeccion_propio: survey.realizaInspeccionPropio || '',  // AGREGADO
+                  frecuencia_chequeo_propio: survey.frecuenciaChequeoPropio || '',  // AGREGADO
                   usa_vehiculo_empresa: survey.usaVehiculoEmpresa || '',
+                  tipo_vehiculo_empresa: survey.tipoVehiculoEmpresa || '',  // AGREGADO
+                  tipo_vehiculo_empresa_otro: survey.tipoVehiculoEmpresaOtro || '',  // AGREGADO
+                  realiza_inspeccion_empresa: survey.realizaInspeccionEmpresa || '',  // AGREGADO
+                  frecuencia_chequeo_empresa: survey.frecuenciaChequeoEmpresa || '',  // AGREGADO
                   planificacion: survey.planificacion || '',
+                  antelacion: survey.antelacion || '',  // AGREGADO
                   km_mensuales: survey.kmMensuales?.toString() || '',  // Este SÍ es número, se convierte a string para el input
                   tiene_comparendos: survey.tieneComparendos || '',
                   riesgos: survey.riesgos || [],
+                  riesgo_otro: survey.riesgoOtro || '',  // AGREGADO
                   causas: survey.causas || [],
-                  causas_comparendo: survey.causasComparendo || []
+                  causa_otra: survey.causaOtra || '',  // AGREGADO
+                  causas_comparendo: survey.causasComparendo || [],
+                  causa_comparendo_otra: survey.causaComparendoOtra || ''  // AGREGADO
                 }));
 
                 info('Tus datos previos han sido cargados. Puedes actualizarlos si es necesario.');
@@ -200,8 +218,10 @@ export const SurveyTalentoHumano = ({ onNavigate, onLogout, currentUser, accessT
         tipoContratacion: formData.tipo_contratacion,
         genero: formData.genero,
         grupo: formData.grupo,
+        grupoOtro: formData.grupo_otro || null,
         medioTransporteDesplazamiento: formData.medio_transporte_desplazamiento,
         claseVehiculo: formData.clase_vehiculo,
+        claseVehiculoOtro: formData.clase_vehiculo_otro || null,
         licencia: formData.licencia,
         vigenciaLicencia: formData.vigencia_licencia_anio && formData.vigencia_licencia_mes && formData.vigencia_licencia_dia
           ? `${formData.vigencia_licencia_anio}-${formData.vigencia_licencia_mes.padStart(2, '0')}-${formData.vigencia_licencia_dia.padStart(2, '0')}`
@@ -211,16 +231,32 @@ export const SurveyTalentoHumano = ({ onNavigate, onLogout, currentUser, accessT
         accidente5Anios: formData.accidente_5_anios,
         accidenteLaboral: formData.accidente_laboral,
         cantidadAccidentes: formData.cantidad_accidentes || null,  // String con rango (ej: "1", "1-5")
+        cantidadAccidentesLaborales: formData.cantidad_accidentes_laborales || null,  // AGREGADO
+        rolAccidente: formData.rol_accidente || null,  // AGREGADO
+        incidente: formData.incidente || null,  // AGREGADO
         viasPublicas: formData.vias_publicas,
+        medioDesplazamiento: formData.medio_desplazamiento || [],
         frecuenciaVehiculoPropio: formData.frecuencia_vehiculo_propio,
+        tipoVehiculoPropio: formData.tipo_vehiculo_propio || null,  // AGREGADO
+        tipoVehiculoPropioOtro: formData.tipo_vehiculo_propio_otro || null,  // AGREGADO
+        empresaPagaRodamiento: formData.empresa_paga_rodamiento || null,  // AGREGADO
+        realizaInspeccionPropio: formData.realiza_inspeccion_propio || null,  // AGREGADO
+        frecuenciaChequeoPropio: formData.frecuencia_chequeo_propio || null,  // AGREGADO
         usaVehiculoEmpresa: formData.usa_vehiculo_empresa,
+        tipoVehiculoEmpresa: formData.tipo_vehiculo_empresa || null,  // AGREGADO
+        tipoVehiculoEmpresaOtro: formData.tipo_vehiculo_empresa_otro || null,  // AGREGADO
+        realizaInspeccionEmpresa: formData.realiza_inspeccion_empresa || null,  // AGREGADO
+        frecuenciaChequeoEmpresa: formData.frecuencia_chequeo_empresa || null,  // AGREGADO
         planificacion: formData.planificacion,
+        antelacion: formData.antelacion || null,  // AGREGADO
         kmMensuales: formData.km_mensuales ? parseInt(formData.km_mensuales) : null,  // Este SÍ es número
         tieneComparendos: formData.tiene_comparendos,
-        medioDesplazamiento: formData.medio_desplazamiento || [],
         riesgos: formData.riesgos || [],
+        riesgoOtro: formData.riesgo_otro || null,  // AGREGADO
         causas: formData.causas || [],
-        causasComparendo: formData.causas_comparendo || []
+        causaOtra: formData.causa_otra || null,  // AGREGADO
+        causasComparendo: formData.causas_comparendo || [],
+        causaComparendoOtra: formData.causa_comparendo_otra || null  // AGREGADO
       };
 
       // Debug: Mostrar datos que se van a enviar
