@@ -145,6 +145,8 @@ CREATE TABLE vehiculos (
     id_usuario BIGINT NULL,
     soat DATE,
     tecno DATE,
+    soat_documento VARCHAR(255) COMMENT 'Ruta del documento SOAT',
+    tecno_documento VARCHAR(255) COMMENT 'Ruta del documento Tecnomecánica',
 
     CONSTRAINT fk_vehiculo_usuario
         FOREIGN KEY (id_usuario)

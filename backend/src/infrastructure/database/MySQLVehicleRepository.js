@@ -40,7 +40,9 @@ export class MySQLVehicleRepository extends VehicleRepository {
         ultimo_mantenimiento: row.ultimo_mantenimiento,
         id_usuario: row.id_usuario,
         soat: row.soat,
-        tecno: row.tecno
+        tecno: row.tecno,
+        soat_documento: row.soat_documento,
+        tecno_documento: row.tecno_documento
       }));
     } catch (error) {
       console.error('Error en findAll:', error);
@@ -80,7 +82,9 @@ export class MySQLVehicleRepository extends VehicleRepository {
         ultimo_mantenimiento: rows[0].ultimo_mantenimiento,
         id_usuario: rows[0].id_usuario,
         soat: rows[0].soat,
-        tecno: rows[0].tecno
+        tecno: rows[0].tecno,
+        soat_documento: rows[0].soat_documento,
+        tecno_documento: rows[0].tecno_documento
       });
     } catch (error) {
       console.error('Error en findById:', error);
@@ -139,8 +143,9 @@ export class MySQLVehicleRepository extends VehicleRepository {
       await pool.query(`
         INSERT INTO vehiculos (
           id_placa, modelo, marca, anio, color, tipo_combustible,
-          kilometraje_actual, ultimo_mantenimiento, id_usuario, soat, tecno
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          kilometraje_actual, ultimo_mantenimiento, id_usuario, soat, tecno,
+          soat_documento, tecno_documento
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `, [
         vehicle.id_placa,
         vehicle.modelo,
@@ -152,7 +157,9 @@ export class MySQLVehicleRepository extends VehicleRepository {
         vehicle.ultimo_mantenimiento,
         vehicle.id_usuario,
         vehicle.soat,
-        vehicle.tecno
+        vehicle.tecno,
+        vehicle.soat_documento,
+        vehicle.tecno_documento
       ]);
 
       return await this.findById(vehicle.id_placa);
@@ -185,7 +192,8 @@ export class MySQLVehicleRepository extends VehicleRepository {
 
       const allowedFields = [
         'modelo', 'marca', 'anio', 'color', 'tipo_combustible',
-        'kilometraje_actual', 'ultimo_mantenimiento', 'id_usuario', 'soat', 'tecno'
+        'kilometraje_actual', 'ultimo_mantenimiento', 'id_usuario', 'soat', 'tecno',
+        'soat_documento', 'tecno_documento'
       ];
 
       for (const field of allowedFields) {

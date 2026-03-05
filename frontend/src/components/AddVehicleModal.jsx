@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Modal from './Modal';
 import { TruckIcon, UserIcon } from '@heroicons/react/24/outline';
 import { useAlert } from '../context/AlertContext';
+import vehicleService from '../services/vehicle.service';
 
 const AddVehicleModal = ({ isOpen, onClose, onSubmit, drivers = [] }) => {
   const { success, error } = useAlert();
@@ -29,6 +30,10 @@ const AddVehicleModal = ({ isOpen, onClose, onSubmit, drivers = [] }) => {
   });
 
   const [errors, setErrors] = useState({});
+  const [soatFile, setSoatFile] = useState(null);
+  const [tecnoFile, setTecnoFile] = useState(null);
+  const [uploadingSoat, setUploadingSoat] = useState(false);
+  const [uploadingTecno, setUploadingTecno] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -43,6 +48,32 @@ const AddVehicleModal = ({ isOpen, onClose, onSubmit, drivers = [] }) => {
         ...prev,
         [name]: ''
       }));
+    }
+  };
+
+  const handleFileChange = (e, docType) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validar tamaño (5MB máximo)
+    if (file.size > 5 * 1024 * 1024) {
+      error('El archivo no debe superar los 5MB');
+      e.target.value = '';
+      return;
+    }
+
+    // Validar tipo
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+      error('Solo se permiten archivos PDF, JPG, JPEG o PNG');
+      e.target.value = '';
+      return;
+    }
+
+    if (docType === 'soat') {
+      setSoatFile(file);
+    } else {
+      setTecnoFile(file);
     }
   };
 
@@ -84,7 +115,7 @@ const AddVehicleModal = ({ isOpen, onClose, onSubmit, drivers = [] }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
@@ -92,22 +123,59 @@ const AddVehicleModal = ({ isOpen, onClose, onSubmit, drivers = [] }) => {
       return;
     }
 
-    // Formatear la placa a mayúsculas
-    const vehicleData = {
-      ...formData,
-      plate: formData.plate.toUpperCase(),
-      year: formData.year ? parseInt(formData.year) : null,
-      mileage: formData.mileage ? parseInt(formData.mileage) : null,
-      driverId: formData.driverId || null,
-      id: Date.now() // ID temporal - el backend generará el real
-    };
+    try {
+      // Formatear la placa a mayúsculas
+      const vehicleData = {
+        ...formData,
+        plate: formData.plate.toUpperCase(),
+        year: formData.year ? parseInt(formData.year) : null,
+        mileage: formData.mileage ? parseInt(formData.mileage) : null,
+        driverId: formData.driverId || null,
+        id: Date.now() // ID temporal - el backend generará el real
+      };
 
-    if (onSubmit) {
-      onSubmit(vehicleData);
+      if (onSubmit) {
+        await onSubmit(vehicleData);
+      }
+
+      // Si se creó exitosamente y hay archivos, subirlos
+      const plateUpperCase = formData.plate.trim().toUpperCase();
+      
+      if (soatFile) {
+        try {
+          setUploadingSoat(true);
+          const response = await vehicleService.uploadDocument(plateUpperCase, soatFile, 'soat');
+          if (response.success) {
+            console.log('Documento SOAT subido exitosamente');
+          }
+        } catch (err) {
+          console.error('Error al subir SOAT:', err);
+          error('Vehículo creado, pero hubo un error al subir el documento SOAT');
+        } finally {
+          setUploadingSoat(false);
+        }
+      }
+      
+      if (tecnoFile) {
+        try {
+          setUploadingTecno(true);
+          const response = await vehicleService.uploadDocument(plateUpperCase, tecnoFile, 'tecno');
+          if (response.success) {
+            console.log('Documento Tecnomecánica subido exitosamente');
+          }
+        } catch (err) {
+          console.error('Error al subir Tecno:', err);
+          error('Vehículo creado, pero hubo un error al subir el documento de Tecnomecánica');
+        } finally {
+          setUploadingTecno(false);
+        }
+      }
+
+      success(`Vehículo ${vehicleData.plate} agregado exitosamente`);
+      handleClose();
+    } catch (err) {
+      console.error('Error en handleSubmit:', err);
     }
-
-    success(`Vehículo ${vehicleData.plate} agregado exitosamente`);
-    handleClose();
   };
 
   const handleClose = () => {
@@ -125,6 +193,8 @@ const AddVehicleModal = ({ isOpen, onClose, onSubmit, drivers = [] }) => {
       driverId: ''
     });
     setErrors({});
+    setSoatFile(null);
+    setTecnoFile(null);
     onClose();
   };
 
@@ -331,6 +401,31 @@ const AddVehicleModal = ({ isOpen, onClose, onSubmit, drivers = [] }) => {
               {errors.soatExpiry && (
                 <p className="text-red-600 text-sm mt-1">{errors.soatExpiry}</p>
               )}
+              
+              {/* Upload de documento SOAT (Opcional) */}
+              <div className="mt-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-dashed border-blue-300 rounded-lg p-2.5">
+                <label className="text-xs text-primary font-bold block mb-2 flex items-center gap-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-blue-600">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                  </svg>
+                  Documento SOAT (Opcional)
+                </label>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <p className="text-xs text-gray-600">PDF, JPG, PNG (máx. 5MB)</p>
+                  <label className="cursor-pointer inline-block flex-shrink-0">
+                    <input
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(e) => handleFileChange(e, 'soat')}
+                      className="hidden"
+                      id="soat-file-new"
+                    />
+                    <div className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-xs transition-all shadow-md hover:shadow-lg whitespace-nowrap">
+                      {soatFile ? `✓ ${soatFile.name}` : 'Seleccionar archivo'}
+                    </div>
+                  </label>
+                </div>
+              </div>
             </div>
 
             {/* Vencimiento Revisión Técnico-Mecánica */}
@@ -353,6 +448,31 @@ const AddVehicleModal = ({ isOpen, onClose, onSubmit, drivers = [] }) => {
               {errors.techReviewExpiry && (
                 <p className="text-red-600 text-sm mt-1">{errors.techReviewExpiry}</p>
               )}
+              
+              {/* Upload de documento Tecnomecánica (Opcional) */}
+              <div className="mt-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-dashed border-blue-300 rounded-lg p-2.5">
+                <label className="text-xs text-primary font-bold block mb-2 flex items-center gap-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-blue-600">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                  </svg>
+                  Documento Tecnomecánica (Opcional)
+                </label>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <p className="text-xs text-gray-600">PDF, JPG, PNG (máx. 5MB)</p>
+                  <label className="cursor-pointer inline-block flex-shrink-0">
+                    <input
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(e) => handleFileChange(e, 'tecno')}
+                      className="hidden"
+                      id="tecno-file-new"
+                    />
+                    <div className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-xs transition-all shadow-md hover:shadow-lg whitespace-nowrap">
+                      {tecnoFile ? `✓ ${tecnoFile.name}` : 'Seleccionar archivo'}
+                    </div>
+                  </label>
+                </div>
+              </div>
             </div>
 
             {/* Último Mantenimiento */}

@@ -1,6 +1,6 @@
 // Componente VehicleCard - Tarjeta de información de vehículo
 // Uso: Muestra información general del vehículo con SOAT y revisión técnico-mecánica
-import { UserIcon } from '@heroicons/react/24/outline';
+import { UserIcon, DocumentCheckIcon } from '@heroicons/react/24/outline';
 
 const VehicleCard = ({ vehicle, driver, onMaintenanceClick, onDetailsClick }) => {
   // Ejemplo de datos del vehículo:
@@ -13,7 +13,9 @@ const VehicleCard = ({ vehicle, driver, onMaintenanceClick, onDetailsClick }) =>
   //   soatExpiry: "2026-06-15",
   //   techReviewExpiry: "2026-08-20",
   //   lastMaintenance: "2026-01-10",
-  //   driverId: 1
+  //   driverId: 1,
+  //   soatDocumento: "soat_123456.pdf",
+  //   tecnoDocumento: "tecno_123456.pdf"
   // }
   // driver: { id: 1, name: "Carlos López", ... }
 
@@ -69,8 +71,13 @@ const VehicleCard = ({ vehicle, driver, onMaintenanceClick, onDetailsClick }) =>
         {/* SOAT */}
         <div className="border-t pt-3">
           <div className="flex justify-between items-start">
-            <div>
-              <p className="text-primary-light font-semibold text-sm">SOAT</p>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <p className="text-primary-light font-semibold text-sm">SOAT</p>
+                {vehicle.soatDocumento && (
+                  <DocumentCheckIcon className="w-4 h-4 text-green-600" title="Documento cargado" />
+                )}
+              </div>
               <p className={`text-sm font-medium ${getStatusColor(vehicle.soatExpiry)}`}>
                 Vence: {new Date(vehicle.soatExpiry).toLocaleDateString('es-CO')}
               </p>
@@ -91,8 +98,13 @@ const VehicleCard = ({ vehicle, driver, onMaintenanceClick, onDetailsClick }) =>
         {/* Revisión Técnico-Mecánica */}
         <div className="border-t pt-3">
           <div className="flex justify-between items-start">
-            <div>
-              <p className="text-primary-light font-semibold text-sm">Revisión Técnico-Mecánica</p>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <p className="text-primary-light font-semibold text-sm">Revisión Técnico-Mecánica</p>
+                {vehicle.tecnoDocumento && (
+                  <DocumentCheckIcon className="w-4 h-4 text-green-600" title="Documento cargado" />
+                )}
+              </div>
               <p className={`text-sm font-medium ${getStatusColor(vehicle.techReviewExpiry)}`}>
                 Vence: {new Date(vehicle.techReviewExpiry).toLocaleDateString('es-CO')}
               </p>

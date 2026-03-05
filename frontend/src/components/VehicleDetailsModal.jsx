@@ -24,7 +24,11 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, onDelete, dri
   const [isEditingDates, setIsEditingDates] = useState(false);
   const [isEditingInfo, setIsEditingInfo] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDeleteDocConfirm, setShowDeleteDocConfirm] = useState(false);
+  const [docTypeToDelete, setDocTypeToDelete] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [uploadingSoat, setUploadingSoat] = useState(false);
+  const [uploadingTecno, setUploadingTecno] = useState(false);
   const [formData, setFormData] = useState({
     soatExpiry: '',
     techReviewExpiry: '',
@@ -277,6 +281,146 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, onDelete, dri
       error(errorMessage);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Manejar subida de documento
+  const handleUploadDocument = async (e, docType) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validar tamaño (5MB máximo)
+    if (file.size > 5 * 1024 * 1024) {
+      error('El archivo no debe superar los 5MB');
+      return;
+    }
+
+    // Validar tipo
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+      error('Solo se permiten archivos PDF, JPG, JPEG o PNG');
+      return;
+    }
+
+    try {
+      if (docType === 'soat') {
+        setUploadingSoat(true);
+      } else {
+        setUploadingTecno(true);
+      }
+
+      const response = await vehicleService.uploadDocument(vehicle.plate, file, docType);
+      
+      if (response.success) {
+        success(`Documento de ${docType.toUpperCase()} subido correctamente`);
+        
+        // Actualizar el vehículo con el nuevo documento
+        if (onUpdate) {
+          const updatedVehicle = await vehicleService.getVehicleById(vehicle.plate);
+          if (updatedVehicle.success) {
+            // Mapear datos del backend al formato del frontend
+            const mapped = {
+              id: updatedVehicle.data.id_placa,
+              plate: updatedVehicle.data.id_placa,
+              brand: updatedVehicle.data.marca || 'N/A',
+              model: updatedVehicle.data.modelo || 'N/A',
+              year: updatedVehicle.data.anio || '',
+              color: updatedVehicle.data.color || 'N/A',
+              fuelType: updatedVehicle.data.tipo_combustible || '',
+              soatExpiry: updatedVehicle.data.soat || null,
+              techReviewExpiry: updatedVehicle.data.tecno || null,
+              lastMaintenance: updatedVehicle.data.ultimo_mantenimiento || null,
+              mileage: updatedVehicle.data.kilometraje_actual || '0',
+              driverId: updatedVehicle.data.id_usuario || null,
+              soatDocumento: updatedVehicle.data.soat_documento || null,
+              tecnoDocumento: updatedVehicle.data.tecno_documento || null
+            };
+            onUpdate(mapped);
+          }
+        }
+      } else {
+        error(response.message || 'Error al subir documento');
+      }
+    } catch (err) {
+      console.error('Error al subir documento:', err);
+      const errorMessage = err.response?.data?.message || 'Error al subir el documento';
+      error(errorMessage);
+    } finally {
+      if (docType === 'soat') {
+        setUploadingSoat(false);
+      } else {
+        setUploadingTecno(false);
+      }
+      // Limpiar el input
+      e.target.value = '';
+    }
+  };
+
+  // Descargar documento
+  const handleDownloadDocument = async (docType) => {
+    try {
+      await vehicleService.downloadDocument(vehicle.plate, docType);
+      success(`Descargando documento de ${docType.toUpperCase()}...`);
+    } catch (err) {
+      console.error('Error al descargar documento:', err);
+      const errorMessage = err.response?.data?.message || 'Error al descargar el documento';
+      error(errorMessage);
+    }
+  };
+
+  // Mostrar modal de confirmación para eliminar documento
+  const handleDeleteDocumentClick = (docType) => {
+    setDocTypeToDelete(docType);
+    setShowDeleteDocConfirm(true);
+  };
+
+  // Eliminar documento (confirmado)
+  const handleConfirmDeleteDocument = async () => {
+    if (!docTypeToDelete) return;
+
+    try {
+      setIsSaving(true);
+      const docType = docTypeToDelete;
+      const response = await vehicleService.deleteDocument(vehicle.plate, docType);
+      
+      if (response.success) {
+        success(`Documento de ${docType.toUpperCase()} eliminado correctamente`);
+        
+        // Actualizar el vehículo
+        if (onUpdate) {
+          const updatedVehicle = await vehicleService.getVehicleById(vehicle.plate);
+          if (updatedVehicle.success) {
+            // Mapear datos del backend al formato del frontend
+            const mapped = {
+              id: updatedVehicle.data.id_placa,
+              plate: updatedVehicle.data.id_placa,
+              brand: updatedVehicle.data.marca || 'N/A',
+              model: updatedVehicle.data.modelo || 'N/A',
+              year: updatedVehicle.data.anio || '',
+              color: updatedVehicle.data.color || 'N/A',
+              fuelType: updatedVehicle.data.tipo_combustible || '',
+              soatExpiry: updatedVehicle.data.soat || null,
+              techReviewExpiry: updatedVehicle.data.tecno || null,
+              lastMaintenance: updatedVehicle.data.ultimo_mantenimiento || null,
+              mileage: updatedVehicle.data.kilometraje_actual || '0',
+              driverId: updatedVehicle.data.id_usuario || null,
+              soatDocumento: updatedVehicle.data.soat_documento || null,
+              tecnoDocumento: updatedVehicle.data.tecno_documento || null
+            };
+            onUpdate(mapped);
+          }
+        }
+      } else {
+        error(response.message || 'Error al eliminar documento');
+      }
+    } catch (err) {
+      console.error('Error al eliminar documento:', err);
+      const errorMessage = err.response?.data?.message || 'Error al eliminar el documento';
+      error(errorMessage);
+    } finally {
+      setIsSaving(false);
+      setShowDeleteDocConfirm(false);
+      setDocTypeToDelete(null);
     }
   };
 
@@ -618,6 +762,58 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, onDelete, dri
                     />
                   </div>
                 )}
+
+                {/* Gestión de documento SOAT */}
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  {vehicle.soatDocumento ? (
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm text-green-600 font-semibold">✓ Documento cargado</p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleDownloadDocument('soat')}
+                          className="text-xs px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors"
+                        >
+                          Descargar
+                        </button>
+                        <button
+                          onClick={() => handleDeleteDocumentClick('soat')}
+                          className="text-xs px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded transition-colors"
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-dashed border-blue-300 rounded-lg p-3">
+                      <label className="text-sm text-primary font-bold block mb-3 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-blue-600">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                        </svg>
+                        Subir documento SOAT
+                      </label>
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <p className="text-xs text-gray-600">PDF, JPG, PNG (máx. 5MB)</p>
+                        <label className="cursor-pointer inline-block flex-shrink-0">
+                          <input
+                            type="file"
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            onChange={(e) => handleUploadDocument(e, 'soat')}
+                            disabled={uploadingSoat}
+                            className="hidden"
+                            id="soat-upload"
+                          />
+                          <div className={`px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all whitespace-nowrap ${
+                            uploadingSoat 
+                              ? 'bg-gray-400 text-white cursor-not-allowed' 
+                              : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg'
+                          }`}>
+                            {uploadingSoat ? 'Subiendo...' : 'Seleccionar archivo'}
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -658,6 +854,58 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, onDelete, dri
                     />
                   </div>
                 )}
+
+                {/* Gestión de documento Tecnomecánica */}
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  {vehicle.tecnoDocumento ? (
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm text-green-600 font-semibold">✓ Documento cargado</p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleDownloadDocument('tecno')}
+                          className="text-xs px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors"
+                        >
+                          Descargar
+                        </button>
+                        <button
+                          onClick={() => handleDeleteDocumentClick('tecno')}
+                          className="text-xs px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded transition-colors"
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-dashed border-blue-300 rounded-lg p-3">
+                      <label className="text-sm text-primary font-bold block mb-3 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-blue-600">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                        </svg>
+                        Subir documento Tecnomecánica
+                      </label>
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <p className="text-xs text-gray-600">PDF, JPG, PNG (máx. 5MB)</p>
+                        <label className="cursor-pointer inline-block flex-shrink-0">
+                          <input
+                            type="file"
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            onChange={(e) => handleUploadDocument(e, 'tecno')}
+                            disabled={uploadingTecno}
+                            className="hidden"
+                            id="tecno-upload"
+                          />
+                          <div className={`px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all whitespace-nowrap ${
+                            uploadingTecno 
+                              ? 'bg-gray-400 text-white cursor-not-allowed' 
+                              : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg'
+                          }`}>
+                            {uploadingTecno ? 'Subiendo...' : 'Seleccionar archivo'}
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -707,7 +955,71 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, onDelete, dri
         )}
       </div>
 
-      {/* Modal de Confirmación de Eliminación */}
+      {/* Modal de Confirmación de Eliminación de Documento */}
+      {showDeleteDocConfirm && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 animate-fade-in">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="bg-red-100 p-3 rounded-full">
+                <ExclamationTriangleIcon className="w-8 h-8 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">¿Eliminar Documento?</h3>
+                <p className="text-gray-600 text-sm">Esta acción no se puede deshacer</p>
+              </div>
+            </div>
+
+            <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 mb-6">
+              <p className="text-red-800 font-semibold mb-2">Se eliminará:</p>
+              <ul className="text-sm text-red-700 space-y-1">
+                <li>• Documento: <span className="font-bold">{docTypeToDelete?.toUpperCase()}</span></li>
+                <li>• Vehículo: <span className="font-bold">{vehicle.plate}</span></li>
+                <li className="text-red-800 font-bold mt-2">• El archivo será eliminado del servidor</li>
+              </ul>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowDeleteDocConfirm(false);
+                  setDocTypeToDelete(null);
+                }}
+                disabled={isSaving}
+                className={`flex-1 font-semibold py-3 px-4 rounded-lg transition-colors ${
+                  isSaving
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                }`}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmDeleteDocument}
+                disabled={isSaving}
+                className={`flex-1 font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                  isSaving
+                    ? 'bg-gray-400 text-white cursor-not-allowed'
+                    : 'bg-red-600 hover:bg-red-700 text-white shadow-md hover:shadow-lg'
+                }`}
+              >
+                {isSaving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Eliminando...
+                  </>
+                ) : (
+                  <>
+                    <TrashIcon className="w-5 h-5" />
+                    Sí, Eliminar
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Confirmación de Eliminación de Vehículo */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 animate-fade-in">

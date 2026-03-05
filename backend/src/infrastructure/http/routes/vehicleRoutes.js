@@ -12,6 +12,7 @@ import {
 } from '../../middlewares/validator.js';
 import { writeLimiter } from '../../middlewares/rateLimiter.js';
 import { verifyToken, requireSupervisor } from '../../middlewares/auth.middleware.js';
+import { uploadSingle } from '../../config/multer.config.js';
 
 /**
  * Crea el router de vehículos
@@ -128,6 +129,61 @@ export const createVehicleRouter = (vehicleController) => {
     requireSupervisor,
     writeLimiter,
     vehicleController.deleteVehicle
+  );
+
+  // ==============================================
+  // RUTAS DE DOCUMENTOS (SOAT y Tecnomecánica)
+  // ==============================================
+
+  /**
+   * POST /api/vehicles/:placa/documents
+   * Subir documento (SOAT o Tecnomecánica)
+   * 
+   * Protecciones:
+   * - Token JWT requerido
+   * - Rol Supervisor o Administrador
+   * - Rate limiting: 20 operaciones por minuto
+   * - Multer para manejar archivos
+   * 
+   * Body (multipart/form-data):
+   * - file: archivo (PDF, JPG, JPEG, PNG - máx 5MB)
+   * - docType: "soat" o "tecno"
+   * - placa: placa del vehículo
+   */
+  router.post('/:placa/documents', 
+    verifyToken,
+    requireSupervisor,
+    writeLimiter,
+    uploadSingle('file'),
+    vehicleController.uploadDocument
+  );
+
+  /**
+   * GET /api/vehicles/:placa/documents/:docType
+   * Descargar documento (SOAT o Tecnomecánica)
+   * 
+   * Protecciones:
+   * - Token JWT requerido
+   */
+  router.get('/:placa/documents/:docType', 
+    verifyToken,
+    vehicleController.downloadDocument
+  );
+
+  /**
+   * DELETE /api/vehicles/:placa/documents/:docType
+   * Eliminar documento (SOAT o Tecnomecánica)
+   * 
+   * Protecciones:
+   * - Token JWT requerido
+   * - Rol Supervisor o Administrador
+   * - Rate limiting: 20 operaciones por minuto
+   */
+  router.delete('/:placa/documents/:docType', 
+    verifyToken,
+    requireSupervisor,
+    writeLimiter,
+    vehicleController.deleteDocument
   );
 
   return router;

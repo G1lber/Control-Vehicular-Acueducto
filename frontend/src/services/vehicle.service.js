@@ -126,6 +126,98 @@ const vehicleService = {
       console.error('Error al eliminar vehículo:', error);
       throw error;
     }
+  },
+
+  /**
+   * Subir documento de SOAT o Tecnomecánica
+   * @param {string} placa - Placa del vehículo
+   * @param {File} file - Archivo a subir
+   * @param {string} docType - Tipo de documento (soat|tecno)
+   * @returns {Promise<Object>} Confirmación
+   */
+  async uploadDocument(placa, file, docType) {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('docType', docType);
+      formData.append('placa', placa);
+
+      console.log(`📤 [vehicle.service] Subiendo documento ${docType} para vehículo ${placa}`);
+      
+      const response = await apiService.post(
+        `/vehicles/${placa}/documents`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+      
+      return response.data;
+    } catch (error) {
+      console.error('❌ [vehicle.service] Error al subir documento:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Descargar documento de SOAT o Tecnomecánica
+   * @param {string} placa - Placa del vehículo
+   * @param {string} docType - Tipo de documento (soat|tecno)
+   * @returns {Promise<void>} Descarga el archivo
+   */
+  async downloadDocument(placa, docType) {
+    try {
+      console.log(`📥 [vehicle.service] Descargando documento ${docType} para vehículo ${placa}`);
+      
+      const response = await apiService.get(
+        `/vehicles/${placa}/documents/${docType}`,
+        {
+          responseType: 'blob'
+        }
+      );
+
+      // Crear un enlace temporal para descargar el archivo
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${placa}_${docType}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('❌ [vehicle.service] Error al descargar documento:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Eliminar documento de SOAT o Tecnomecánica
+   * @param {string} placa - Placa del vehículo
+   * @param {string} docType - Tipo de documento (soat|tecno)
+   * @returns {Promise<Object>} Confirmación
+   */
+  async deleteDocument(placa, docType) {
+    try {
+      console.log(`🗑️ [vehicle.service] Eliminando documento ${docType} para vehículo ${placa}`);
+      
+      const response = await apiService.delete(`/vehicles/${placa}/documents/${docType}`);
+      return response.data;
+    } catch (error) {
+      console.error('❌ [vehicle.service] Error al eliminar documento:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Obtener un vehículo por placa (alias para compatibilidad)
+   * @param {string} placa - Placa del vehículo
+   * @returns {Promise<Object>} Datos del vehículo
+   */
+  async getVehicleById(placa) {
+    return this.getVehicleByPlaca(placa);
   }
 };
 

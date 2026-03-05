@@ -16,7 +16,9 @@ export class Vehicle {
     ultimo_mantenimiento,
     id_usuario,
     soat,
-    tecno
+    tecno,
+    soat_documento,
+    tecno_documento
   }) {
     this.id_placa = id_placa;
     this.modelo = modelo;
@@ -29,6 +31,8 @@ export class Vehicle {
     this.id_usuario = id_usuario;
     this.soat = soat;
     this.tecno = tecno;
+    this.soat_documento = soat_documento || null;
+    this.tecno_documento = tecno_documento || null;
   }
 
   // Métodos de dominio (lógica de negocio)
@@ -135,6 +139,8 @@ export class Vehicle {
       id_usuario: this.id_usuario,
       soat: this.soat,
       tecno: this.tecno,
+      soat_documento: this.soat_documento,
+      tecno_documento: this.tecno_documento,
       status: this.getStatus(),
       days_until_soat: this.getDaysUntilSoatExpiry(),
       days_until_tecno: this.getDaysUntilTecnoExpiry()

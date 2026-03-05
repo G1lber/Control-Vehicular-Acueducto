@@ -51,7 +51,9 @@ const VehicleList = ({ onNavigate }) => {
           techReviewExpiry: v.tecno || null,
           lastMaintenance: v.ultimo_mantenimiento || null,
           mileage: v.kilometraje_actual || '0',
-          driverId: v.id_usuario || null
+          driverId: v.id_usuario || null,
+          soatDocumento: v.soat_documento || null,
+          tecnoDocumento: v.tecno_documento || null
         }));
         
         // Cargar el último mantenimiento de cada vehículo en paralelo
