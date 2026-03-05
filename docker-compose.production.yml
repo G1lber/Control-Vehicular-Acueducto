@@ -64,6 +64,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      # Persistir archivos SOAT y Tecnomecánica
+      - ./backend/SOAT_Tecno:/app/SOAT_Tecno
     networks:
       - acueducto-network-prod
     # No exponemos puerto - Nginx hace proxy
