@@ -317,10 +317,13 @@ export const SurveyTalentoHumano = ({ onNavigate, onLogout, currentUser, accessT
       {accessType !== 'survey_only' && (
         <button
           onClick={() => onNavigate && onNavigate('home')}
-          className="mb-4 md:mb-6 flex items-center gap-2 text-primary hover:text-primary-light transition-colors"
+          className="mb-4 md:mb-6 flex items-center gap-2 text-primary hover:text-primary-light font-semibold transition-colors"
         >
-          <ArrowLeftIcon className="w-5 h-5" />
-          Volver al Inicio
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+          </svg>
+          <span className="md:hidden">Volver</span>
+          <span className="hidden md:inline">Volver al Inicio</span>
         </button>
       )}
 

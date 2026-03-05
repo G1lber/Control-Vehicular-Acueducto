@@ -333,6 +333,17 @@ const VehicleList = ({ onNavigate }) => {
 
   return (
     <div className="py-8">
+      {/* Botón Volver - visible especialmente en móvil */}
+      <button
+        onClick={() => onNavigate('home')}
+        className="mb-4 flex items-center gap-2 text-primary hover:text-primary-light font-semibold transition-colors md:hidden"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+        </svg>
+        Volver
+      </button>
+
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
