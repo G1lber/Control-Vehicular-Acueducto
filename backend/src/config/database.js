@@ -18,7 +18,8 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  timezone: '-05:00' // Zona horaria de Colombia
+  timezone: 'Z', // UTC - evita conversiones de zona horaria
+  dateStrings: true // Mantener fechas como strings para evitar conversiones automáticas
 });
 
 // Función para probar la conexión
