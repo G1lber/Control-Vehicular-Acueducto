@@ -8,6 +8,9 @@
 character-set-server = utf8mb4
 collation-server = utf8mb4_unicode_ci
 
+# Zona horaria Colombia
+default-time-zone = '-05:00'
+
 # InnoDB settings (optimizado para 8GB RAM)
 innodb_buffer_pool_size = 2G
 innodb_log_file_size = 256M

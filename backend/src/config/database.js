@@ -17,7 +17,8 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME || 'control_vehicular_acueducto',
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  timezone: '-05:00' // Zona horaria de Colombia
 });
 
 // Función para probar la conexión
