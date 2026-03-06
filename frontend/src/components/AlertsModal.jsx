@@ -8,9 +8,25 @@ import {
 } from '@heroicons/react/24/outline';
 
 const AlertsModal = ({ isOpen, onClose, vehicles }) => {
+  // Función helper para convertir string YYYY-MM-DD a Date sin conversión de zona horaria
+  const parseDateString = (dateString) => {
+    if (!dateString) return null;
+    const [year, month, day] = dateString.split('-').map(Number);
+    return new Date(year, month - 1, day); // mes es 0-indexed
+  };
+
+  // Función para formatear fecha a texto legible sin conversión de zona horaria
+  const formatDateToText = (dateString) => {
+    if (!dateString) return 'No especificada';
+    const [year, month, day] = dateString.split('-');
+    const monthNames = ['ene', 'feb', 'mar', 'abr', 'may', 'jun',
+                        'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+    return `${parseInt(day)}/${monthNames[parseInt(month) - 1]}/${year}`;
+  };
+
   // Función para verificar si una fecha está próxima a vencer (30 días)
   const isExpiringSoon = (dateString) => {
-    const expiryDate = new Date(dateString);
+    const expiryDate = parseDateString(dateString);
     const today = new Date();
     const daysUntilExpiry = Math.floor((expiryDate - today) / (1000 * 60 * 60 * 24));
     return daysUntilExpiry <= 30 && daysUntilExpiry >= 0;
@@ -18,14 +34,14 @@ const AlertsModal = ({ isOpen, onClose, vehicles }) => {
 
   // Función para verificar si una fecha ya expiró
   const isExpired = (dateString) => {
-    const expiryDate = new Date(dateString);
+    const expiryDate = parseDateString(dateString);
     const today = new Date();
     return expiryDate < today;
   };
 
   // Calcular días restantes
   const getDaysRemaining = (dateString) => {
-    const expiryDate = new Date(dateString);
+    const expiryDate = parseDateString(dateString);
     const today = new Date();
     return Math.floor((expiryDate - today) / (1000 * 60 * 60 * 24));
   };
@@ -48,12 +64,12 @@ const AlertsModal = ({ isOpen, onClose, vehicles }) => {
     
     // Si ambos tienen o no tienen vencidos, ordenar por la fecha más próxima
     const aMinDate = Math.min(
-      new Date(a.soatExpiry).getTime(),
-      new Date(a.techReviewExpiry).getTime()
+      parseDateString(a.soatExpiry).getTime(),
+      parseDateString(a.techReviewExpiry).getTime()
     );
     const bMinDate = Math.min(
-      new Date(b.soatExpiry).getTime(),
-      new Date(b.techReviewExpiry).getTime()
+      parseDateString(b.soatExpiry).getTime(),
+      parseDateString(b.techReviewExpiry).getTime()
     );
     
     return aMinDate - bMinDate;
@@ -154,7 +170,7 @@ const AlertsModal = ({ isOpen, onClose, vehicles }) => {
                           <p className={`text-sm ${
                             soatExpired ? 'text-red-600' : 'text-yellow-600'
                           }`}>
-                            Vence: {new Date(vehicle.soatExpiry).toLocaleDateString('es-CO')}
+                            Vence: {formatDateToText(vehicle.soatExpiry)}
                             {!soatExpired && ` (${getDaysRemaining(vehicle.soatExpiry)} días)`}
                           </p>
                         </div>
@@ -178,7 +194,7 @@ const AlertsModal = ({ isOpen, onClose, vehicles }) => {
                           <p className={`text-sm ${
                             techExpired ? 'text-red-600' : 'text-yellow-600'
                           }`}>
-                            Vence: {new Date(vehicle.techReviewExpiry).toLocaleDateString('es-CO')}
+                            Vence: {formatDateToText(vehicle.techReviewExpiry)}
                             {!techExpired && ` (${getDaysRemaining(vehicle.techReviewExpiry)} días)`}
                           </p>
                         </div>

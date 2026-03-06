@@ -94,9 +94,25 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, onDelete, dri
 
   if (!vehicle) return null;
 
+  // Función helper para convertir string YYYY-MM-DD a Date sin conversión de zona horaria
+  const parseDateString = (dateString) => {
+    if (!dateString) return null;
+    const [year, month, day] = dateString.split('-').map(Number);
+    return new Date(year, month - 1, day); // mes es 0-indexed
+  };
+
+  // Función para formatear fecha a texto legible sin conversión de zona horaria
+  const formatDateToText = (dateString) => {
+    if (!dateString) return 'No especificada';
+    const [year, month, day] = dateString.split('-');
+    const monthNames = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+                        'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    return `${parseInt(day)} de ${monthNames[parseInt(month) - 1]} de ${year}`;
+  };
+
   // Función para verificar si una fecha está próxima a vencer (30 días)
   const isExpiringSoon = (dateString) => {
-    const expiryDate = new Date(dateString);
+    const expiryDate = parseDateString(dateString);
     const today = new Date();
     const daysUntilExpiry = Math.floor((expiryDate - today) / (1000 * 60 * 60 * 24));
     return daysUntilExpiry <= 30 && daysUntilExpiry >= 0;
@@ -104,14 +120,14 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, onDelete, dri
 
   // Función para verificar si una fecha ya expiró
   const isExpired = (dateString) => {
-    const expiryDate = new Date(dateString);
+    const expiryDate = parseDateString(dateString);
     const today = new Date();
     return expiryDate < today;
   };
 
   // Obtener días restantes
   const getDaysRemaining = (dateString) => {
-    const expiryDate = new Date(dateString);
+    const expiryDate = parseDateString(dateString);
     const today = new Date();
     const daysRemaining = Math.floor((expiryDate - today) / (1000 * 60 * 60 * 24));
     return daysRemaining;
@@ -668,7 +684,7 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, onDelete, dri
                   <div className="flex-1">
                     <p className="text-xs text-secondary font-semibold mb-1">Último Mantenimiento</p>
                     <p className="text-lg font-bold text-primary">
-                      {new Date(vehicle.lastMaintenance).toLocaleDateString('es-CO')}
+                      {formatDateToText(vehicle.lastMaintenance)}
                     </p>
                   </div>
                 </div>
@@ -745,11 +761,7 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, onDelete, dri
                     <div>
                       <p className="text-sm text-secondary mb-1">Fecha de vencimiento:</p>
                       <p className="text-lg font-semibold text-primary">
-                        {new Date(vehicle.soatExpiry).toLocaleDateString('es-CO', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
+                        {formatDateToText(vehicle.soatExpiry)}
                       </p>
                     </div>
                     {getStatusBadge(vehicle.soatExpiry)}
@@ -837,11 +849,7 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, onDelete, dri
                     <div>
                       <p className="text-sm text-secondary mb-1">Fecha de vencimiento:</p>
                       <p className="text-lg font-semibold text-primary">
-                        {new Date(vehicle.techReviewExpiry).toLocaleDateString('es-CO', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
+                        {formatDateToText(vehicle.techReviewExpiry)}
                       </p>
                     </div>
                     {getStatusBadge(vehicle.techReviewExpiry)}

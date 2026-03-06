@@ -19,9 +19,25 @@ const VehicleCard = ({ vehicle, driver, onMaintenanceClick, onDetailsClick }) =>
   // }
   // driver: { id: 1, name: "Carlos López", ... }
 
+  // Función helper para convertir string YYYY-MM-DD a Date sin conversión de zona horaria
+  const parseDateString = (dateString) => {
+    if (!dateString) return null;
+    const [year, month, day] = dateString.split('-').map(Number);
+    return new Date(year, month - 1, day); // mes es 0-indexed
+  };
+
+  // Función para formatear fecha a texto legible sin conversión de zona horaria
+  const formatDateToText = (dateString) => {
+    if (!dateString) return 'No especificada';
+    const [year, month, day] = dateString.split('-');
+    const monthNames = ['ene', 'feb', 'mar', 'abr', 'may', 'jun',
+                        'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+    return `${parseInt(day)}/${monthNames[parseInt(month) - 1]}/${year}`;
+  };
+
   // Función para verificar si una fecha está próxima a vencer (30 días)
   const isExpiringSoon = (dateString) => {
-    const expiryDate = new Date(dateString);
+    const expiryDate = parseDateString(dateString);
     const today = new Date();
     const daysUntilExpiry = Math.floor((expiryDate - today) / (1000 * 60 * 60 * 24));
     return daysUntilExpiry <= 30 && daysUntilExpiry >= 0;
@@ -29,7 +45,7 @@ const VehicleCard = ({ vehicle, driver, onMaintenanceClick, onDetailsClick }) =>
 
   // Función para verificar si una fecha ya expiró
   const isExpired = (dateString) => {
-    const expiryDate = new Date(dateString);
+    const expiryDate = parseDateString(dateString);
     const today = new Date();
     return expiryDate < today;
   };
@@ -79,7 +95,7 @@ const VehicleCard = ({ vehicle, driver, onMaintenanceClick, onDetailsClick }) =>
                 )}
               </div>
               <p className={`text-sm font-medium ${getStatusColor(vehicle.soatExpiry)}`}>
-                Vence: {new Date(vehicle.soatExpiry).toLocaleDateString('es-CO')}
+                Vence: {formatDateToText(vehicle.soatExpiry)}
               </p>
             </div>
             {isExpired(vehicle.soatExpiry) && (
@@ -106,7 +122,7 @@ const VehicleCard = ({ vehicle, driver, onMaintenanceClick, onDetailsClick }) =>
                 )}
               </div>
               <p className={`text-sm font-medium ${getStatusColor(vehicle.techReviewExpiry)}`}>
-                Vence: {new Date(vehicle.techReviewExpiry).toLocaleDateString('es-CO')}
+                Vence: {formatDateToText(vehicle.techReviewExpiry)}
               </p>
             </div>
             {isExpired(vehicle.techReviewExpiry) && (
@@ -126,7 +142,7 @@ const VehicleCard = ({ vehicle, driver, onMaintenanceClick, onDetailsClick }) =>
         <div className="border-t pt-3">
           <p className="text-secondary text-xs">
             Último mantenimiento: {vehicle.lastMaintenance 
-              ? new Date(vehicle.lastMaintenance).toLocaleDateString('es-CO')
+              ? formatDateToText(vehicle.lastMaintenance)
               : 'Sin registros'}
           </p>
         </div>
