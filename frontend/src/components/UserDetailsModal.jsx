@@ -201,9 +201,9 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null, currentUse
           
           // LICENCIA DE CONDUCCIÓN
           licencia: surveyData.licencia || '',
-          vigencia_licencia_dia: surveyData.vigenciaLicencia ? new Date(surveyData.vigenciaLicencia).getDate().toString() : '',
-          vigencia_licencia_mes: surveyData.vigenciaLicencia ? (new Date(surveyData.vigenciaLicencia).getMonth() + 1).toString() : '',
-          vigencia_licencia_anio: surveyData.vigenciaLicencia ? new Date(surveyData.vigenciaLicencia).getFullYear().toString() : '',
+          vigencia_licencia_dia: surveyData.vigenciaLicencia ? new Date(surveyData.vigenciaLicencia).getUTCDate().toString() : '',
+          vigencia_licencia_mes: surveyData.vigenciaLicencia ? (new Date(surveyData.vigenciaLicencia).getUTCMonth() + 1).toString() : '',
+          vigencia_licencia_anio: surveyData.vigenciaLicencia ? new Date(surveyData.vigenciaLicencia).getUTCFullYear().toString() : '',
           categoria_licencia: surveyData.categoriaLicencia || '',
           experiencia: surveyData.experiencia || '',  // Ya viene como string del backend (ej: "1-4")
           
@@ -514,9 +514,9 @@ const UserDetailsModal = ({ isOpen, onClose, user, surveyData = null, currentUse
             medio_transporte_desplazamiento: updatedSurveyData.medioTransporteDesplazamiento || '',
             clase_vehiculo: updatedSurveyData.claseVehiculo || '',
             licencia: updatedSurveyData.licencia || '',
-            vigencia_licencia_dia: updatedSurveyData.vigenciaLicencia ? new Date(updatedSurveyData.vigenciaLicencia).getDate().toString() : '',
-            vigencia_licencia_mes: updatedSurveyData.vigenciaLicencia ? (new Date(updatedSurveyData.vigenciaLicencia).getMonth() + 1).toString() : '',
-            vigencia_licencia_anio: updatedSurveyData.vigenciaLicencia ? new Date(updatedSurveyData.vigenciaLicencia).getFullYear().toString() : '',
+            vigencia_licencia_dia: updatedSurveyData.vigenciaLicencia ? new Date(updatedSurveyData.vigenciaLicencia).getUTCDate().toString() : '',
+            vigencia_licencia_mes: updatedSurveyData.vigenciaLicencia ? (new Date(updatedSurveyData.vigenciaLicencia).getUTCMonth() + 1).toString() : '',
+            vigencia_licencia_anio: updatedSurveyData.vigenciaLicencia ? new Date(updatedSurveyData.vigenciaLicencia).getUTCFullYear().toString() : '',
             categoria_licencia: updatedSurveyData.categoriaLicencia || '',
             experiencia: updatedSurveyData.experiencia || '',
             accidente_5_anios: updatedSurveyData.accidente5Anios || '',

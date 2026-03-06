@@ -105,9 +105,9 @@ export const SurveyTalentoHumano = ({ onNavigate, onLogout, currentUser, accessT
                   clase_vehiculo: survey.claseVehiculo || '',
                   clase_vehiculo_otro: survey.claseVehiculoOtro || '',
                   licencia: survey.licencia || '',
-                  vigencia_licencia_dia: survey.vigenciaLicencia ? new Date(survey.vigenciaLicencia).getDate().toString() : '',
-                  vigencia_licencia_mes: survey.vigenciaLicencia ? (new Date(survey.vigenciaLicencia).getMonth() + 1).toString() : '',
-                  vigencia_licencia_anio: survey.vigenciaLicencia ? new Date(survey.vigenciaLicencia).getFullYear().toString() : '',
+                  vigencia_licencia_dia: survey.vigenciaLicencia ? new Date(survey.vigenciaLicencia).getUTCDate().toString() : '',
+                  vigencia_licencia_mes: survey.vigenciaLicencia ? (new Date(survey.vigenciaLicencia).getUTCMonth() + 1).toString() : '',
+                  vigencia_licencia_anio: survey.vigenciaLicencia ? new Date(survey.vigenciaLicencia).getUTCFullYear().toString() : '',
                   categoria_licencia: survey.categoriaLicencia || '',
                   experiencia: survey.experiencia || '',  // Ya viene como string desde backend (ej: "1-4")
                   accidente_5_anios: survey.accidente5Anios || '',
