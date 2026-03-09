@@ -53,3 +53,6 @@ mysql-data-prod/
 *.bak
 backup*.sql
 *.sql.gz
+
+# Notas
+notas.txt
