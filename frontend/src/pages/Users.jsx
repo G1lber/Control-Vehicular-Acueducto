@@ -16,7 +16,7 @@ import {
   ChevronRightIcon
 } from '@heroicons/react/24/outline';
 
-const Users = ({ currentUser }) => {
+const Users = ({ currentUser, onNavigate }) => {
   // Estados para datos del backend
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState(null);
@@ -246,7 +246,7 @@ const Users = ({ currentUser }) => {
   return (
     <div className="py-8">      {/* Botón Volver - visible especialmente en móvil */}
       <button
-        onClick={() => window.history.back()}
+        onClick={() => onNavigate && onNavigate('home')}
         className="mb-4 flex items-center gap-2 text-primary hover:text-primary-light font-semibold transition-colors md:hidden"
       >
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
