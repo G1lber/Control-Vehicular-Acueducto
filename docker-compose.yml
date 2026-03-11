@@ -3,8 +3,6 @@
 # Control Vehicular Acueducto
 # ==================================
 
-version: '3.8'
-
 services:
   # ==================================
   # Servicio 1: Base de datos MySQL

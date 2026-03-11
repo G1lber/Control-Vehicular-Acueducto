@@ -37,9 +37,12 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 # Exponer puerto 80
 EXPOSE 80
 
-# Healthcheck
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s \
-  CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
+# Instalar curl para el healthcheck
+RUN apk add --no-cache curl
+
+# Healthcheck usando curl
+HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost/ || exit 1
 
 # Nginx se inicia automáticamente
 CMD ["nginx", "-g", "daemon off;"]

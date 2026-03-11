@@ -11,7 +11,8 @@ build
 # Variables de entorno
 .env
 .env.local
-.env.production
+# NO ignorar .env.production - se necesita para el build
+# .env.production
 
 # Archivos temporales
 *.log
