@@ -84,6 +84,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
     image: acueducto-frontend:latest
     container_name: acueducto-frontend-prod
     restart: always

@@ -5,6 +5,9 @@
 # Etapa 1: Build
 FROM node:22-alpine AS builder
 
+# Argumento para la URL del API (se pasa desde docker-compose)
+ARG VITE_API_URL=/api
+
 WORKDIR /app
 
 # Copiar archivos de dependencias
@@ -15,6 +18,9 @@ RUN npm ci && npm cache clean --force
 
 # Copiar código fuente
 COPY . .
+
+# Establecer variable de entorno para el build
+ENV VITE_API_URL=$VITE_API_URL
 
 # Build de producción - Genera carpeta dist/
 RUN npm run build
