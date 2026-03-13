@@ -100,10 +100,11 @@ services:
       # Configuración SSL de Nginx (se creará después)
       - ./nginx-ssl.conf:/etc/nginx/conf.d/ssl.conf:ro
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      test: ["CMD", "curl", "-f", "http://localhost/", "--connect-timeout", "5", "--max-time", "8"]
       interval: 30s
-      timeout: 5s
+      timeout: 10s
       retries: 3
+      start_period: 40s
 
 # ==================================
 # Volúmenes persistentes

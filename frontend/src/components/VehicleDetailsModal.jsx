@@ -94,17 +94,22 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, onDelete, dri
 
   if (!vehicle) return null;
 
-  // Función helper para convertir string YYYY-MM-DD a Date sin conversión de zona horaria
+  // Función helper para convertir string de fecha a Date local (sin cambio de zona horaria)
+  // Maneja tanto "YYYY-MM-DD" como ISO strings "2026-06-15T00:00:00.000Z" de MySQL2
   const parseDateString = (dateString) => {
     if (!dateString) return null;
-    const [year, month, day] = dateString.split('-').map(Number);
-    return new Date(year, month - 1, day); // mes es 0-indexed
+    const datePart = String(dateString).slice(0, 10); // Tomar solo YYYY-MM-DD
+    const parts = datePart.split('-').map(Number);
+    if (parts.length !== 3 || parts.some(isNaN)) return null;
+    const [year, month, day] = parts;
+    return new Date(year, month - 1, day);
   };
 
   // Función para formatear fecha a texto legible sin conversión de zona horaria
   const formatDateToText = (dateString) => {
     if (!dateString) return 'No especificada';
-    const [year, month, day] = dateString.split('-');
+    const datePart = String(dateString).slice(0, 10);
+    const [year, month, day] = datePart.split('-');
     const monthNames = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
                         'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
     return `${parseInt(day)} de ${monthNames[parseInt(month) - 1]} de ${year}`;
@@ -113,6 +118,7 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, onDelete, dri
   // Función para verificar si una fecha está próxima a vencer (30 días)
   const isExpiringSoon = (dateString) => {
     const expiryDate = parseDateString(dateString);
+    if (!expiryDate) return false;
     const today = new Date();
     const daysUntilExpiry = Math.floor((expiryDate - today) / (1000 * 60 * 60 * 24));
     return daysUntilExpiry <= 30 && daysUntilExpiry >= 0;
@@ -121,6 +127,7 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, onDelete, dri
   // Función para verificar si una fecha ya expiró
   const isExpired = (dateString) => {
     const expiryDate = parseDateString(dateString);
+    if (!expiryDate) return false;
     const today = new Date();
     return expiryDate < today;
   };
@@ -128,12 +135,19 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicle, onUpdate, onDelete, dri
   // Obtener días restantes
   const getDaysRemaining = (dateString) => {
     const expiryDate = parseDateString(dateString);
+    if (!expiryDate) return null;
     const today = new Date();
-    const daysRemaining = Math.floor((expiryDate - today) / (1000 * 60 * 60 * 24));
-    return daysRemaining;
+    return Math.floor((expiryDate - today) / (1000 * 60 * 60 * 24));
   };
 
   const getStatusBadge = (dateString) => {
+    if (!dateString) {
+      return (
+        <span className="bg-gray-100 text-gray-600 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+          No especificada
+        </span>
+      );
+    }
     if (isExpired(dateString)) {
       return (
         <span className="bg-red-100 text-red-800 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">

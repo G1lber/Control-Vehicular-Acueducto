@@ -8,17 +8,22 @@ import {
 } from '@heroicons/react/24/outline';
 
 const AlertsModal = ({ isOpen, onClose, vehicles }) => {
-  // Función helper para convertir string YYYY-MM-DD a Date sin conversión de zona horaria
+  // Función helper para convertir string de fecha a Date local (sin cambio de zona horaria)
+  // Maneja tanto "YYYY-MM-DD" como ISO strings "2026-06-15T00:00:00.000Z" de MySQL2
   const parseDateString = (dateString) => {
     if (!dateString) return null;
-    const [year, month, day] = dateString.split('-').map(Number);
-    return new Date(year, month - 1, day); // mes es 0-indexed
+    const datePart = String(dateString).slice(0, 10);
+    const parts = datePart.split('-').map(Number);
+    if (parts.length !== 3 || parts.some(isNaN)) return null;
+    const [year, month, day] = parts;
+    return new Date(year, month - 1, day);
   };
 
   // Función para formatear fecha a texto legible sin conversión de zona horaria
   const formatDateToText = (dateString) => {
     if (!dateString) return 'No especificada';
-    const [year, month, day] = dateString.split('-');
+    const datePart = String(dateString).slice(0, 10);
+    const [year, month, day] = datePart.split('-');
     const monthNames = ['ene', 'feb', 'mar', 'abr', 'may', 'jun',
                         'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
     return `${parseInt(day)}/${monthNames[parseInt(month) - 1]}/${year}`;
@@ -27,6 +32,7 @@ const AlertsModal = ({ isOpen, onClose, vehicles }) => {
   // Función para verificar si una fecha está próxima a vencer (30 días)
   const isExpiringSoon = (dateString) => {
     const expiryDate = parseDateString(dateString);
+    if (!expiryDate) return false;
     const today = new Date();
     const daysUntilExpiry = Math.floor((expiryDate - today) / (1000 * 60 * 60 * 24));
     return daysUntilExpiry <= 30 && daysUntilExpiry >= 0;
@@ -35,6 +41,7 @@ const AlertsModal = ({ isOpen, onClose, vehicles }) => {
   // Función para verificar si una fecha ya expiró
   const isExpired = (dateString) => {
     const expiryDate = parseDateString(dateString);
+    if (!expiryDate) return false;
     const today = new Date();
     return expiryDate < today;
   };
@@ -42,6 +49,7 @@ const AlertsModal = ({ isOpen, onClose, vehicles }) => {
   // Calcular días restantes
   const getDaysRemaining = (dateString) => {
     const expiryDate = parseDateString(dateString);
+    if (!expiryDate) return null;
     const today = new Date();
     return Math.floor((expiryDate - today) / (1000 * 60 * 60 * 24));
   };

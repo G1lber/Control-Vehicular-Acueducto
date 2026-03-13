@@ -30,15 +30,17 @@ export const Home = ({ onNavigate }) => {
 
   // Calcular alertas reales
   const calculateAlerts = () => {
-    // Función helper para convertir string YYYY-MM-DD a Date sin conversión de zona horaria
+    // Maneja tanto "YYYY-MM-DD" como ISO strings "2026-06-15T00:00:00.000Z" de MySQL2
     const parseDateString = (dateString) => {
       if (!dateString) return null;
-      const [year, month, day] = dateString.split('-').map(Number);
-      return new Date(year, month - 1, day); // mes es 0-indexed
+      const datePart = String(dateString).slice(0, 10);
+      const parts = datePart.split('-').map(Number);
+      if (parts.length !== 3 || parts.some(isNaN)) return null;
+      const [year, month, day] = parts;
+      return new Date(year, month - 1, day);
     };
 
     const isExpiringSoon = (dateString) => {
-      if (!dateString) return false;
       const expiryDate = parseDateString(dateString);
       if (!expiryDate) return false;
       const today = new Date();
@@ -47,7 +49,6 @@ export const Home = ({ onNavigate }) => {
     };
 
     const isExpired = (dateString) => {
-      if (!dateString) return false;
       const expiryDate = parseDateString(dateString);
       if (!expiryDate) return false;
       const today = new Date();
