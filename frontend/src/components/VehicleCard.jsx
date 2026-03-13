@@ -50,6 +50,14 @@ const VehicleCard = ({ vehicle, driver, onMaintenanceClick, onDetailsClick }) =>
     return expiryDate < today;
   };
 
+  // Obtener días restantes
+  const getDaysRemaining = (dateString) => {
+    const expiryDate = parseDateString(dateString);
+    const today = new Date();
+    const daysRemaining = Math.floor((expiryDate - today) / (1000 * 60 * 60 * 24));
+    return daysRemaining;
+  };
+
   const getStatusColor = (dateString) => {
     if (isExpired(dateString)) return 'text-red-600';
     if (isExpiringSoon(dateString)) return 'text-yellow-600';
@@ -105,7 +113,7 @@ const VehicleCard = ({ vehicle, driver, onMaintenanceClick, onDetailsClick }) =>
             )}
             {isExpiringSoon(vehicle.soatExpiry) && !isExpired(vehicle.soatExpiry) && (
               <span className="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2 py-1 rounded">
-                Por vencer
+                {getDaysRemaining(vehicle.soatExpiry)} días
               </span>
             )}
           </div>
@@ -132,7 +140,7 @@ const VehicleCard = ({ vehicle, driver, onMaintenanceClick, onDetailsClick }) =>
             )}
             {isExpiringSoon(vehicle.techReviewExpiry) && !isExpired(vehicle.techReviewExpiry) && (
               <span className="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2 py-1 rounded">
-                Por vencer
+                {getDaysRemaining(vehicle.techReviewExpiry)} días
               </span>
             )}
           </div>

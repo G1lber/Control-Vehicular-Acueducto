@@ -40,9 +40,9 @@ EXPOSE 80
 # Instalar curl para el healthcheck
 RUN apk add --no-cache curl
 
-# Healthcheck usando curl
-HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
-  CMD curl -f http://localhost/ || exit 1
+# Healthcheck mejorado con timeout más largo y verificación explícita
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:80/ -A "Docker-Healthcheck" --connect-timeout 5 --max-time 10 || exit 1
 
 # Nginx se inicia automáticamente
 CMD ["nginx", "-g", "daemon off;"]

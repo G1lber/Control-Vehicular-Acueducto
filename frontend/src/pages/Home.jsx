@@ -30,15 +30,26 @@ export const Home = ({ onNavigate }) => {
 
   // Calcular alertas reales
   const calculateAlerts = () => {
+    // Función helper para convertir string YYYY-MM-DD a Date sin conversión de zona horaria
+    const parseDateString = (dateString) => {
+      if (!dateString) return null;
+      const [year, month, day] = dateString.split('-').map(Number);
+      return new Date(year, month - 1, day); // mes es 0-indexed
+    };
+
     const isExpiringSoon = (dateString) => {
-      const expiryDate = new Date(dateString);
+      if (!dateString) return false;
+      const expiryDate = parseDateString(dateString);
+      if (!expiryDate) return false;
       const today = new Date();
       const daysUntilExpiry = Math.floor((expiryDate - today) / (1000 * 60 * 60 * 24));
       return daysUntilExpiry <= 30 && daysUntilExpiry >= 0;
     };
 
     const isExpired = (dateString) => {
-      const expiryDate = new Date(dateString);
+      if (!dateString) return false;
+      const expiryDate = parseDateString(dateString);
+      if (!expiryDate) return false;
       const today = new Date();
       return expiryDate < today;
     };
