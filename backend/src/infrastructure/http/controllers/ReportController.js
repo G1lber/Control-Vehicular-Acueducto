@@ -227,7 +227,8 @@ class ReportController {
 
     // Agregar datos
     reportData.data.forEach(row => {
-      const newRow = worksheet.addRow(row);
+      const normalizedRow = this._normalizeRowText(row);
+      const newRow = worksheet.addRow(normalizedRow);
       
       // Alternar colores de filas
       if (newRow.number % 2 === 0) {
@@ -239,9 +240,9 @@ class ReportController {
       }
 
       // Formatear celdas según tipo de dato
-      Object.keys(row).forEach((key, index) => {
+      Object.keys(normalizedRow).forEach((key, index) => {
         const cell = newRow.getCell(index + 1);
-        const value = row[key];
+        const value = normalizedRow[key];
 
         // Formatear fechas
         if (value instanceof Date || this._isDateString(value)) {
@@ -389,6 +390,37 @@ class ReportController {
     if (typeof value !== 'string') return false;
     const date = new Date(value);
     return date instanceof Date && !isNaN(date);
+  }
+
+  /**
+   * Helper: Normalizar texto con posible mojibake (Ã¡, Ã©, etc.)
+   * @private
+   */
+  _normalizeRowText(row) {
+    const normalized = {};
+
+    Object.entries(row).forEach(([key, value]) => {
+      normalized[key] = this._normalizeText(value);
+    });
+
+    return normalized;
+  }
+
+  /**
+   * Helper: Corrige texto mal decodificado latin1->utf8 cuando aplica
+   * @private
+   */
+  _normalizeText(value) {
+    if (typeof value !== 'string') return value;
+
+    const hasMojibake = /Ã.|â.|Â.|�/.test(value);
+    if (!hasMojibake) return value;
+
+    try {
+      return Buffer.from(value, 'latin1').toString('utf8');
+    } catch {
+      return value;
+    }
   }
 }
 

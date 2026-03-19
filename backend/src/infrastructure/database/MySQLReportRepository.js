@@ -79,18 +79,69 @@ class MySQLReportRepository {
         rol: 'r.nombre_rol',
         area: 'u.area',
         celular: 'u.celular',
-        // Campos de información adicional
+        // Campos de información adicional (encuesta talento humano)
         ciudad: 'ia.ciudad',
         sitioLabor: 'ia.sitio_labor',
         cargo: 'ia.cargo',
         edad: 'ia.edad',
         genero: 'ia.genero',
+        grupo: 'CASE WHEN ia.grupo = "Otro" THEN CONCAT("Otro: ", ia.grupo_otro) ELSE ia.grupo END AS grupo',
         tipoContratacion: 'ia.tipo_contratacion',
+        medioTransporteDesplazamiento: 'ia.medio_transporte_desplazamiento',
+        claseVehiculo: 'CASE WHEN ia.clase_vehiculo = "Otro" THEN CONCAT("Otro: ", ia.clase_vehiculo_otro) ELSE ia.clase_vehiculo END AS claseVehiculo',
         licencia: 'ia.licencia',
         categoriaLicencia: 'ia.categoria_licencia',
         vigenciaLicencia: 'ia.vigencia_licencia',
+        experiencia: 'ia.experiencia',
         accidente5Anios: 'ia.accidente_5_anios',
+        accidenteLaboral: 'ia.accidente_laboral',
+        cantidadAccidentes: 'ia.cantidad_accidentes',
+        cantidadAccidentesLaborales: 'ia.cantidad_accidentes_laborales',
+        rolAccidente: 'ia.rol_accidente',
+        incidente: 'ia.incidente',
+        viasPublicas: 'ia.vias_publicas',
+        medioDesplazamiento: 'ia.medio_desplazamiento',
+        frecuenciaVehiculoPropio: 'ia.frecuencia_vehiculo_propio',
+        tipoVehiculoPropio: 'CASE WHEN ia.tipo_vehiculo_propio = "Otro" THEN CONCAT("Otro: ", ia.tipo_vehiculo_propio_otro) ELSE ia.tipo_vehiculo_propio END AS tipoVehiculoPropio',
+        empresaPagaRodamiento: 'ia.empresa_paga_rodamiento',
+        realizaInspeccionPropio: 'ia.realiza_inspeccion_propio',
+        frecuenciaChequeoPropio: 'ia.frecuencia_chequeo_propio',
+        usaVehiculoEmpresa: 'ia.usa_vehiculo_empresa',
+        tipoVehiculoEmpresa: 'CASE WHEN ia.tipo_vehiculo_empresa = "Otro" THEN CONCAT("Otro: ", ia.tipo_vehiculo_empresa_otro) ELSE ia.tipo_vehiculo_empresa END AS tipoVehiculoEmpresa',
+        realizaInspeccionEmpresa: 'ia.realiza_inspeccion_empresa',
+        frecuenciaChequeoEmpresa: 'ia.frecuencia_chequeo_empresa',
+        planificacion: 'ia.planificacion',
+        antelacion: 'ia.antelacion',
+        kmMensuales: 'ia.km_mensuales',
         tieneComparendos: 'ia.tiene_comparendos',
+        riesgos: `CASE
+          WHEN ia.riesgo_otro IS NOT NULL AND TRIM(ia.riesgo_otro) <> '' THEN
+            CASE
+              WHEN JSON_VALID(ia.riesgos) THEN JSON_ARRAY_APPEND(COALESCE(ia.riesgos, JSON_ARRAY()), '$', CONCAT('Otro: ', ia.riesgo_otro))
+              WHEN ia.riesgos IS NULL OR TRIM(ia.riesgos) = '' THEN CONCAT('Otro: ', ia.riesgo_otro)
+              ELSE CONCAT(ia.riesgos, ', Otro: ', ia.riesgo_otro)
+            END
+          ELSE ia.riesgos
+        END AS riesgos`,
+        causas: `CASE
+          WHEN ia.causa_otra IS NOT NULL AND TRIM(ia.causa_otra) <> '' THEN
+            CASE
+              WHEN JSON_VALID(ia.causas) THEN JSON_ARRAY_APPEND(COALESCE(ia.causas, JSON_ARRAY()), '$', CONCAT('Otro: ', ia.causa_otra))
+              WHEN ia.causas IS NULL OR TRIM(ia.causas) = '' THEN CONCAT('Otro: ', ia.causa_otra)
+              ELSE CONCAT(ia.causas, ', Otro: ', ia.causa_otra)
+            END
+          ELSE ia.causas
+        END AS causas`,
+        causasComparendo: `CASE
+          WHEN ia.causa_comparendo_otra IS NOT NULL AND TRIM(ia.causa_comparendo_otra) <> '' THEN
+            CASE
+              WHEN JSON_VALID(ia.causas_comparendo) THEN JSON_ARRAY_APPEND(COALESCE(ia.causas_comparendo, JSON_ARRAY()), '$', CONCAT('Otro: ', ia.causa_comparendo_otra))
+              WHEN ia.causas_comparendo IS NULL OR TRIM(ia.causas_comparendo) = '' THEN CONCAT('Otro: ', ia.causa_comparendo_otra)
+              ELSE CONCAT(ia.causas_comparendo, ', Otro: ', ia.causa_comparendo_otra)
+            END
+          ELSE ia.causas_comparendo
+        END AS causasComparendo`,
+        informacionAdicional: 'ia.informacion_adicional',
         fechaRegistroSurvey: 'ia.fecha_registro'
       };
 

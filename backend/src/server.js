@@ -52,9 +52,15 @@ const PORT = process.env.PORT || 3000;
 // 1. CORS - Permitir peticiones del frontend
 app.use(cors());
 
-// 2. Parseo de datos
-app.use(express.json()); // Parsear JSON en body
-app.use(express.urlencoded({ extended: true })); // Parsear form data
+// 2. Parseo de datos con UTF-8
+app.use(express.json({ charset: 'utf-8' })); // Parsear JSON en body
+app.use(express.urlencoded({ extended: true, charset: 'utf-8' })); // Parsear form data
+
+// 3. Headers de respuesta con codificación UTF-8
+app.use((req, res, next) => {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  next();
+});
 
 // 3. Logger - Registrar todas las peticiones HTTP
 app.use(logger);
