@@ -174,7 +174,7 @@ const VehicleCard = ({ vehicle, driver, onMaintenanceClick, onDetailsClick }) =>
             onClick={() => onMaintenanceClick && onMaintenanceClick(vehicle)}
             className="flex-1 bg-white hover:bg-gray-50 text-primary border-2 border-primary font-semibold py-2 px-4 rounded transition-colors text-sm"
           >
-            Mantenimiento
+            Hoja de vida
           </button>
         </div>
       </div>

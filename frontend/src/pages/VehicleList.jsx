@@ -140,8 +140,8 @@ const VehicleList = ({ onNavigate }) => {
   };
 
   const handleMaintenanceClick = (vehicle) => {
-    // Navegar a la página de mantenimiento con los datos del vehículo
-    onNavigate('maintenance', vehicle);
+    // Navegar a la página de hoja de vida (historial) con los datos del vehículo
+    onNavigate('vehicleHistory', vehicle);
   };
 
   const handleAddVehicle = async (vehicleData) => {

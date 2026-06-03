@@ -5,6 +5,7 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import LoginSurvey from './pages/LoginSurvey'
 import VehicleList from './pages/VehicleList'
+import VehicleHistory from './pages/VehicleHistory'
 import Reports from './pages/Reports'
 import Users from './pages/Users'
 import SurveyTalentoHumano from './pages/SurveyTalentoHumano'
@@ -189,6 +190,13 @@ function App() {
     switch (currentPage) {
       case 'vehicles':
         return <VehicleList onNavigate={handleNavigate} />;
+      case 'vehicleHistory':
+        return (
+          <VehicleHistory
+            vehicle={selectedVehicle}
+            onNavigate={handleNavigate}
+          />
+        );
       case 'users':
         return <Users onNavigate={handleNavigate} currentUser={currentUser} />;
       case 'reports':

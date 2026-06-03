@@ -20,21 +20,45 @@ class MaintenanceController {
 
       let maintenances;
 
-      // Filtrar por vehículo
+      // Obtener la base más específica disponible y luego aplicar filtros combinados
       if (placa) {
         maintenances = await this.maintenanceUseCases.getMaintenancesByVehicle(placa);
-      }
-      // Filtrar por tipo
-      else if (tipo) {
+      } else if (tipo) {
         maintenances = await this.maintenanceUseCases.getMaintenancesByType(tipo);
-      }
-      // Filtrar por fecha
-      else if (year) {
+      } else if (year) {
         maintenances = await this.maintenanceUseCases.getMaintenancesByDate(year, month);
-      }
-      // Sin filtros: todos
-      else {
+      } else {
         maintenances = await this.maintenanceUseCases.getAllMaintenances();
+      }
+
+      if (tipo) {
+        const tipoNormalized = String(tipo).toLowerCase();
+        maintenances = maintenances.filter(maintenance => {
+          const maintenanceType = String(maintenance.tipo || maintenance.tipo_mantenimiento || '').toLowerCase();
+          return maintenanceType.includes(tipoNormalized);
+        });
+      }
+
+      if (year) {
+        const yearNumber = parseInt(year, 10);
+        maintenances = maintenances.filter(maintenance => {
+          const dateValue = maintenance.fechaRealizado || maintenance.fecha_realizado;
+          if (!dateValue) return false;
+
+          const maintenanceDate = new Date(String(dateValue).slice(0, 10));
+          if (Number.isNaN(maintenanceDate.getTime())) return false;
+
+          if (maintenanceDate.getFullYear() !== yearNumber) {
+            return false;
+          }
+
+          if (month) {
+            const monthNumber = parseInt(month, 10);
+            return maintenanceDate.getMonth() + 1 === monthNumber;
+          }
+
+          return true;
+        });
       }
 
       res.json({

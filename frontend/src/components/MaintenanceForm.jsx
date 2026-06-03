@@ -1,14 +1,46 @@
-// Componente MaintenanceForm - Formulario para registrar mantenimientos
-// Registra: cambio de aceite, llantas, líquido de frenos, kit de arrastre, etc.
+// Componente MaintenanceForm - Formulario para registrar o editar mantenimientos
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import maintenanceService from '../services/maintenance.service';
 import { useAlert } from '../context/AlertContext';
 
-const MaintenanceForm = ({ vehicleId, onSubmit, onCancel }) => {
+const maintenanceTypes = [
+  { value: 'oil_change', label: 'Cambio de Aceite' },
+  { value: 'tire_change', label: 'Cambio de Llantas' },
+  { value: 'brake_fluid', label: 'Cambio de Líquido de Frenos' },
+  { value: 'drive_kit', label: 'Cambio de Kit de Arrastre' },
+  { value: 'filters', label: 'Cambio de Filtros' },
+  { value: 'battery', label: 'Cambio de Batería' },
+  { value: 'brakes', label: 'Mantenimiento de Frenos' },
+  { value: 'suspension', label: 'Mantenimiento de Suspensión' },
+  { value: 'engine', label: 'Mantenimiento de Motor' },
+  { value: 'transmission', label: 'Mantenimiento de Transmisión' },
+  { value: 'other', label: 'Otro' },
+];
+
+const typeMapping = {
+  oil_change: 'Cambio de aceite',
+  tire_change: 'Cambio de llantas',
+  brake_fluid: 'Líquido de frenos',
+  drive_kit: 'Kit de arrastre',
+  filters: 'Cambio de filtros',
+  battery: 'Cambio de batería',
+  brakes: 'Mantenimiento de frenos',
+  suspension: 'Mantenimiento de suspensión',
+  engine: 'Mantenimiento de motor',
+  transmission: 'Mantenimiento de transmisión',
+  other: 'Otro'
+};
+
+const reverseTypeMapping = Object.fromEntries(
+  Object.entries(typeMapping).map(([key, value]) => [value.toLowerCase(), key])
+);
+
+const getMaintenanceId = (data) => data?.id ?? data?.id_mantenimiento ?? null;
+
+const MaintenanceForm = ({ vehicleId, onSubmit, onCancel, initialData = null }) => {
   const { success, error } = useAlert();
   const [isSaving, setIsSaving] = useState(false);
-  
   const [formData, setFormData] = useState({
     vehicleId: vehicleId || '',
     maintenanceType: '',
@@ -20,20 +52,30 @@ const MaintenanceForm = ({ vehicleId, onSubmit, onCancel }) => {
     parts: [],
   });
 
-  // Tipos de mantenimiento disponibles
-  const maintenanceTypes = [
-    { value: 'oil_change', label: 'Cambio de Aceite' },
-    { value: 'tire_change', label: 'Cambio de Llantas' },
-    { value: 'brake_fluid', label: 'Cambio de Líquido de Frenos' },
-    { value: 'drive_kit', label: 'Cambio de Kit de Arrastre' },
-    { value: 'filters', label: 'Cambio de Filtros' },
-    { value: 'battery', label: 'Cambio de Batería' },
-    { value: 'brakes', label: 'Mantenimiento de Frenos' },
-    { value: 'suspension', label: 'Mantenimiento de Suspensión' },
-    { value: 'engine', label: 'Mantenimiento de Motor' },
-    { value: 'transmission', label: 'Mantenimiento de Transmisión' },
-    { value: 'other', label: 'Otro' },
-  ];
+  useEffect(() => {
+    if (!initialData) {
+      setFormData(prev => ({
+        ...prev,
+        vehicleId: vehicleId || ''
+      }));
+      return;
+    }
+
+    const backendType = String(initialData.tipo || initialData.maintenanceType || '').toLowerCase();
+    const mappedType = reverseTypeMapping[backendType] || initialData.maintenanceType || '';
+    const dateValue = initialData.fechaRealizado || initialData.fecha_realizado || initialData.date || '';
+
+    setFormData({
+      vehicleId: initialData.placa || vehicleId || '',
+      maintenanceType: mappedType,
+      description: initialData.descripcion || '',
+      date: dateValue ? String(dateValue).slice(0, 10) : new Date().toISOString().split('T')[0],
+      cost: initialData.costo ?? '',
+      mileage: initialData.kilometraje ?? initialData.kilometraje_actual ?? '',
+      nextMaintenanceDate: initialData.fechaProxima ? String(initialData.fechaProxima).slice(0, 10) : '',
+      parts: [],
+    });
+  }, [initialData, vehicleId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -45,36 +87,17 @@ const MaintenanceForm = ({ vehicleId, onSubmit, onCancel }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
       setIsSaving(true);
-      
-      console.log('🔧 Datos del formulario de mantenimiento:', formData);
-      
-      // Mapear el tipo de mantenimiento del frontend al backend
-      const typeMapping = {
-        'oil_change': 'Cambio de aceite',
-        'tire_change': 'Cambio de llantas',
-        'brake_fluid': 'Líquido de frenos',
-        'drive_kit': 'Kit de arrastre',
-        'filters': 'Cambio de filtros',
-        'battery': 'Cambio de batería',
-        'brakes': 'Mantenimiento de frenos',
-        'suspension': 'Mantenimiento de suspensión',
-        'engine': 'Mantenimiento de motor',
-        'transmission': 'Mantenimiento de transmisión',
-        'other': 'Otro'
-      };
 
-      // Mapear el formato del frontend al formato del backend (camelCase esperado por validator)
       const maintenancePayload = {
         placa: formData.vehicleId,
         tipo: typeMapping[formData.maintenanceType] || formData.maintenanceType,
         fechaRealizado: formData.date,
-        descripcion: formData.description
+        descripcion: formData.description,
       };
 
-      // Agregar campos opcionales solo si tienen valor
       if (formData.cost) {
         maintenancePayload.costo = parseFloat(formData.cost);
       }
@@ -85,27 +108,28 @@ const MaintenanceForm = ({ vehicleId, onSubmit, onCancel }) => {
         maintenancePayload.fechaProxima = formData.nextMaintenanceDate;
       }
 
-      console.log('📤 Payload de mantenimiento:', maintenancePayload);
+      const maintenanceId = getMaintenanceId(initialData);
 
-      const response = await maintenanceService.createMaintenance(maintenancePayload);
-      
-      console.log('✅ Respuesta del servidor:', response);
-      
+      if (initialData && !maintenanceId) {
+        error('No se pudo identificar el mantenimiento a editar');
+        return;
+      }
+
+      const response = maintenanceId
+        ? await maintenanceService.updateMaintenance(maintenanceId, maintenancePayload)
+        : await maintenanceService.createMaintenance(maintenancePayload);
+
       if (response.success) {
-        success('Mantenimiento registrado exitosamente');
-        
-        // Llamar al callback si existe
+        success(initialData ? 'Mantenimiento actualizado exitosamente' : 'Mantenimiento registrado exitosamente');
         if (onSubmit) {
-          onSubmit(formData);
+          onSubmit(formData, response);
         }
       } else {
-        error(response.message || 'Error al registrar mantenimiento');
+        error(response.message || (initialData ? 'Error al actualizar mantenimiento' : 'Error al registrar mantenimiento'));
       }
     } catch (err) {
-      console.error('❌ Error al crear mantenimiento:', err);
-      console.error('📋 Response data:', err.response?.data);
-      console.error('🔴 Mensaje:', err.response?.data?.message);
-      const errorMessage = err.response?.data?.message || 'Error al registrar el mantenimiento';
+      console.error('Error al guardar mantenimiento:', err);
+      const errorMessage = err.response?.data?.message || (initialData ? 'Error al actualizar el mantenimiento' : 'Error al registrar el mantenimiento');
       error(errorMessage);
     } finally {
       setIsSaving(false);
@@ -115,11 +139,10 @@ const MaintenanceForm = ({ vehicleId, onSubmit, onCancel }) => {
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
       <h2 className="text-2xl font-bold text-primary mb-6">
-        Registrar Mantenimiento
+        {initialData ? 'Editar Mantenimiento' : 'Registrar Mantenimiento'}
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Tipo de Mantenimiento */}
         <div>
           <label className="block text-primary-light font-semibold mb-2" htmlFor="maintenanceType">
             Tipo de Mantenimiento *
@@ -141,7 +164,6 @@ const MaintenanceForm = ({ vehicleId, onSubmit, onCancel }) => {
           </select>
         </div>
 
-        {/* Fecha */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-primary-light font-semibold mb-2" htmlFor="date">
@@ -173,7 +195,6 @@ const MaintenanceForm = ({ vehicleId, onSubmit, onCancel }) => {
           </div>
         </div>
 
-        {/* Kilometraje y Costo */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-primary-light font-semibold mb-2" htmlFor="mileage">
@@ -206,7 +227,6 @@ const MaintenanceForm = ({ vehicleId, onSubmit, onCancel }) => {
           </div>
         </div>
 
-        {/* Descripción */}
         <div>
           <label className="block text-primary-light font-semibold mb-2" htmlFor="description">
             Descripción del Mantenimiento *
@@ -223,7 +243,6 @@ const MaintenanceForm = ({ vehicleId, onSubmit, onCancel }) => {
           />
         </div>
 
-        {/* Botones */}
         <div className="flex gap-4 pt-4">
           <button
             type="submit"
@@ -236,7 +255,7 @@ const MaintenanceForm = ({ vehicleId, onSubmit, onCancel }) => {
                 Guardando...
               </>
             ) : (
-              'Registrar Mantenimiento'
+              initialData ? 'Guardar cambios' : 'Registrar Mantenimiento'
             )}
           </button>
           <button
