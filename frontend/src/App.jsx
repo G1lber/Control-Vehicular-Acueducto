@@ -23,6 +23,25 @@ function App() {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const { success, error, info } = useAlert();
 
+  const syncBrowserHistory = (page, vehicleData = null, replace = false) => {
+    const historyState = {
+      currentPage: page,
+      selectedVehicle: vehicleData || null
+    };
+
+    if (replace) {
+      window.history.replaceState(historyState, '', window.location.pathname);
+    } else {
+      window.history.pushState(historyState, '', window.location.pathname);
+    }
+  };
+
+  const applyHistoryState = (state) => {
+    if (!state) return;
+    if (state.currentPage) setCurrentPage(state.currentPage);
+    setSelectedVehicle(state.selectedVehicle || null);
+  };
+
   // Verificar si hay sesión al cargar
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -39,6 +58,9 @@ function App() {
         // Si es acceso solo al cuestionario, ir directo allí
         if (savedAccessType === 'survey_only') {
           setCurrentPage('surveyTalentoHumano');
+          syncBrowserHistory('surveyTalentoHumano', null, true);
+        } else {
+          syncBrowserHistory('home', null, true);
         }
       } catch (err) {
         console.error('Error al restaurar sesión:', err);
@@ -48,6 +70,25 @@ function App() {
     
     // Marcar que ya se verificó la autenticación
     setIsCheckingAuth(false);
+  }, []);
+
+  // Mantener la navegación interna dentro del historial del navegador
+  useEffect(() => {
+    const handlePopState = (event) => {
+      const state = event.state;
+
+      if (!state) {
+        return;
+      }
+
+      applyHistoryState(state);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
   }, []);
 
   // Escuchar evento de sesión expirada
@@ -85,8 +126,10 @@ function App() {
     // Si es acceso solo al cuestionario, ir directo allí
     if (access === 'survey_only') {
       setCurrentPage('surveyTalentoHumano');
+      syncBrowserHistory('surveyTalentoHumano', null, true);
     } else {
       setCurrentPage('home');
+      syncBrowserHistory('home', null, true);
     }
   };
 
@@ -96,6 +139,8 @@ function App() {
     setCurrentUser(null);
     setAccessType(null);
     setCurrentPage('home');
+    setSelectedVehicle(null);
+    window.history.replaceState({ currentPage: 'home', selectedVehicle: null }, '', window.location.pathname);
     info('Sesión cerrada correctamente');
   };
 
@@ -109,7 +154,11 @@ function App() {
     setCurrentPage(page);
     if (vehicleData) {
       setSelectedVehicle(vehicleData);
+    } else {
+      setSelectedVehicle(null);
     }
+
+    syncBrowserHistory(page, vehicleData, false);
   };
 
   const handleMaintenanceSubmit = (formData) => {

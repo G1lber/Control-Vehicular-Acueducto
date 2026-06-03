@@ -377,9 +377,14 @@ const MaintenanceHistoryModal = ({ isOpen, onClose, maintenances: initialMainten
                     {/* Descripción */}
                     {maintenance.description && (
                       <div className="pt-3 border-t border-gray-200">
-                        <p className="text-sm text-gray-700">
-                          <span className="font-semibold text-secondary">Descripción:</span> {maintenance.description}
-                        </p>
+                        <div className="rounded-lg bg-gray-50 p-3">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-secondary mb-2">
+                            Descripción
+                          </p>
+                          <p className="text-sm text-gray-700 whitespace-normal break-words leading-6 max-h-28 overflow-y-auto pr-1">
+                            {maintenance.description}
+                          </p>
+                        </div>
                       </div>
                     )}
                   </div>
