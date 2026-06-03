@@ -26,6 +26,18 @@ const MaintenanceHistoryModal = ({ isOpen, onClose, maintenances: initialMainten
   const [maintenances, setMaintenances] = useState(initialMaintenances || []);
   const [loading, setLoading] = useState(false);
 
+  const getMaintenanceVehicleId = (maintenance) => {
+    return maintenance?.vehicleId
+      || maintenance?.id_placa
+      || maintenance?.placa
+      || maintenance?.idPlaca
+      || maintenance?.vehicle
+      || maintenance?.vehiculo
+      || maintenance?.id_vehicle
+      || maintenance?.idVehiculo
+      || null;
+  };
+
   // Cargar mantenimientos cuando se abre el modal
   useEffect(() => {
     if (isOpen) {
@@ -36,7 +48,10 @@ const MaintenanceHistoryModal = ({ isOpen, onClose, maintenances: initialMainten
       if (!initialMaintenances) {
         loadMaintenances();
       } else {
-        setMaintenances(initialMaintenances);
+        setMaintenances(initialMaintenances.map(maintenance => ({
+          ...maintenance,
+          vehicleId: getMaintenanceVehicleId(maintenance)
+        })));
       }
     }
   }, [isOpen, initialMaintenances]);
@@ -50,7 +65,7 @@ const MaintenanceHistoryModal = ({ isOpen, onClose, maintenances: initialMainten
         // Mapear datos del backend al frontend
         const mapped = response.data.map(m => ({
           id: m.id_mantenimiento,
-          vehicleId: m.id_placa,
+          vehicleId: getMaintenanceVehicleId(m),
           maintenanceType: mapMaintenanceTypeToFrontend(m.tipo_mantenimiento),
           description: m.descripcion,
           date: m.fecha_realizado,
@@ -87,7 +102,22 @@ const MaintenanceHistoryModal = ({ isOpen, onClose, maintenances: initialMainten
 
   // Función para obtener datos del vehículo por ID
   const getVehicleById = (vehicleId) => {
-    return vehicles.find(v => v.id === vehicleId);
+    const normalizedVehicleId = String(vehicleId || '').trim().toUpperCase();
+    return vehicles.find(v => {
+      const candidateId = String(v.id || v.id_placa || v.plate || '').trim().toUpperCase();
+      return candidateId === normalizedVehicleId;
+    });
+  };
+
+  const getVehicleLabel = (maintenance) => {
+    const vehicleId = getMaintenanceVehicleId(maintenance);
+    const vehicle = getVehicleById(vehicleId);
+
+    if (vehicle) {
+      return `${vehicle.plate || vehicle.id || vehicle.id_placa} - ${vehicle.brand || 'N/A'} ${vehicle.model || ''}`.trim();
+    }
+
+    return vehicleId ? `Vehículo ${vehicleId}` : 'Vehículo no identificado';
   };
 
   // Función para formatear el tipo de mantenimiento
@@ -300,13 +330,13 @@ const MaintenanceHistoryModal = ({ isOpen, onClose, maintenances: initialMainten
               </div>
             ) : (
               <div className="space-y-3 max-h-[450px] overflow-y-auto pr-2">
-                {sortedMaintenances.map((maintenance) => {
-                const vehicle = getVehicleById(maintenance.vehicleId);
+                {sortedMaintenances.map((maintenance, index) => {
                 const colorClass = getMaintenanceColor(maintenance.maintenanceType);
+                const maintenanceKey = maintenance.id || maintenance.vehicleId || maintenance.date || `maintenance-${index}`;
 
                 return (
                   <div
-                    key={maintenance.id}
+                    key={maintenanceKey}
                     className="bg-white border-2 border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
                   >
                     {/* Header */}
@@ -319,14 +349,12 @@ const MaintenanceHistoryModal = ({ isOpen, onClose, maintenances: initialMainten
                           <h5 className="font-bold text-primary text-lg">
                             {formatMaintenanceType(maintenance.maintenanceType)}
                           </h5>
-                          {vehicle && (
-                            <div className="flex items-center gap-2 text-sm text-secondary">
-                              <TruckIcon className="w-4 h-4" />
-                              <span className="font-semibold">
-                                {vehicle.plate} - {vehicle.brand} {vehicle.model}
-                              </span>
-                            </div>
-                          )}
+                          <div className="flex items-center gap-2 text-sm text-secondary">
+                            <TruckIcon className="w-4 h-4" />
+                            <span className="font-semibold">
+                              {getVehicleLabel(maintenance)}
+                            </span>
+                          </div>
                         </div>
                       </div>
                       <span className={`px-3 py-1 rounded-full text-xs font-bold border ${colorClass}`}>

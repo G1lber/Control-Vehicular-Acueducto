@@ -116,13 +116,13 @@ export const Home = ({ onNavigate }) => {
         const maintenancesResponse = await maintenanceService.getAllMaintenances();
         if (maintenancesResponse.success) {
           const mappedMaintenances = maintenancesResponse.data.map(m => ({
-            id: m.id_mantenimiento,
-            vehicleId: m.id_placa,
-            maintenanceType: m.tipo_mantenimiento,
-            date: m.fecha_realizado || m.fechaRealizado,
+            id: m.id,
+            vehicleId: m.placa || m.id_placa,
+            maintenanceType: m.tipo || m.tipo_mantenimiento,
+            date: m.fechaRealizado || m.fecha_realizado,
             cost: m.costo?.toString() || '',
             mileage: m.kilometraje?.toString() || '',
-            nextMaintenanceDate: m.fecha_proxima || m.fechaProxima || null,
+            nextMaintenanceDate: m.fechaProxima || m.fecha_proxima || null,
             description: m.descripcion || ''
           }));
           setMaintenances(mappedMaintenances);
