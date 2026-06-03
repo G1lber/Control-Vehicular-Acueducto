@@ -47,6 +47,7 @@ function App() {
     const token = localStorage.getItem('token');
     const userStr = localStorage.getItem('user');
     const savedAccessType = localStorage.getItem('access_type') || 'full';
+    const savedHistoryState = window.history.state;
 
     if (token && userStr) {
       try {
@@ -59,7 +60,11 @@ function App() {
         if (savedAccessType === 'survey_only') {
           setCurrentPage('surveyTalentoHumano');
           syncBrowserHistory('surveyTalentoHumano', null, true);
+        } else if (savedHistoryState?.currentPage) {
+          setCurrentPage(savedHistoryState.currentPage);
+          setSelectedVehicle(savedHistoryState.selectedVehicle || null);
         } else {
+          setCurrentPage('home');
           syncBrowserHistory('home', null, true);
         }
       } catch (err) {
