@@ -28,6 +28,17 @@ export const createReportRoutes = (reportController) => {
   );
 
   /**
+   * @route GET /api/reports/soat-tecno/download
+   * @desc Descargar la carpeta completa SOAT_Tecno como ZIP
+   * @access Protegido - Requiere autenticación
+   * @returns Archivo ZIP
+   */
+  router.get('/soat-tecno/download',
+    verifyToken,
+    (req, res) => reportController.downloadSoatTecnoFiles(req, res)
+  );
+
+  /**
    * @route GET /api/reports/fields/:reportType
    * @desc Obtener campos disponibles para un tipo de reporte
    * @access Protegido - Requiere autenticación

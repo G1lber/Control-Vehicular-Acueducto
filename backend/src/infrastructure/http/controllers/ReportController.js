@@ -6,6 +6,14 @@
  */
 
 import ExcelJS from 'exceljs';
+import fs from 'fs';
+import path from 'path';
+import { ZipArchive } from 'archiver';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const SOAT_TECNO_DIR = path.resolve(__dirname, '../../../../SOAT_Tecno');
 
 class ReportController {
   constructor(reportUseCases) {
@@ -99,6 +107,46 @@ class ReportController {
           message: 'Error al generar el reporte',
           error: error.message,
           details: error.stack
+        });
+      }
+    }
+  };
+
+  /**
+   * GET /api/reports/soat-tecno/download
+   * Descargar la carpeta completa SOAT_Tecno como archivo ZIP
+   */
+  downloadSoatTecnoFiles = async (req, res) => {
+    try {
+      if (!fs.existsSync(SOAT_TECNO_DIR)) {
+        return res.status(404).json({
+          success: false,
+          message: 'No se encontró la carpeta SOAT_Tecno'
+        });
+      }
+
+      const archiveName = `SOAT_Tecno_${new Date().toISOString().split('T')[0]}.zip`;
+
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', `attachment; filename=${archiveName}`);
+
+      const archive = new ZipArchive({ zlib: { level: 9 } });
+
+      archive.on('error', (error) => {
+        throw error;
+      });
+
+      archive.pipe(res);
+      archive.directory(SOAT_TECNO_DIR, false);
+      await archive.finalize();
+    } catch (error) {
+      console.error('Error en downloadSoatTecnoFiles:', error);
+
+      if (!res.headersSent) {
+        return res.status(500).json({
+          success: false,
+          message: 'Error al descargar la carpeta SOAT_Tecno',
+          error: error.message
         });
       }
     }

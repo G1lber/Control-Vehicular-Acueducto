@@ -15,6 +15,7 @@ import {
   CheckIcon,
   XMarkIcon,
   Cog6ToothIcon,
+  FolderIcon,
   ChevronDownIcon,
   ChevronUpIcon
 } from '@heroicons/react/24/outline';
@@ -78,6 +79,13 @@ const Reports = ({ onNavigate }) => {
       icon: CheckBadgeIcon, 
       description: 'Conductores con vehículos asignados y datos de seguridad',
       color: 'from-pink-500 to-pink-600'
+    },
+    {
+      value: 'soat_tecno',
+      label: 'SOAT y Tecno',
+      icon: FolderIcon,
+      description: 'Descarga la carpeta completa con todos los documentos SOAT y Tecno',
+      color: 'from-teal-500 to-teal-600'
     }
   ];
 
@@ -89,8 +97,14 @@ const Reports = ({ onNavigate }) => {
   // Cargar campos disponibles cuando se selecciona un tipo de reporte
   useEffect(() => {
     if (selectedReport) {
-      loadAvailableFields(selectedReport);
-      setShowFieldSelector(true);
+      if (selectedReport === 'soat_tecno') {
+        setAvailableFields([]);
+        setSelectedFields([]);
+        setShowFieldSelector(false);
+      } else {
+        loadAvailableFields(selectedReport);
+        setShowFieldSelector(true);
+      }
     } else {
       setShowFieldSelector(false);
       setAvailableFields([]);
@@ -157,11 +171,6 @@ const Reports = ({ onNavigate }) => {
       return;
     }
 
-    if (selectedFields.length === 0) {
-      error('Selecciona al menos un campo para incluir en el reporte');
-      return;
-    }
-
     // Validar fechas
     if (dateRange.startDate && dateRange.endDate) {
       if (new Date(dateRange.startDate) > new Date(dateRange.endDate)) {
@@ -172,6 +181,18 @@ const Reports = ({ onNavigate }) => {
 
     try {
       setIsGenerating(true);
+
+      if (selectedReport === 'soat_tecno') {
+        await reportService.downloadSoatTecnoFiles();
+        success('Carpeta SOAT y Tecno descargada exitosamente');
+        setSelectedReport(null);
+        return;
+      }
+
+      if (selectedFields.length === 0) {
+        error('Selecciona al menos un campo para incluir en el reporte');
+        return;
+      }
       
       const reportConfig = {
         reportType: selectedReport,
@@ -418,9 +439,13 @@ const Reports = ({ onNavigate }) => {
       <div className="flex justify-center">
         <button
           onClick={handleGenerateReport}
-          disabled={!selectedReport || isGenerating || selectedFields.length === 0}
+          disabled={
+            !selectedReport ||
+            isGenerating ||
+            (selectedReport !== 'soat_tecno' && selectedFields.length === 0)
+          }
           className={`flex items-center gap-3 px-8 py-4 rounded-lg font-bold text-lg transition-all shadow-lg ${
-            selectedReport && !isGenerating && selectedFields.length > 0
+            selectedReport && !isGenerating && (selectedReport === 'soat_tecno' || selectedFields.length > 0)
               ? 'bg-gradient-to-r from-primary to-primary-light text-white hover:shadow-xl transform hover:-translate-y-1'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}

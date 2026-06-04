@@ -78,6 +78,39 @@ const reportService = {
   },
 
   /**
+   * Descargar todos los archivos SOAT y Tecno como ZIP
+   */
+  downloadSoatTecnoFiles: async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/reports/soat-tecno/download`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al descargar los archivos SOAT y Tecno');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `SOAT_Tecno_${new Date().toISOString().split('T')[0]}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      return true;
+    } catch (error) {
+      console.error('Error en downloadSoatTecnoFiles:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Generar y descargar reporte
    */
   generateReport: async (reportConfig) => {
